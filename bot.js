@@ -446,7 +446,8 @@ client.on('guildDelete', async (guild) => {
   await update_stats();
 });
 
-client.login('MTA1MjU4NjU2NTM5NTgyODc3OA.G93V0r.a3M_yHzx08EzM5lWq5_AyMHRKq9pqzIbWdA93o');//Official
+console.log(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}));
+client.login(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace('\n', ''));//Official
 //client.login('MTA0MTc1NjAzNDE3NzQ0MTg1Mg.G3ggUx.wRtAiJzd55zJHRykz3IG2Rfbg78zhpwTpXmPc0');//Testing
 
 async function update_stats()

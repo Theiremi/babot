@@ -2,3 +2,4 @@
 /statusbot/*
 !/statusbot/index.js
 /token
+/babot.log
