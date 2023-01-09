@@ -13622,3 +13622,94 @@
 [2023/01/09 18:47:27] [Player-queue        ] [305352616551120896] Video https://youtu.be/qlGrzNagmNQ from youtube added to queue
 [2023/01/09 18:47:36] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
 [2023/01/09 18:47:44] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
+[2023/01/09 19:15:23] [Main                ] Logged in as BaBot#2064!
+[2023/01/09 19:15:23] [Main                ] Data actualized on discords.com
+[2023/01/09 19:15:23] [Main                ] Data actualized on discordbotlist.com
+[2023/01/09 19:15:23] [Main                ] Data actualized on botlist.me
+[2023/01/09 19:15:24] [Main-feedback       ] Error when logging statistics on the server
+[2023/01/09 19:15:30] [Player-player       ] [588413190426066961] No existing player, creating a new one
+[2023/01/09 19:15:30] [Player              ] [588413190426066961] Command `player` received from user chikibanosya#7621
+[2023/01/09 19:15:30] [Player-object       ] [588413190426066961] New player object created in channel 588413192514830336
+[2023/01/09 19:15:34] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:15:35] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:15:37] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:15:38] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=LzgCPEPAwmU" given
+[2023/01/09 19:15:42] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=LzgCPEPAwmU from youtube added to queue
+[2023/01/09 19:15:42] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=LzgCPEPAwmU at volume 1
+[2023/01/09 19:15:51] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:16:27] [Player              ] [305352616551120896] Command `player` received from user Breakdown#2322
+[2023/01/09 19:16:27] [Player-object       ] [305352616551120896] New player object created in channel 374919469484605440
+[2023/01/09 19:16:27] [Player-player       ] [305352616551120896] No existing player, creating a new one
+[2023/01/09 19:16:28] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:16:29] [Player-modal_add    ] [588413190426066961] Search term "INSTASAMKA - Альбом POPSTAR (Премьера альбома 2022)" given
+[2023/01/09 19:16:39] [Player              ] [588413190426066961] Command `select_add_song` received from user chikibanosya#7621
+[2023/01/09 19:16:39] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=VnAthkSkyQA" selected
+[2023/01/09 19:16:44] [Player              ] [305352616551120896] Command `open_modal_add` received from user Breakdown#2322
+[2023/01/09 19:16:45] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=VnAthkSkyQA from youtube added to queue
+[2023/01/09 19:16:46] [Player              ] [305352616551120896] Command `modal_add` received from user Breakdown#2322
+[2023/01/09 19:16:46] [Player-modal_add    ] [305352616551120896] Link "https://youtu.be/CaGTOxuOE9Y" given
+[2023/01/09 19:16:48] [Player              ] [588413190426066961] Command `btn_next` received from user chikibanosya#7621
+[2023/01/09 19:16:48] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=VnAthkSkyQA at volume 1
+[2023/01/09 19:16:50] [Player-queue        ] [305352616551120896] Video https://youtu.be/CaGTOxuOE9Y from youtube added to queue
+[2023/01/09 19:16:50] [Player-song         ] [305352616551120896] Playing https://youtu.be/CaGTOxuOE9Y at volume 1
+[2023/01/09 19:16:52] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
+[2023/01/09 19:16:54] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
+[2023/01/09 19:16:59] [Player              ] [588413190426066961] Command `btn_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:02] [Player-song         ] [588413190426066961] Change volume from 100% to 1000%
+[2023/01/09 19:17:02] [Player              ] [588413190426066961] Command `select_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:06] [Player              ] [305352616551120896] Command `select_volume` received from user Breakdown#2322
+[2023/01/09 19:17:06] [Player-song         ] [305352616551120896] Change volume from 100% to 10000%
+[2023/01/09 19:17:08] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
+[2023/01/09 19:17:10] [Player-song         ] [305352616551120896] Change volume from 10000% to 100%
+[2023/01/09 19:17:10] [Player              ] [305352616551120896] Command `select_volume` received from user Breakdown#2322
+[2023/01/09 19:17:11] [Player              ] [588413190426066961] Command `btn_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:14] [Player              ] [588413190426066961] Command `select_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:14] [Player-song         ] [588413190426066961] Change volume from 1000% to 10000%
+[2023/01/09 19:17:16] [Player              ] [305352616551120896] Command `btn_volume` received from user Breakdown#2322
+[2023/01/09 19:17:18] [Player              ] [588413190426066961] Command `btn_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:20] [Player              ] [588413190426066961] Command `select_volume` received from user chikibanosya#7621
+[2023/01/09 19:17:20] [Player-song         ] [588413190426066961] Change volume from 10000% to 100%
+[2023/01/09 19:17:23] [Player              ] [305352616551120896] Command `select_volume` received from user Breakdown#2322
+[2023/01/09 19:17:23] [Player-song         ] [305352616551120896] Change volume from 100% to 10000%
+[2023/01/09 19:17:25] [Player              ] [588413190426066961] Command `shuffle` received from user chikibanosya#7621
+[2023/01/09 19:17:27] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:17:33] [Player              ] [993300059166883950] Command `troll` received from user ☭Stalin☭#3368
+[2023/01/09 19:17:33] [Player-troll        ] [993300059166883950] User Ego#1087 targeted by troll Wet fart.opus with volume null
+[2023/01/09 19:17:39] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:17:40] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=FGlT_-wiUdA" given
+[2023/01/09 19:17:44] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=FGlT_-wiUdA from youtube added to queue
+[2023/01/09 19:17:47] [Player              ] [305352616551120896] Command `loop` received from user Breakdown#2322
+[2023/01/09 19:18:00] [Player              ] [993300059166883950] Command `troll` received from user ☭Stalin☭#3368
+[2023/01/09 19:18:00] [Player-troll        ] [993300059166883950] User Ego#1087 targeted by troll Alert metal gear.opus with volume null
+[2023/01/09 19:18:02] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:04] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:04] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=7Cg2jM197U8" given
+[2023/01/09 19:18:08] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=7Cg2jM197U8 from youtube added to queue
+[2023/01/09 19:18:24] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:27] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:27] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=M6SiuzTzlag" given
+[2023/01/09 19:18:32] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=M6SiuzTzlag from youtube added to queue
+[2023/01/09 19:18:42] [Player              ] [305352616551120896] Command `leave` received from user Breakdown#2322
+[2023/01/09 19:18:51] [Player              ] [993300059166883950] Command `troll` received from user ☭Stalin☭#3368
+[2023/01/09 19:18:51] [Player-troll        ] [993300059166883950] User Ego#1087 targeted by troll bruh.mp3 with volume null
+[2023/01/09 19:18:52] [Player              ] [588413190426066961] Command `open_modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:54] [Player              ] [588413190426066961] Command `modal_add` received from user chikibanosya#7621
+[2023/01/09 19:18:54] [Player-modal_add    ] [588413190426066961] Link "https://www.youtube.com/watch?v=bfZZ29llIZk" given
+[2023/01/09 19:18:58] [Player-queue        ] [588413190426066961] Video https://www.youtube.com/watch?v=bfZZ29llIZk from youtube added to queue
+[2023/01/09 19:19:06] [Player-player       ] [993300059166883950] No existing player, creating a new one
+[2023/01/09 19:19:06] [Player              ] [993300059166883950] Command `player` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:06] [Player-object       ] [993300059166883950] New player object created in channel 993300059837964361
+[2023/01/09 19:19:08] [Player              ] [993300059166883950] Command `open_modal_add` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:14] [Player              ] [993300059166883950] Command `modal_add` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:15] [Player-modal_add    ] [993300059166883950] Link "https://youtu.be/2altO3JKcZI" given
+[2023/01/09 19:19:19] [Player-queue        ] [993300059166883950] Video https://youtu.be/2altO3JKcZI from youtube added to queue
+[2023/01/09 19:19:19] [Player-song         ] [993300059166883950] Playing https://youtu.be/2altO3JKcZI at volume 1
+[2023/01/09 19:19:23] [Player              ] [993300059166883950] Command `btn_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:25] [Player              ] [993300059166883950] Command `select_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:25] [Player-song         ] [993300059166883950] Change volume from 100% to 500%
+[2023/01/09 19:19:29] [Player              ] [993300059166883950] Command `btn_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:32] [Player              ] [993300059166883950] Command `select_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:19:32] [Player-song         ] [993300059166883950] Change volume from 500% to 250%
+[2023/01/09 19:20:47] [Player              ] [588413190426066961] Command `btn_volume` received from user молодой планктон#4056
+[2023/01/09 19:21:03] [Player              ] [588413190426066961] Command `queue` received from user chikibanosya#7621
+[2023/01/09 19:21:06] [Player              ] [588413190426066961] Command `close_any` received from user chikibanosya#7621

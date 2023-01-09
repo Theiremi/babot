@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const fs = require('fs');
 
-let manager = new Discord.ShardingManager('bot.js', {token: 'MTA1MjU4NjU2NTM5NTgyODc3OA.G93V0r.a3M_yHzx08EzM5lWq5_AyMHRKq9pqzIbWdA93o'});
+let manager = new Discord.ShardingManager('bot.js', {token: fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace('\n', '')});
 manager.spawn();
