@@ -13713,3 +13713,27 @@
 [2023/01/09 19:20:47] [Player              ] [588413190426066961] Command `btn_volume` received from user молодой планктон#4056
 [2023/01/09 19:21:03] [Player              ] [588413190426066961] Command `queue` received from user chikibanosya#7621
 [2023/01/09 19:21:06] [Player              ] [588413190426066961] Command `close_any` received from user chikibanosya#7621
+[2023/01/09 19:23:25] [Player              ] [993300059166883950] Command `open_modal_add` received from user ☭Stalin☭#3368
+[2023/01/09 19:23:27] [Player              ] [993300059166883950] Command `modal_add` received from user ☭Stalin☭#3368
+[2023/01/09 19:23:28] [Player-modal_add    ] [993300059166883950] Link "https://youtu.be/Bk8VgH27eiY" given
+[2023/01/09 19:23:32] [Player-queue        ] [993300059166883950] Video https://youtu.be/Bk8VgH27eiY from youtube added to queue
+[2023/01/09 19:23:32] [Player-song         ] [993300059166883950] Playing https://youtu.be/Bk8VgH27eiY at volume 2.5
+[2023/01/09 19:23:34] [Player              ] [588413190426066961] Command `select_volume` received from user chikibanosya#7621
+[2023/01/09 19:23:34] [Player-song         ] [588413190426066961] Change volume from 100% to 10000%
+[2023/01/09 19:23:38] [Player              ] [588413190426066961] Command `btn_volume` received from user chikibanosya#7621
+[2023/01/09 19:23:41] [Player              ] [588413190426066961] Command `select_volume` received from user chikibanosya#7621
+[2023/01/09 19:23:41] [Player-song         ] [588413190426066961] Change volume from 10000% to 100%
+[2023/01/09 19:23:42] [Player              ] [993300059166883950] Command `btn_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:24:03] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=FGlT_-wiUdA at volume 1
+[2023/01/09 19:24:03] [Player              ] [588413190426066961] Command `btn_next` received from user $iceberg$#2987
+[2023/01/09 19:24:05] [Player              ] [993300059166883950] Command `select_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:24:05] [Player-song         ] [993300059166883950] Change volume from 250% to 10000%
+[2023/01/09 19:24:08] [Player              ] [993300059166883950] Command `open_modal_add` received from user ☭Stalin☭#3368
+[2023/01/09 19:24:09] [Player              ] [588413190426066961] Command `btn_next` received from user chikibanosya#7621
+[2023/01/09 19:24:09] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=7Cg2jM197U8 at volume 1
+[2023/01/09 19:24:10] [Player              ] [993300059166883950] Command `btn_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:24:10] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=VnAthkSkyQA at volume 1
+[2023/01/09 19:24:13] [Player-song         ] [993300059166883950] Change volume from 10000% to 250%
+[2023/01/09 19:24:13] [Player              ] [993300059166883950] Command `select_volume` received from user ☭Stalin☭#3368
+[2023/01/09 19:24:21] [Player              ] [588413190426066961] Command `btn_next` received from user chikibanosya#7621
+[2023/01/09 19:24:21] [Player-song         ] [588413190426066961] Playing https://www.youtube.com/watch?v=FGlT_-wiUdA at volume 1
