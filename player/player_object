@@ -1,0 +1,25 @@
+{
+	"guildId": {
+		voice_connection: VoiceConnection,
+		player: AudioPlayer,
+		resource: AudioResource,
+		queue: [
+			{
+				name: "",
+				link: "",
+				thumbnail: "",
+				duration: "",
+				play_link: "",
+			},
+			...
+		],
+		current_track: 0,
+		is_playing: false,
+		volume: 100,
+		loop: false,
+		player_interfaces: [
+			Message,
+			...
+		]
+	}
+}&

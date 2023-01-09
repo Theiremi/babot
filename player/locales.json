@@ -1,0 +1,42 @@
+{
+	"player_command_desc": {
+		"fr":		"Interface du lecteur de son",
+		"en-US":	"Player interface",
+		"default":	"Player interface"
+	},
+	"troll_command_desc": {
+		"fr":		"Joue discrètement un son dans le salon vocal d'un utilisateur",
+		"en-US":	"Player interface",
+		"default":	"Player interface"
+	},
+	"error_guild_only": {
+		"fr":		"❌ Cette commande n'est disponible que dans les serveurs",
+		"en-US":	"❌ You can only use this command in a guild",
+		"default":	"❌ You can only use this command in a guild"
+	},
+	"error_join_channel": {
+		"fr":		"❌ Veuillez rejoindre un salon vocal",
+		"en-US":	"❌ Please join a voice channel",
+		"default":	"❌ Please join a voice channel"
+	},
+	"error_not_in_channel": {
+		"fr":		"❌ Je ne suis plus dans un salon vocal. Démarrez une nouvelle session avec la commande `/player`",
+		"en-US":	"❌ I'm no longer in a vocal channel. Start a new playing session with the command `/player`",
+		"default":	"❌ I'm no longer in a vocal channel. Start a new playing session with the command `/player`"
+	},
+	"error_user_not_found": {
+		"fr":		"❌ Cet utilisateur n'existe pas",
+		"en-US":	"❌ This user doesn't exist",
+		"default":	"❌ This user doesn't exist"
+	},
+	"error_user_not_in_channel": {
+		"fr":		"❌ Cet utilisateur n'est pas dans un salon vocal",
+		"en-US":	"❌ This user isn't in a voice channel",
+		"default":	"❌ This user isn't in a voice channel"
+	},
+	"error_troll_player_used": {
+		"fr":		"❌ Je suis en train de jouer de la musique dans un autre salon. Pour ne pas déranger mes auditeurs, je préfère ne pas bouger",
+		"en-US":	"❌ I'm playing music in an other channel. To avoid disturbing my listeners, I refuse to move",
+		"default":	"❌ I'm playing music in an other channel. To avoid disturbing my listeners, I refuse to move"
+	}
+}

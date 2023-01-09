@@ -1,0 +1,12 @@
+Local server
+
+discord.js
+
+- The server running my bot doesn't provide any other service exposed to the internet
+- The server is completely isolated from income internet connections with a NAT router
+- The code base is hosted on a second storage server to improve scalability, also isolated from income connections, and password protected
+- My discord account is protected with 2FA
+
+- contacts in DM to my personal account
+- Support server
+- Email contact@theireply.fr

@@ -1,0 +1,43 @@
+[
+	{
+		"version": "1.0.0",
+		"commits": [
+			"Initial features"
+		]
+	},
+	{
+		"version": "1.0.1",
+		"commits": [
+			"Some bugs crashing BaBot fixed",
+			"Shuffle is reversible",
+			"Add more troll song"
+		]
+	},
+	{
+		"version": "1.0.2",
+		"commits": [
+			"Some bugs crashing BaBot fixed",
+			"Improved queue interface",
+			"Implementing \"Hide\" button in player",
+			"Implementing `/feedback` command",
+			"Add `/stats` command"
+		]
+	},
+	{
+		"version": "1.1.0 (actual)",
+		"commits": [
+			"**Rewriting the audio processing part**",
+			"Starting to hide some easter eggs bc it's fun",
+			"Added privacy options"
+		]
+	},
+	{
+		"version": "1.1.1 (under development)",
+		"commits": [
+			"Support for Spotify",
+			"SoundCloud support (play and search)",
+			"Queue improved",
+			"Add a dashboard specific for each user"
+		]
+	}
+]

@@ -1,0 +1,3 @@
+/node_modules/*
+/statusbot/*
+!/statusbot/index.js

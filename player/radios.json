@@ -1,0 +1,44 @@
+[
+	{
+		"id": "C9",
+		"name": "C9",
+		"link": "https://www.c9.fr",
+		"play_link": "https://stream.c9.fr/c9.aac",
+		"thumbnail": "https://www.c9.fr/assets/c9_white_full_big.png"
+	},
+	{
+		"id": "BVLD",
+		"name": "102.1 BLVD",
+		"link": "https://www.blvd.fm/",
+		"play_link": "http://streaming.cfel.leclerccommunication.ca:8000/cfel.mp3",
+		"thumbnail": "https://www.blvd.fm/img/logo-blvd-og.jpg"
+	},
+	{
+		"id": "RTL",
+		"name": "RTL",
+		"link": "https://www.rtl.fr/",
+		"play_link": "https://streamer-02.rtl.fr/rtl-1-44-128",
+		"thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/RTL_logo.svg/1200px-RTL_logo.svg.png"
+	},
+	{
+		"id": "RTL2",
+		"name": "RTL2",
+		"link": "https://www.rtl2.fr/",
+		"play_link": "https://streamer-03.rtl.fr/rtl2-1-44-128",
+		"thumbnail": "https://upload.wikimedia.org/wikipedia/fr/5/51/RTL2.png"
+	},
+	{
+		"id": "cherie",
+		"name": "Chérie FM",
+		"link": "https://www.cheriefm.fr/",
+		"play_link": "https://scdn.nrjaudio.fm/fr/30201/mp3_128.mp3?cdn_path=audio_lbs9&access_token=cfd281fd27fc4fd3946c7c0e7de03881",
+		"thumbnail": "https://upload.wikimedia.org/wikipedia/fr/thumb/3/3a/Logo_Ch%C3%A9rie_2017.svg/2560px-Logo_Ch%C3%A9rie_2017.svg.png"
+	},
+	{
+		"id": "nostalgie",
+		"name": "Nostalgie",
+		"link": "http://www.nostalgie.fr/",
+		"play_link": "https://scdn.nrjaudio.fm/audio1/fr/30601/mp3_128.mp3",
+		"thumbnail": "https://img.nrj.fr/VKCZ9whgWl64Tth7EbjqYg_qaao=/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FP_Nosta_Chansons_francaises_1.png"
+	}
+]
