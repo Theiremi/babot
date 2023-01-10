@@ -18,7 +18,7 @@ const status = new Status(Discord, client, log);
 
 let custom_status = [
   ["certification coming in up to 3 weeks : no more than 250 servers allowed before (Discord fault, not mine)", 3],
-  ["/changelog : version 1.1.0 released", 3],
+  ["/changelog : version 1.1.1 released", 3],
   //["BaBot can crash quite often due of its young age, but all errors are patched in up to 8 hours", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (new platform, troll songs, report a problem...)", 3],
   ["I hope this link works -> https://discord.gg/zssHymr656", 3],
@@ -545,9 +545,9 @@ function isJsonString(str) {
 function update_status()
 {
   setInterval(async () => {
-    let random_status = Math.floor(Math.random() * (custom_status.length + 1));
+    let random_status = Math.floor(Math.random() * (custom_status.length + 3));
     let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
-    let next_status = random_status === 0 ? [(250 - guild_count) + " guilds slot remaining", 3] : custom_status[random_status - 1];
+    let next_status = random_status < 3 ? [(250 - guild_count) + " guilds slot remaining", 3] : custom_status[random_status - 1];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);
 }
