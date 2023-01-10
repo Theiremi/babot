@@ -346,7 +346,7 @@ module.exports = class Player {
 			}
 			else if(interaction.customId === "queue")
 			{
-				await interaction.reply(await this.#generateQueueInterface(interaction.guildId));
+				await interaction.reply(this.#generateQueueInterface(interaction.guildId));
 			}
 			else if(interaction.customId === "open_modal_add")//Works
 			{
@@ -399,40 +399,48 @@ module.exports = class Player {
 
 				if(!isNaN(new_page))
 				{
-					await interaction.update(await this.#generateQueueInterface(interaction.guildId, 0, new_page));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId, new_page));
 				}
 			}
 			else if(interaction.customId.startsWith("btn_queue_play_"))
 			{
-				let new_song = interaction.customId.split('_').splice(-1);
+				let new_song = parseInt(interaction.customId.split('_').splice(-1)[0]);
 
 				if(!isNaN(new_song))
 				{
-					console.log(new_song);
 					if(this.#get_song(interaction.guildId, new_song, true))
 					{
 						this.#_guilds_play_data[interaction.guildId].current_track = new_song;
 						await this.#play_song(interaction.guildId);
 					}
-					await interaction.update(await this.#generateQueueInterface(interaction.guildId, 0, new_page));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, new_song));
 				}
 			}
 			else if(interaction.customId.startsWith("btn_queue_remove_"))
 			{
-				let song = interaction.customId.split('_').splice(-1);
+				let song = parseInt(interaction.customId.split('_').splice(-1)[0]);
 
 				if(!isNaN(song))
 				{
 					if(this.#get_song(interaction.guildId, song, true))
 					{
-						delete this.#_guilds_play_data[interaction.guildId].queue[song];
+						this.#_guilds_play_data[interaction.guildId].queue.splice(song, 1);
 
 						if(this.#_guilds_play_data[interaction.guildId].current_track === song)
 						{
-							await this.#play_song(interaction.guildId);
+							if(this.#get_song(interaction.guildId))
+							{
+								await this.#play_song(interaction.guildId);
+							}
+							else
+							{
+								this.#_guilds_play_data[interaction.guildId].player.stop();
+							}
+
+							await this.#updatePlayerInterface(guild_id);
 						}
 					}
-					await interaction.update(await this.#generateQueueInterface(interaction.guildId, new_page));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId));
 				}
 			}
 
@@ -581,8 +589,6 @@ module.exports = class Player {
 						/*this.#_guilds_play_data[interaction.guildId].transformer.changeSettings({volume: this.#_guilds_play_data[interaction.guildId].volume});
 						let resource = Voice.createAudioResource(this.#_guilds_play_data[interaction.guildId].transformer.pipe(new prism.opus.OggDemuxer()), {inputType: "opus"});
 						this.#_guilds_play_data[interaction.guildId].player.play(resource);*/
-						
-
 					}
 
 					await interaction.update(this.#generatePlayerInterface(interaction.guildId));
@@ -608,7 +614,6 @@ module.exports = class Player {
 			}
 			else if(interaction.customId === "select_queue_song")
 			{
-				console.log(parseInt(interaction.values[0]));
 				await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, parseInt(interaction.values[0])));
 			}
 			else interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
@@ -788,18 +793,19 @@ module.exports = class Player {
 
 			let player_embed = new this.#_discord.EmbedBuilder()
 				.setColor([0x62, 0xD5, 0xE9])
-				.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"})
 
 			if(this.#get_song(guild_id) !== undefined)
 			{
 				player_embed.setTitle("Playing \"" + this.#get_song(guild_id).name + "\"");
 				player_embed.setURL(this.#get_song(guild_id).link);
-				player_embed.setImage(this.#get_song(guild_id).thumbnail)
+				player_embed.setImage(this.#get_song(guild_id).thumbnail);
+				player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
 			}
 			else
 			{
 				player_embed.setTitle("Currently playing anything");
 				player_embed.setDescription("Add a music in the queue to start listening");
+				player_embed.setThumbnail('https://www.theireply.fr/babot/image_flou.jpg');
 			}
 
 			return {content: '', embeds: [player_embed], components: player_interface_components}
@@ -816,7 +822,7 @@ module.exports = class Player {
 		}
 	}
 
-	async #generateQueueInterface(guild_id, page = 0, selected_song = -1)
+	#generateQueueInterface(guild_id, page = 0, selected_song = -1)
 	{
 		if(this.#isObjectValid(guild_id))
 		{
@@ -835,15 +841,6 @@ module.exports = class Player {
 				.setDescription(queue);
 
 			let components_queue = [];
-			components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.StringSelectMenuBuilder()
-					.setCustomId("select_queue_song")
-					.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : {label: "undefined", value: "undefined"})
-					.setMaxValues(1)
-					.setMinValues(1)
-					.setPlaceholder("Select a song")
-					.setDisabled(queue_portion.length > 0 ? false : true)
-			]));
 			if(selected_song >= 0 && selected_song >= 20 * page && selected_song < 20 * (page+1))
 			{
 				components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
@@ -864,6 +861,19 @@ module.exports = class Player {
 						.setDisabled(true)
 				]));
 			}
+			else
+			{
+				components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
+					new this.#_discord.StringSelectMenuBuilder()
+						.setCustomId("select_queue_song")
+						.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : {label: "undefined", value: "undefined"})
+						.setMaxValues(1)
+						.setMinValues(1)
+						.setPlaceholder("Select a song")
+						.setDisabled(queue_portion.length > 0 ? false : true)
+				]));
+			}
+
 			components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
 				new this.#_discord.ButtonBuilder()
 					.setCustomId("btn_queue_page_next_" + (page > page_quantity ? page - 1 : 0))
@@ -898,7 +908,7 @@ module.exports = class Player {
 		return new Promise(async (resolve, reject) => {
 			if(this.#isObjectValid(guild_id))
 			{
-				if(link.startsWith('https://'))//It's a link
+				if(link.startsWith('https://') || force_search)//It's a link
 				{
 					if(link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/) || force_search)
 					{
@@ -918,7 +928,7 @@ module.exports = class Player {
 						}
 						else
 						{
-							let return_resolve = await resolve_yt_video(link);
+							let return_resolve = await resolve_yt_video(link, force_search);
 							if(return_resolve !== false)
 							{
 								this.#_log_function('Player-queue', '[' + guild_id + '] Video ' + link + ' from youtube added to queue');
@@ -997,7 +1007,7 @@ module.exports = class Player {
 							}
 						});
 
-						console.log(music_data_query.data);
+						//console.log(music_data_query.data);
 						if(music_data_query.data === undefined) return reject('This music/playlist is unavailable');
 
 						if(matches[1] === "track")
@@ -1018,8 +1028,7 @@ module.exports = class Player {
 							for(let e of music_data_query.data.tracks.items)
 							{
 								if(!this.#isObjectValid(guild_id)) break;
-								console.log(e);
-								await this.#add_in_queue(guild_id, e.name + " " + e.artists[0].name + " music", true).catch((e) => { console.log('Probably useless error 3 : ' + e)});
+								await this.#add_in_queue(guild_id, e.track.name + " " + e.track.artists[0].name + " music", true).catch((e) => { console.log('Probably useless error 3 : ' + e)});
 							}
 						}
 						return reject('Spotify support will be released in the 1.1.1 version. See `/changelog`');
@@ -1169,9 +1178,9 @@ async function yt_search(term)
 	return video_data.data.items.map((x) => {return {name: x.snippet.title, link: "https://www.youtube.com/watch?v=" + x.id.videoId}});
 }
 
-async function resolve_yt_video(link)
+async function resolve_yt_video(link, search)
 {
-	if(link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
+	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
 	{
 		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
 		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
@@ -1180,8 +1189,8 @@ async function resolve_yt_video(link)
 		let video_data = JSON.parse(video_data_process.stdout);
 		if(video_data === undefined) return false;
 
+		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
 		if(video_data &&
-			video_data._type === "video" &&
 			video_data.original_url &&
 			video_data.requested_downloads &&
 			video_data.title &&
@@ -1221,6 +1230,84 @@ async function resolve_yt_playlist(playlist_id)
 }
 //-----//
 
+//----- SOUNDCLOUD UTILITIES -----//
+async function sc_search(term)
+{
+	let video_data = await axios({url: "https://api-v2.soundcloud.com/search/tracks",
+		method: 'get',
+		headers: {
+			"Accept-Encoding": "deflate, br",
+			"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0",
+			"Accept": "application/json, text/javascript"
+		},
+		params: {
+			sc_a_id: "3d1709b864256e6701c60bcc16d925c0c43328fa",
+			user_id: "27375-340005-10682-566993",
+			client_id: "ZQvaVYuPpe0Pg7Ga7V24qFseYl6eTK73",
+			limit: 5,
+			q: term,
+		},
+		validateStatus: function (status) {
+			return status >= 200 && status < 500;
+		}
+	});
+
+	if(video_data.data.error !== undefined) return false;
+	return video_data.data.collection.map((x) => {return {name: x.title, link: x.permalink_url}});
+}
+
+async function resolve_sc_music(link, search)
+{
+	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
+	{
+		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
+		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
+		if(!isJsonString(video_data_process.stdout)) return false;
+
+		let video_data = JSON.parse(video_data_process.stdout);
+		if(video_data === undefined) return false;
+
+		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
+		if(video_data &&
+			video_data._type === "video" &&
+			video_data.original_url &&
+			video_data.requested_downloads &&
+			video_data.title &&
+			video_data.thumbnail)
+		{
+			return {
+				link: video_data.original_url,
+				play_link: video_data.requested_downloads[0].url,
+				name: video_data.title,
+				thumbnail: video_data.thumbnail,
+				play_headers: video_data.requested_downloads[0].http_headers
+			};
+		}
+		else return false;
+	}
+}
+
+async function resolve_sc_playlist(playlist_id)
+{
+	let video_data = await axios({url: "https://www.googleapis.com/youtube/v3/playlistItems",
+		method: 'get',
+		headers: {
+			"Accept-Encoding": "deflate, br"
+		},
+		params: {
+			key: "AIzaSyDAAk5CiS6FfmAg1r5ClftdooAIB-nomdQ",
+			part: "snippet",
+			maxResults: 50,
+			playlistId: playlist_id
+		},
+		validateStatus: function (status) {
+			return status >= 200 && status < 500;
+		}
+	});
+	if(video_data.data.error !== undefined) return false;
+	return video_data.data.items.map((x) => "https://www.youtube.com/watch?v=" + x.snippet.resourceId.videoId);
+}
+//-----//
 
 async function radio_search(term)
 {
