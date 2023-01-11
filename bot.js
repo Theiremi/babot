@@ -547,7 +547,7 @@ function update_status()
   setInterval(async () => {
     let random_status = Math.floor(Math.random() * (custom_status.length + 3));
     let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
-    let next_status = random_status < 3 ? [(250 - guild_count) + " guilds slot remaining", 3] : custom_status[random_status - 1];
+    let next_status = random_status < 3 ? [(250 - guild_count) + " guilds slot remaining", 3] : custom_status[random_status - 3];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);
 }
