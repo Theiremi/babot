@@ -26,10 +26,15 @@ let custom_status = [
 ]
 
 let uptime = Math.round(Date.now() / 1000);
+let dev_mode = false;
 client.on('ready', async () => {
   //--- NAMING BOT ---//
-  log('Main', `Logged in as ${client.user.tag}!`);
-  if(client.user.username != 'BaBot')
+  log('Main', `Logged in as ${client.user.tag}!`);é
+  if(client.user.username === 'BaBotDev')
+  {
+    dev_mode = true;
+  }
+  else if(client.user.username != 'BaBot')
   {
     await client.user.setUsername('BaBot');
     log('Main', 'Changing username...');

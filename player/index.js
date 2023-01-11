@@ -1187,7 +1187,7 @@ async function resolve_yt_video(link, search)
 		if(!isJsonString(video_data_process.stdout)) return false;
 
 		let video_data = JSON.parse(video_data_process.stdout);
-		if(video_data === undefined) return false;
+		if(video_data == undefined) return false;
 
 		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
 		if(video_data &&
@@ -1256,9 +1256,9 @@ async function sc_search(term)
 	return video_data.data.collection.map((x) => {return {name: x.title, link: x.permalink_url}});
 }
 
-async function resolve_sc_music(link, search)
+async function resolve_sc_music(link)
 {
-	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
+	if(link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
 	{
 		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
 		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
