@@ -29,7 +29,7 @@ let uptime = Math.round(Date.now() / 1000);
 let dev_mode = false;
 client.on('ready', async () => {
   //--- NAMING BOT ---//
-  log('Main', `Logged in as ${client.user.tag}!`);é
+  log('Main', `Logged in as ${client.user.tag}!`);
   if(client.user.username === 'BaBotDev')
   {
     dev_mode = true;
@@ -312,7 +312,7 @@ client.on('interactionCreate', async (interaction) => {
             url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
             method: "POST",
             headers: {
-              'Accept-Encoding': 'deflate, br'
+              'Accept-Encoding': 'deflate'
             },
             data: {username: "Teleport request", embeds: [{title: "New teleport request", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked a teleport to this server : ' + invite.url, author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
         }).then(function(){
@@ -321,6 +321,7 @@ client.on('interactionCreate', async (interaction) => {
             console.log(e);
             log('Main-teleport', 'Error when sending teleport request of ' + interaction.user.tag + ' (' + interaction.user.id + '). Link : ' + invite.url);
         });
+        interaction.reply({ephemeral: true, content: "Your request has been send ! A dev should be here soon !"});
       }, function(e) {
           interaction.reply({ephemeral: true, content: "I'm not allowed to do that in this channel"});
       });
