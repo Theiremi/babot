@@ -40,7 +40,20 @@ client.on('ready', async () => {
   //--- CRASH HANDLING ---//
   if(fs.existsSync(__dirname + '/crash.sts'))
   {
-    fs.promises.unlink(__dirname + '/crash.sts');
+    await axios({
+      url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
+      method: "POST",
+      headers: {
+        'Accept-Encoding': 'deflate, br'
+      },
+      data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: await fs.promises.readFile(__dirname + '/crash.sts', {encoding: 'utf-8'}), color: 0x2f3136}]}
+    }).then(function(){
+      log('Main-error', 'Error sent to the server');
+    }, function(e) {
+      //console.log(e);
+      log('Main-error', 'Error when logging error on the server');
+    });
+    await fs.promises.unlink(__dirname + '/crash.sts');
     await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});
     setTimeout(function() {
       update_status();
@@ -339,7 +352,7 @@ client.on('interactionCreate', async (interaction) => {
             },
             data: {username: "Retrieve data request", embeds: [{title: "New request of data retrieving", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked to retrieve all their data', author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
         }).then(function(){
-            log('Main-feedback', 'New retrievi request logged in the server');
+            log('Main-feedback', 'New retrieve request logged in the server');
         }, function(e) {
             console.log(e);
             log('Main-feedback', 'Error when logging retrieve request of ' + interaction.user.tag + ' (' + interaction.user.id + ')');
@@ -402,7 +415,7 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
-  if(message.cleanContent.startsWith('m!play'))
+  /*if(message.cleanContent.startsWith('m!play'))
   {
     log('Main', '[' + message.guildId + '] I made my publicity to ' + message.author.tag);
     console.log(message.cleanContent);
@@ -425,11 +438,11 @@ client.on('messageCreate', async (message) => {
       }
     }]});
   }
-  else if(message.cleanContent.toLowerCase().indexOf('babot') !== -1 &&
+  else */if(message.cleanContent.toLowerCase().indexOf('babot') !== -1 &&
     message.cleanContent.toLowerCase().indexOf('loop') !== -1 &&
     message.cleanContent.toLowerCase().indexOf('stuck') !== -1)
   {
-    message.reply({ content: "Speaking about BaBot ?"});
+    message.reply({ content: "Speaking about BaBot stuck in a loop ?"});
     log('Main', '[' + message.guildId + '] I replied to ' + message.author.tag + ' who was speaking about me : ' + message.cleanContent);
   }
 });
@@ -552,16 +565,14 @@ function update_status()
   }, 1000 * 60);
 }
 
-
-
 process.on('uncaughtException', error => {
   console.log(error);
-  fs.writeFileSync(__dirname + '/crash.sts', "1");
+  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
   console.log(error);
-  fs.writeFileSync(__dirname + '/crash.sts', "1");
+  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
