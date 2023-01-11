@@ -20,7 +20,7 @@ let custom_status = [
   ["certification coming in up to 3 weeks : no more than 250 servers allowed before (Discord fault, not mine)", 3],
   ["/changelog : version 1.1.1 released", 3],
   //["BaBot can crash quite often due of its young age, but all errors are patched in up to 8 hours", 3],
-  ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (new platform, troll songs, report a problem...)", 3],
+  ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything !", 3],
   ["I hope this link works -> https://discord.gg/zssHymr656", 3],
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
 ]
