@@ -29,7 +29,7 @@ let uptime = Math.round(Date.now() / 1000);
 let dev_mode = false;
 client.on('ready', async () => {
   //--- NAMING BOT ---//
-  log('Main', `Logged in as ${client.user.tag}!`);é
+  log('Main', `Logged in as ${client.user.tag}!`);
   if(client.user.username === 'BaBotDev')
   {
     dev_mode = true;
@@ -43,7 +43,7 @@ client.on('ready', async () => {
   //---//
 
   //--- CRASH HANDLING ---//
-  if(fs.existsSync(__dirname + '/crash.sts'))
+  if(!dev_mode && fs.existsSync(__dirname + '/crash.sts'))
   {
     await axios({
       url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
@@ -94,6 +94,7 @@ client.on('ready', async () => {
   client.application.commands.create({name: "known_issues", description: "List of all issues in BaBot waiting to be fixed", type: 1, dmPermission: true});
   client.application.commands.create({name: "feedback", description: "Send a feedback to the developer", type: 1, dmPermission: true});
   client.application.commands.create({name: "stats", description: "See general statistics about BaBot", type: 1, dmPermission: true});
+  client.application.commands.create({name: "teleport", description: "Teleport a BaBot dev on your server", type: 1, dmPermission: false});
   client.application.commands.create(new Builders.SlashCommandBuilder()
     .setName('privacy')
     .setDescription('All legal actions that you can take on data stored by BaBot')
@@ -297,6 +298,35 @@ client.on('interactionCreate', async (interaction) => {
       else await interaction.reply({ content: '❌ This subcommand doesn\'t exists', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
       return;
     }
+    else if(interaction.commandName === 'teleport')
+    {
+      log('Main-teleport', 'Command `teleport` received from user ' + interaction.user.tag);
+      if(!interaction.inGuild() || interaction.member == undefined)//The user is in a guild, and a Guildmember object for this user exists
+      {
+        await interaction.reply({ephemeral: true, content: "You're not in a guild"});
+        return;
+      }
+
+      interaction.guild.invites.create(interaction.channel).then(function(invite){
+        axios({
+            url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
+            method: "POST",
+            headers: {
+              'Accept-Encoding': 'deflate'
+            },
+            data: {username: "Teleport request", embeds: [{title: "New teleport request", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked a teleport to this server : ' + invite.url, author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
+        }).then(function(){
+            log('Main-teleport', 'New teleport request send via webhook');
+        }, function(e) {
+            console.log(e);
+            log('Main-teleport', 'Error when sending teleport request of ' + interaction.user.tag + ' (' + interaction.user.id + '). Link : ' + invite.url);
+        });
+        interaction.reply({ephemeral: true, content: "Your request has been send ! A dev should be here soon !"});
+      }, function(e) {
+          interaction.reply({ephemeral: true, content: "I'm not allowed to do that in this channel"});
+      });
+      return;
+    }
     //---//
   }
   else if(interaction.isButton())
@@ -470,6 +500,7 @@ client.login(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace(
 
 async function update_stats()
 {
+  if(dev_mode) return;
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   await axios({
