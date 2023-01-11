@@ -3,3 +3,4 @@
 !/statusbot/index.js
 /token
 /babot.log
+/known_issues.json
