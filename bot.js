@@ -43,7 +43,7 @@ client.on('ready', async () => {
   //---//
 
   //--- CRASH HANDLING ---//
-  if(fs.existsSync(__dirname + '/crash.sts'))
+  if(!dev_mode && fs.existsSync(__dirname + '/crash.sts'))
   {
     await axios({
       url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
@@ -500,6 +500,7 @@ client.login(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace(
 
 async function update_stats()
 {
+  if(dev_mode) return;
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   await axios({
