@@ -40,7 +40,20 @@ client.on('ready', async () => {
   //--- CRASH HANDLING ---//
   if(fs.existsSync(__dirname + '/crash.sts'))
   {
-    fs.promises.unlink(__dirname + '/crash.sts');
+    await axios({
+      url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
+      method: "POST",
+      headers: {
+        'Accept-Encoding': 'deflate, br'
+      },
+      data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: await fs.promises.readFile(__dirname + '/crash.sts', {encoding: 'utf-8'}), color: 0x2f3136}]}
+    }).then(function(){
+      log('Main-error', 'Error sent to the server');
+    }, function(e) {
+      //console.log(e);
+      log('Main-error', 'Error when logging error on the server');
+    });
+    await fs.promises.unlink(__dirname + '/crash.sts');
     await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});
     setTimeout(function() {
       update_status();
@@ -554,31 +567,12 @@ function update_status()
 
 process.on('uncaughtException', error => {
   console.log(error);
-  send_error(error);
-  fs.writeFileSync(__dirname + '/crash.sts', "1");
+  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
   console.log(error);
-  send_error(error);
-  fs.writeFileSync(__dirname + '/crash.sts', "1");
+  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
-
-send_error(error)
-{
-  await axios({
-    url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
-    method: "POST",
-    headers: {
-      'Accept-Encoding': 'deflate, br'
-    },
-    data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: error.message + '\n' + error.name + '\nReason : ' + error.cause + '\nStack trace : ```' + error.stack + '```', color: 0x2f3136}]}
-  }).then(function(){
-    log('Main-feedback', 'Error sent to the server');
-  }, function(e) {
-    //console.log(e);
-    log('Main-feedback', 'Error when logging error on the server');
-  });
-}
