@@ -1,8 +1,7 @@
 /node_modules/*
 /statusbot/*
 !/statusbot/index.js
-/token
 /babot.log
 /known_issues.json
 /crash.sts
-/discord_keys
+/env_data
