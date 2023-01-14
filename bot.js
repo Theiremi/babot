@@ -16,6 +16,8 @@ const client = new Discord.Client({intents: [Discord.IntentsBitField.Flags.Guild
 const player = new Player(Discord, client, log);
 const status = new Status(Discord, client, log);
 
+let settings = {};
+
 let custom_status = [//List of all status randomly displayed by the bot
   ["certification done ! No more limit on the max numbers of servers", 3],
   ["/changelog : version 1.1.1 released", 3],
@@ -26,25 +28,21 @@ let custom_status = [//List of all status randomly displayed by the bot
 ]
 
 let uptime = Math.round(Date.now() / 1000);//Used to determine uptime when stats is executed
-let dev_mode = false;
 client.on('ready', async () => {
   //--- NAMING BOT ---//
+  if(settings.dev) log('Main', 'Warning : BaBot is running in development mode');
+
   log('Main', `Logged in as ${client.user.tag}!`);
-  if(client.user.username === 'BaBotDev')
+  if(client.user.username != settings.name)
   {
-    dev_mode = true;
-    log('Main', 'Warning : You\'re working on a development version of BaBot');
-  }
-  else if(client.user.username != 'BaBot')
-  {
-    await client.user.setUsername('BaBot');
+    await client.user.setUsername(settings.name);
     log('Main', 'Changing username...');
     log('Main', `Logged in as ${client.user.tag}!`);
   }
   //---//
 
   //--- CRASH HANDLING ---//
-  if(!dev_mode && fs.existsSync(__dirname + '/crash.sts'))//If a crash occured and this instance is in production mode
+  if(!settings.dev && fs.existsSync(__dirname + '/crash.sts'))//If a crash occured and this instance is in production mode
   {
     //Report error with a webhook to a channel in the server
     await axios({
@@ -502,13 +500,27 @@ client.on('guildDelete', async (guild) => {
   await update_stats();
 });
 
-console.log(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}));
-client.login(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace('\n', ''));//Official
-//client.login('MTA0MTc1NjAzNDE3NzQ0MTg1Mg.G3ggUx.wRtAiJzd55zJHRykz3IG2Rfbg78zhpwTpXmPc0');//Testing
+//----- ENTRY POINT -----//
+(async () => {
+  if(fs.existsSync(__dirname + '/env_data/env.json'))
+  {
+    let settings_file = await fs.promises.readFile(__dirname + '/env_data/env.json', {encoding: 'utf-8'});
+
+    if(isJsonString(settings_file))
+    {
+      settings = JSON.parse(settings_file);
+      client.login(settings.token);
+      log('Main', 'Environment variables loaded');
+    }
+    else log('Main', 'ERROR : Environment file isn\'t JSON valid');
+  }
+  else log('Main', 'ERROR : Environment file not found');
+})();
+//-----//
 
 async function update_stats()//Executed when guilds count change or bot is restarted
 {
-  if(dev_mode) return;//Only update stats on websites and others in production mode
+  if(settings.dev) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   await axios({
