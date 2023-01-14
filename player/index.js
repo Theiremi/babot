@@ -437,7 +437,7 @@ module.exports = class Player {
 								this.#_guilds_play_data[interaction.guildId].player.stop();
 							}
 
-							await this.#updatePlayerInterface(guild_id);
+							await this.#updatePlayerInterface(interaction.guildId);
 						}
 					}
 					await interaction.update(this.#generateQueueInterface(interaction.guildId));
@@ -866,7 +866,7 @@ module.exports = class Player {
 				components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.StringSelectMenuBuilder()
 						.setCustomId("select_queue_song")
-						.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : {label: "undefined", value: "undefined"})
+						.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : [{label: "undefined", value: "undefined"}])
 						.setMaxValues(1)
 						.setMinValues(1)
 						.setPlaceholder("Select a song")
@@ -1123,6 +1123,8 @@ module.exports = class Player {
 					method: 'get',
 					responseType: 'stream',
 					headers: Object.assign(this.#get_song(guild_id).play_headers, {"Accept-Encoding": "deflate, br"})
+				}).catch((e) => {
+					this.#_log_function('Player-song', '[' + guild_id + '] Error fetching song');
 				});
 
 				const transcoder = new prism.FFmpeg({args: [

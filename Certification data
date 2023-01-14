@@ -1,4 +1,28 @@
+This bot does mutliple functions such as :
+- A music player based on the new interactions introduced
+- Trolling members of a guild by joining his vocal and play a song, and then leave (if another member request it)
+- Logging custom status of users in touch with the bot
+
+The data collected includes :
+- User IDs and tag
+- Custom status of the users
+- Last commands used
+- Guilds IDs
+- Links to the musics asked to be saved by the bot
+
+Stored data are used to allows user :
+- to have saved playlists
+- to get statistics about their usage of the bot
+- to get the history of their custom status
+- to redo the last actions they have done
+
+The data about a user are stored 30 days after the bot has no way to reach it through any guilds
+
+Users can ask for a deletion of their data by using the command `/privacy delete` of the bot, or directly by contacting our team at the email contact@theireply.fr (as written in the Privacy Policy)
+
 Local server
+
+The bot runs on a Rapsberry Pi 4 with 4GB of storage. Some others old 64bit PCs are available to scale up the infrastructure
 
 discord.js
 
@@ -10,3 +34,12 @@ discord.js
 - contacts in DM to my personal account
 - Support server
 - Email contact@theireply.fr
+
+The presence intent is required to access the custom status of an user, so it can be logged and given back to this user using the `/statushistory` command.
+The message content is mainly used to create some easter egg, which are then reported in a leaderboard (function under development)
+
+https://images.theireply.fr/statushistory.png
+Example of an already implemented easter egg : https://images.theireply.fr/easteregg.webm
+
+
+
