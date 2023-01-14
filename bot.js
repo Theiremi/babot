@@ -11,13 +11,13 @@ const client = new Discord.Client({intents: [Discord.IntentsBitField.Flags.Guild
   Discord.IntentsBitField.Flags.GuildPresences,
   Discord.IntentsBitField.Flags.GuildVoiceStates,
   Discord.IntentsBitField.Flags.GuildMessages,
-  Discord.IntentsBitField.Flags.MessageContent
+  //Discord.IntentsBitField.Flags.MessageContent
   ]});
 const player = new Player(Discord, client, log);
 const status = new Status(Discord, client, log);
 
-let custom_status = [
-  ["certification coming in up to 3 weeks : no more than 250 servers allowed before (Discord fault, not mine)", 3],
+let custom_status = [//List of all status randomly displayed by the bot
+  ["certification done ! No more limit on the max numbers of servers", 3],
   ["/changelog : version 1.1.1 released", 3],
   //["BaBot can crash quite often due of its young age, but all errors are patched in up to 8 hours", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything !", 3],
@@ -25,7 +25,7 @@ let custom_status = [
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
 ]
 
-let uptime = Math.round(Date.now() / 1000);
+let uptime = Math.round(Date.now() / 1000);//Used to determine uptime when stats is executed
 let dev_mode = false;
 client.on('ready', async () => {
   //--- NAMING BOT ---//
@@ -33,6 +33,7 @@ client.on('ready', async () => {
   if(client.user.username === 'BaBotDev')
   {
     dev_mode = true;
+    log('Main', 'Warning : You\'re working on a development version of BaBot');
   }
   else if(client.user.username != 'BaBot')
   {
@@ -43,8 +44,9 @@ client.on('ready', async () => {
   //---//
 
   //--- CRASH HANDLING ---//
-  if(!dev_mode && fs.existsSync(__dirname + '/crash.sts'))
+  if(!dev_mode && fs.existsSync(__dirname + '/crash.sts'))//If a crash occured and this instance is in production mode
   {
+    //Report error with a webhook to a channel in the server
     await axios({
       url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
       method: "POST",
@@ -58,19 +60,21 @@ client.on('ready', async () => {
       //console.log(e);
       log('Main-error', 'Error when logging error on the server');
     });
-    await fs.promises.unlink(__dirname + '/crash.sts');
-    await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});
+
+    await fs.promises.unlink(__dirname + '/crash.sts');//Delete informations about the crash to avoid repeating this code on the next launch
+    await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});//Inform the users about the crash
     setTimeout(function() {
       update_status();
-    }, 1000 * 60 * 5);
+    }, 1000 * 60 * 5);//After 5 minutes, start to display random status as usual
   }
   else
   {
-    update_status();
+    update_status();//If no crashs occured, start to display random status immediatly
   }
   //---//
 
   //--- BOT STATS ---//
+  //Deprecated section : only useful when the bot was in less than 200 guilds
   /*let all_guilds = await client.guilds.fetch();
   log('Main', 'Operating in ' + all_guilds.size + ' guilds :');
   let members_count = 0;
@@ -85,11 +89,14 @@ client.on('ready', async () => {
   //---//
 
   //--- DEFINING COMMANDS ---//
-  for(let e of await player.options())
+  for(let e of await player.options())//Chat commands required by the player part
   {
     client.application.commands.create(e);
   }
+
   client.application.commands.create(status.options());
+
+  //Global chat commands
   client.application.commands.create({name: "changelog", description: "Display history of change applied to BaBot", type: 1, dmPermission: true});
   client.application.commands.create({name: "known_issues", description: "List of all issues in BaBot waiting to be fixed", type: 1, dmPermission: true});
   client.application.commands.create({name: "feedback", description: "Send a feedback to the developer", type: 1, dmPermission: true});
@@ -115,6 +122,7 @@ client.on('ready', async () => {
   //---//
 
   //--- POSTING RULES ---//
+  //Old code to display rules of the support server
   /*(await (await client.guilds.fetch("1059795604517167164")).channels.fetch('1059795606215860306')).send({content: "", embeds: [
     new Discord.EmbedBuilder()
       .setColor([0, 0, 0])
@@ -124,7 +132,7 @@ client.on('ready', async () => {
   //---//
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', async (interaction) => {//When user interact with the bot
   //log('Main', 'New interaction');
   if(interaction.isChatInputCommand())
   {
@@ -475,7 +483,7 @@ client.on('messageCreate', async (message) => {
   }
   else */if(message.cleanContent.toLowerCase().indexOf('babot') !== -1 &&
     message.cleanContent.toLowerCase().indexOf('loop') !== -1 &&
-    message.cleanContent.toLowerCase().indexOf('stuck') !== -1)
+    message.cleanContent.toLowerCase().indexOf('stuck') !== -1)//Easter egg that will lopp BaBot responding to itself (bc it receive events for created messages even if it was send by itself)
   {
     message.reply({ content: "Speaking about BaBot stuck in a loop ?"});
     log('Main', '[' + message.guildId + '] I replied to ' + message.author.tag + ' who was speaking about me : ' + message.cleanContent);
@@ -498,9 +506,9 @@ console.log(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}));
 client.login(fs.readFileSync(__dirname + '/token', {encoding: 'utf-8'}).replace('\n', ''));//Official
 //client.login('MTA0MTc1NjAzNDE3NzQ0MTg1Mg.G3ggUx.wRtAiJzd55zJHRykz3IG2Rfbg78zhpwTpXmPc0');//Testing
 
-async function update_stats()
+async function update_stats()//Executed when guilds count change or bot is restarted
 {
-  if(dev_mode) return;
+  if(dev_mode) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   await axios({
@@ -591,7 +599,7 @@ function isJsonString(str) {
     return true;
 }
 
-function update_status()
+function update_status()//Change status of the bot every minute
 {
   setInterval(async () => {
     let random_status = Math.floor(Math.random() * (custom_status.length + 3));
@@ -601,6 +609,8 @@ function update_status()
   }, 1000 * 60);
 }
 
+//--- Error catching ---//
+//Write the error occured in crash.sts before leaving to allow the program to send it when it will restart
 process.on('uncaughtException', error => {
   console.log(error);
   fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
@@ -612,3 +622,4 @@ process.on('unhandledRejection', (error) => {
   fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
+//---//
