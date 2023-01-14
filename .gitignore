@@ -3,5 +3,4 @@
 !/statusbot/index.js
 /babot.log
 /known_issues.json
-/crash.sts
-/env_data
+/env_data/*
