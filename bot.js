@@ -42,7 +42,7 @@ client.on('ready', async () => {
   //---//
 
   //--- CRASH HANDLING ---//
-  if(!settings.dev && fs.existsSync(__dirname + '/crash.sts'))//If a crash occured and this instance is in production mode
+  if(!settings.dev && fs.existsSync(__dirname + '/env_data/crash.sts'))//If a crash occured and this instance is in production mode
   {
     //Report error with a webhook to a channel in the server
     await axios({
@@ -51,7 +51,7 @@ client.on('ready', async () => {
       headers: {
         'Accept-Encoding': 'deflate, br'
       },
-      data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: await fs.promises.readFile(__dirname + '/crash.sts', {encoding: 'utf-8'}), color: 0x2f3136}]}
+      data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: await fs.promises.readFile(__dirname + '/env_data/crash.sts', {encoding: 'utf-8'}), color: 0x2f3136}]}
     }).then(function(){
       log('Main-error', 'Error sent to the server');
     }, function(e) {
@@ -59,7 +59,7 @@ client.on('ready', async () => {
       log('Main-error', 'Error when logging error on the server');
     });
 
-    await fs.promises.unlink(__dirname + '/crash.sts');//Delete informations about the crash to avoid repeating this code on the next launch
+    await fs.promises.unlink(__dirname + '/env_data/crash.sts');//Delete informations about the crash to avoid repeating this code on the next launch
     await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});//Inform the users about the crash
     setTimeout(function() {
       update_status();
@@ -596,7 +596,7 @@ function log(code_section, msg)
 
   process.stdout.write(msg_formatted);
 
-  fs.appendFile(__dirname + "/babot.log", msg_formatted,
+  fs.appendFile(process.cwd() + "/env_data/babot.log", msg_formatted,
     function (err) {
     if (err) throw err;
   });
@@ -625,13 +625,13 @@ function update_status()//Change status of the bot every minute
 //Write the error occured in crash.sts before leaving to allow the program to send it when it will restart
 process.on('uncaughtException', error => {
   console.log(error);
-  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
+  fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
   console.log(error);
-  fs.writeFileSync(__dirname + '/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
+  fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
 //---//
