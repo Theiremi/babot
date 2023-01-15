@@ -523,6 +523,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
   if(settings.dev) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
+  let shards_count = client.shard.count;
   await axios({
     url: "https://discords.com/bots/api/bot/1052586565395828778",
     method: "POST",
@@ -557,12 +558,26 @@ async function update_stats()//Executed when guilds count change or bot is resta
     headers: {
       Authorization: "7AjY6Ql2Ra6Yu62TwhSW3pNtRfMEVL"
     },
-    data: "server_count=" + guild_count
+    data: "server_count=" + guild_count + "&shard_count=" + shards_count
   }).then(function(){
     log('Main', 'Data actualized on botlist.me');
   }, function(e) {
     //console.log(e);
     log('Main', 'Error when actualizing data on botlist.me');
+  });
+
+  await axios({
+    url: "https://discord.bots.gg/api/v1/bots/1052586565395828778/stats",
+    method: "POST",
+    headers: {
+      Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJhcGkiOnRydWUsImlkIjoiNDkyNzM0NDk2MjgyNTA5MzEyIiwiaWF0IjoxNjczNzc0MDQxfQ.O4EsKOE1ivZPaS7EeN0kDbe_PZU61giXyyk7s3tLsHE"
+    },
+    data: {guildCount: guild_count, shardCount: shards_count}
+  }).then(function(){
+    log('Main', 'Data actualized on discord.bots.gg');
+  }, function(e) {
+    //console.log(e);
+    log('Main', 'Error when actualizing data on discord.bots.gg');
   });
 
   //--- Stats Webhook ---//

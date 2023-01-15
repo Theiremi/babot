@@ -132,6 +132,8 @@ module.exports = class Player {
 					await interaction.reply({ephemeral: true, content: '❌ The player couldn\'t be initialized, but I don\'t know why. Try again'});
 					return;
 				}
+
+				this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 				await interaction.reply(this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
 				if(this.#isObjectValid(interaction.guildId)) this.#_guilds_play_data[interaction.guildId].player_interfaces.push(await interaction.fetchReply());
 			}
@@ -180,7 +182,6 @@ module.exports = class Player {
 					}
 					
 				}
-
 
 				//--- TROLL RESOURCE ---//
 				let troll_volume = false;
@@ -712,6 +713,7 @@ module.exports = class Player {
 
 	#destroyObject(guild_id)
 	{
+		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 		try
 		{
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
