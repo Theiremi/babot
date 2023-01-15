@@ -1027,10 +1027,23 @@ module.exports = class Player {
 						{
 							this.#_log_function('Player-queue', '[' + guild_id + '] Processing spotify playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
+							console.log(music_data_query.data.tracks.items)
 							for(let e of music_data_query.data.tracks.items)
 							{
 								if(!this.#isObjectValid(guild_id)) break;
-								await this.#add_in_queue(guild_id, e.track.name + " " + e.track.artists[0].name + " music", true).catch((e) => { console.log('Probably useless error 3 : ' + e)});
+								let track_name = "";
+								let artist_name = "";
+								if(e.track !== undefined)
+								{
+									track_name = e.track.name;
+									artist_name = e.track.artists[0].name
+								}
+								else
+								{
+									track_name = e.name;
+									artist_name = e.artists[0].name
+								}
+								await this.#add_in_queue(guild_id, track_name + " " + artist_name + " music", true).catch((e) => { console.log('Probably useless error 3 : ' + e)});
 							}
 						}
 						return reject('Spotify support will be released in the 1.1.1 version. See `/changelog`');
