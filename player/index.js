@@ -396,7 +396,7 @@ module.exports = class Player {
 
 			else if(interaction.customId.startsWith("btn_queue_page_"))
 			{
-				let new_page = interaction.customId.split('_').splice(-1);
+				let new_page = parseInt(interaction.customId.split('_').splice(-1));
 
 				if(!isNaN(new_page))
 				{
@@ -413,8 +413,9 @@ module.exports = class Player {
 					{
 						this.#_guilds_play_data[interaction.guildId].current_track = new_song;
 						await this.#play_song(interaction.guildId);
+						await this.#updatePlayerInterface(interaction.guildId);
 					}
-					await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, new_song));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId));
 				}
 			}
 			else if(interaction.customId.startsWith("btn_queue_remove_"))
@@ -833,7 +834,7 @@ module.exports = class Player {
 			let page_quantity = Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20);
 			let queue = queue_portion.map((x, i) => {
 				let gras = ""
-				if(i === selected_song) gras = "**";
+				if(i === selected_song - page * 20) gras = "**";
 				return gras + ((20 * page + i+1) + ". [" + x.name + "](" + x.link + ")").slice(0, 200) + gras + "\n"
 			}).join('');
 			if(queue === "") queue = "No song in queue"
@@ -857,10 +858,10 @@ module.exports = class Player {
 						.setLabel("Remove")
 						.setDisabled(false),
 					new this.#_discord.ButtonBuilder()
-						.setCustomId("btn_queue_add_song_at_pos")
-						.setStyle(1)
-						.setLabel("Add song after")
-						.setDisabled(true)
+						.setCustomId("btn_queue_page_reset_" + page)
+						.setStyle(2)
+						.setLabel("Unselect this song")
+						.setDisabled(false)
 				]));
 			}
 			else
@@ -878,7 +879,7 @@ module.exports = class Player {
 
 			components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
 				new this.#_discord.ButtonBuilder()
-					.setCustomId("btn_queue_page_next_" + (page > page_quantity ? page - 1 : 0))
+					.setCustomId("btn_queue_page_prev_" + (page > 0 ? page - 1 : 0))
 					.setStyle(1)
 					.setEmoji({name: "⬅️"})
 					.setDisabled(page > 0 ? false : true),
@@ -888,7 +889,7 @@ module.exports = class Player {
 					.setDisabled(true)
 					.setLabel("Page " + (page+1) + " of " + Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20)),
 				new this.#_discord.ButtonBuilder()
-					.setCustomId("btn_queue_page_prev_" + (page < page_quantity - 1 ? page + 1 : page_quantity - 1))
+					.setCustomId("btn_queue_page_next_" + (page < page_quantity - 1 ? page + 1 : page_quantity - 1))
 					.setStyle(1)
 					.setEmoji({name: "➡️"})
 					.setDisabled(page < page_quantity - 1 ? false : true),
@@ -938,8 +939,11 @@ module.exports = class Player {
 
 								if(!this.#isObjectValid(guild_id)) return;
 								this.#_guilds_play_data[guild_id].queue.push(return_resolve);
-								if(current_song_before === undefined) await this.#play_song(guild_id);
-								await this.#updatePlayerInterface(guild_id);
+								if(current_song_before === undefined)
+								{
+									await this.#play_song(guild_id);
+									await this.#updatePlayerInterface(guild_id);
+								}
 
 								resolve('Your music has been added to queue');
 							}
@@ -1027,7 +1031,6 @@ module.exports = class Player {
 						{
 							this.#_log_function('Player-queue', '[' + guild_id + '] Processing spotify playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
-							console.log(music_data_query.data.tracks.items)
 							for(let e of music_data_query.data.tracks.items)
 							{
 								if(!this.#isObjectValid(guild_id)) break;

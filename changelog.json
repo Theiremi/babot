@@ -32,12 +32,20 @@
 		]
 	},
 	{
-		"version": "1.1.1 (actual)",
+		"version": "1.1.1",
 		"commits": [
 			"**Support for Spotify**",
 			"Some bugs crashing BaBot fixed",
 			"Queue improved",
 			"Player interface a little refined when no music playing"
+		]
+	},
+	{
+		"version": "1.1.2 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed",
+			"Queue interface finished",
+			"Issues on playing Spotify albums fixed"
 		]
 	}
 ]
