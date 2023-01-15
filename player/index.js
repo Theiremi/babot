@@ -714,7 +714,6 @@ module.exports = class Player {
 
 	#destroyObject(guild_id)
 	{
-		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 		try
 		{
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
@@ -725,6 +724,8 @@ module.exports = class Player {
 		}
 		
 		delete this.#_guilds_play_data[guild_id];
+
+		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 	}
 
 	//----- Player interface management -----//
