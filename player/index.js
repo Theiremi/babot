@@ -511,6 +511,11 @@ module.exports = class Player {
 				}
 				else
 				{
+					if(value.length > 250)
+					{
+						interaction.reply({content: '❌ Your search request cannot exceed 250 characters', ephemeral: true});
+						return;
+					}
 					await interaction.deferReply();
 					this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Search term "' + value + '" given');
 					let yt = await yt_search(value);
