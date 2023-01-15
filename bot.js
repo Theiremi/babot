@@ -20,7 +20,7 @@ let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
   ["certification done ! No more limit on the max numbers of servers", 3],
-  ["/changelog : version 1.1.1 released", 3],
+  ["/changelog : version 1.1.2 released", 3],
   //["BaBot can crash quite often due of its young age, but all errors are patched in up to 8 hours", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything !", 3],
   ["I hope this link works -> https://discord.gg/zssHymr656", 3],
@@ -164,9 +164,9 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     {
       log('Main', 'Command `known_issues` received from user ' + interaction.user.tag);
 
-      if(fs.existsSync(__dirname + '/known_issues.json'))
+      if(fs.existsSync(__dirname + '/env_data/known_issues.json'))
       {
-        let file_content = await fs.promises.readFile(__dirname + '/known_issues.json', {encoding: 'utf-8'});
+        let file_content = await fs.promises.readFile(__dirname + '/env_data/known_issues.json', {encoding: 'utf-8'});
 
         await interaction.reply({content: "", embeds: [{color: 0x2f3136, description: file_content, title: "BaBot current issues", footer: {text :"BaBot is a really young bot, and I'm not a really good developer, so many errors occurs. However, I do best to patch these !"}}]});
       }
@@ -427,7 +427,6 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }).then(function(){
           log('Main-feedback', 'New feedback logged in the server');
       }, function(e) {
-          console.log(e);
           log('Main-feedback', 'Error when logging feedback of ' + interaction.user.tag + '(' + interaction.user.id + ')');
           log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
