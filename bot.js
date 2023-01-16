@@ -8,7 +8,7 @@ const Builders = require('@discordjs/builders');
 const Player = require('./player/index.js');
 const Status = require('./statusbot/index.js');
 const client = new Discord.Client({intents: [Discord.IntentsBitField.Flags.Guilds,
-  Discord.IntentsBitField.Flags.GuildPresences,
+  //Discord.IntentsBitField.Flags.GuildPresences,
   Discord.IntentsBitField.Flags.GuildVoiceStates,
   Discord.IntentsBitField.Flags.GuildMessages,
   //Discord.IntentsBitField.Flags.MessageContent

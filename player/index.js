@@ -511,6 +511,11 @@ module.exports = class Player {
 				}
 				else
 				{
+					if(value.length > 250)
+					{
+						interaction.reply({content: '❌ Your search request cannot exceed 250 characters', ephemeral: true});
+						return;
+					}
 					await interaction.deferReply();
 					this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Search term "' + value + '" given');
 					let yt = await yt_search(value);
@@ -714,7 +719,6 @@ module.exports = class Player {
 
 	#destroyObject(guild_id)
 	{
-		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 		try
 		{
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
@@ -725,6 +729,8 @@ module.exports = class Player {
 		}
 		
 		delete this.#_guilds_play_data[guild_id];
+
+		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 	}
 
 	//----- Player interface management -----//
