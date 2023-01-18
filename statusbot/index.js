@@ -97,6 +97,8 @@ module.exports = class Status {
 		{
 			if(interaction.commandName === 'statushistory')
 			{
+				interaction.reply({content: "Due to issues with Discord, this function can no longer be provided to you.\nFor those interested, Discord has denied access to BaBot to users status, because they judge this access is not needed (search about *privileged intents* for more info)"});
+				return;
 				let target_user;
 				if(interaction.options.getMember('user') != null)//If a user is specified, target him
 				{

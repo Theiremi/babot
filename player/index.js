@@ -6,6 +6,8 @@ const child_process = require('child_process');
 const axios = require('axios');
 const prism = require('prism-media');
 const { PlayerTransform } = require('./ffmpeg_transform.js');
+const Settings = require(process.cwd() + '/settings.js');
+const settings = new Settings();
 
 module.exports = class Player {
 	#_guilds_play_data = {};
@@ -119,6 +121,7 @@ module.exports = class Player {
 					}
 
 					await this.#initializeObject(interaction.guildId, interaction.member.voice.channelId);
+					settings.addXP(interaction.user.id, 100);
 				}
 
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
@@ -150,6 +153,12 @@ module.exports = class Player {
 				if(target.voice.channelId === null)
 				{
 					interaction.editReply({ content: this.#_locales.error_user_not_in_channel[interaction.locale] ?? this.#_locales.error_user_not_in_channel.default, ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					return;
+				}
+
+				if(!await settings.canTroll(interaction.user.id, target.user.id))
+				{
+					interaction.editReply({ content: '🤫 This member has asked to not be disturbed by troll\n*<:level3:1065239416798453921> Level 3 allows you to bypass this setting (See `/help level`)*', ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
@@ -232,15 +241,7 @@ module.exports = class Player {
 				troll_connection.subscribe(troll_player);
 				//---//
 
-				interaction.editReply({ content: '✅ Song played' }).catch((e) => { console.log('editReply error : ' + e)});
-			}
-			else if(interaction.commandName === 'dashboard')
-			{
-				let dash_embed = new this.#_discord.EmbedBuilder()
-					.setColor([0x2f, 0x31, 0x36])
-					.setTitle('My dashboard')
-					.setDescription("Use the buttons below to redo your last commands");
-				//🥚
+				interaction.editReply({ content: '✅ Song played\nPS : Annoyed by friends trolling you too much ? You can disable trolling on `/settings` panel' }).catch((e) => { console.log('editReply error : ' + e)});
 			}
 		}
 		//-----//
@@ -248,10 +249,12 @@ module.exports = class Player {
 		//----- Buttons Interactions -----//
 		else if(interaction.isButton())
 		{
-			if(!['btn_restart', 'btn_last', 'btn_play', 'btn_pause', 'btn_next', 'btn_volume', 'loop', 'unloop', 'shuffle', 'unshuffle', 'queue', 'open_modal_add', 'hide', 'stop', 'leave', 'close_any', 'initial_duck'].includes(interaction.customId) &&
+			if(!['btn_restart', 'btn_last', 'btn_play', 'btn_pause', 'btn_next', 'btn_volume', 'loop', 'unloop', 'shuffle', 'unshuffle', 'queue', 'open_modal_add', 'hide', 'stop', 'leave', 'close_any', 'initial_duck', 'btn_inactive_leave', 'btn_stay', 'btn_stay_forever'].includes(interaction.customId) &&
 				!interaction.customId.startsWith('btn_queue_page_') &&
 				!interaction.customId.startsWith('btn_queue_play_') &&
 				!interaction.customId.startsWith('btn_queue_remove_')) return false;
+
+			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
@@ -263,6 +266,58 @@ module.exports = class Player {
 				await interaction.reply({ephemeral: true, content: this.#_locales.error_guild_only[interaction.locale] ?? this.#_locales.error_guild_only.default});
 				return;
 			}
+
+			if(interaction.customId === "btn_inactive_leave")
+			{
+				if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
+				{
+					clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+					this.#destroyObject(interaction.guildId);
+
+					await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
+				}
+				else await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+				return;
+			}
+			if(interaction.customId === "btn_stay")
+			{
+				if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
+				{
+					clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+					this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
+
+					await interaction.reply({ephemeral: true, content: "✅ It's ok, I stay here, and I ask you again the next time I'm alone"});
+
+					await this.#updatePlayerInterface(interaction.guildId);
+				}
+				else await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+				return;
+			}
+			if(interaction.customId === "btn_stay_forever")
+			{
+				if(this.#_guilds_play_data[interaction.guildId].inactive_timer === false)
+				{
+					await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+					return;
+				}
+
+				if(await settings.level(interaction.user.id) < 3)
+				{
+					await interaction.reply({ephemeral: true, content: "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"});
+					return;
+				}
+
+				clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+				this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
+				this.#_guilds_play_data[interaction.guildId].force_active = true;
+
+				await interaction.reply({ephemeral: true, content: "✅ It's ok, I stay here without reasking you later"});
+
+				await this.#updatePlayerInterface(interaction.guildId);
+				return;
+			}
+
+
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
 				await interaction.reply({content: '❌ You can\'t control me if you\'re not in my channel', ephemeral: true});
@@ -270,7 +325,7 @@ module.exports = class Player {
 			}
 
 
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+			
 			if(interaction.customId === "btn_restart")//Works
 			{
 				if(this.#get_song(interaction.guildId) !== undefined)
@@ -391,7 +446,7 @@ module.exports = class Player {
 			else if(interaction.customId === "leave")
 			{
 				this.#destroyObject(interaction.guildId);
-				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []});
+				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 			}
 
 			else if(interaction.customId.startsWith("btn_queue_page_"))
@@ -627,6 +682,41 @@ module.exports = class Player {
 		}
 		//-----//
 	}
+
+	async voiceStateUpdate(voiceState)
+	{
+		if(this.#isObjectValid(voiceState.guild.id))
+		{
+			let channel = await this.#_client.channels.fetch(this.#_guilds_play_data[voiceState.guild.id].voice_connection.joinConfig.channelId).catch(e => e);
+			if(channel instanceof Error) return;
+
+			for(let e of channel.members)
+			{
+				e = e[1];
+				if(!e.user.bot)
+				{
+					if(this.#_guilds_play_data[voiceState.guild.id].inactive_timer !== false)
+					{
+						this.#_log_function('Player-object', '[' + voiceState.guild.id + '] I\'m back with some people finally');
+						clearTimeout(this.#_guilds_play_data[voiceState.guild.id].inactive_timer);
+						this.#_guilds_play_data[voiceState.guild.id].inactive_timer = false;
+
+						await this.#updatePlayerInterface(voiceState.guild.id);
+					}
+					return;
+				}
+			}
+			if(this.#_guilds_play_data[voiceState.guild.id].force_active !== true && this.#_guilds_play_data[voiceState.guild.id].inactive_timer === false)
+			{
+				this.#_log_function('Player-object', '[' + voiceState.guild.id + '] Starting inactivity counter');
+				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
+					ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command `/player` !', embeds: [], components: []});
+					ctx.#destroyObject(guild_id);
+				}, 60000*0.5, this, voiceState.guild.id);
+				await this.#updatePlayerInterface(voiceState.guild.id);
+			}
+		}
+	}
 	//-----//
 
 	//----- Guild object management -----//
@@ -661,6 +751,8 @@ module.exports = class Player {
 					volume: 1,
 					loop: false,
 					shuffle: false,
+					inactive_timer: false,
+					force_active: false,
 					player_interfaces: [
 						/*Message,
 						...*/
@@ -736,9 +828,34 @@ module.exports = class Player {
 	//----- Player interface management -----//
 	#generatePlayerInterface(guild_id)//Works
 	{
-		if(this.#_guilds_play_data[guild_id] !== undefined)
+		if(this.#isObjectValid(guild_id))
 		{
 			let player_interface_components = [];
+			if(this.#_guilds_play_data[guild_id].inactive_timer !== false)
+			{
+				player_interface_components.push(
+					new this.#_discord.ActionRowBuilder().addComponents([
+						new this.#_discord.ButtonBuilder()
+							.setCustomId("undefined")
+							.setEmoji({name: "❗"})
+							.setLabel("I'm alone. Can I leave ?")
+							.setStyle(2)
+							.setDisabled(true),
+						new this.#_discord.ButtonBuilder()
+							.setCustomId("btn_inactive_leave")
+							.setLabel("Sure !")
+							.setStyle(3),
+						new this.#_discord.ButtonBuilder()
+							.setCustomId("btn_stay")
+							.setLabel("Nope")
+							.setStyle(4),
+						new this.#_discord.ButtonBuilder()
+							.setCustomId("btn_stay_forever")
+							.setEmoji({name: "golden", id: "1065239445625917520"})
+							.setLabel("Stay forever")
+							.setStyle(2)
+				]));
+			}
 			player_interface_components.push(
 				new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.ButtonBuilder()
@@ -823,11 +940,11 @@ module.exports = class Player {
 		return {content: '❌ I can\'t generate the interface, because Theirémi is stupid'}
 	}
 
-	async #updatePlayerInterface(guild_id)//To test
+	async #updatePlayerInterface(guild_id, custom_message = undefined)//To test
 	{
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
-			await message.edit(this.#generatePlayerInterface(guild_id)).catch((e) => { console.log('Probably useless error 1 : ' + e)})
+			await message.edit(custom_message === undefined ? this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { console.log('Probably useless error 1 : ' + e)})
 		}
 	}
 

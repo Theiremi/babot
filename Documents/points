@@ -1,0 +1,19 @@
+Démarrer une nouvelle session : 100
+Pause/Play : 10
+Next/Last : 5
+Hide : 20
+Stop : 20
+Leave : 50
+Troll : 50
+Volume : 20
+Volume+1000 : 5
+
+
+Level 1 :
+- Access to last audio volumes
+
+Level 2 :
+- Bypass limited_troll setting
+
+Golden :
+- Make the bot stays forever in a room
