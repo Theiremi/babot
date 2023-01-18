@@ -656,7 +656,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let shards_count = client.shard.count;
 
-  fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guilds_count, shards_count: shards_count}));
+  fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, shards_count: shards_count}));
 
   //--- WEBSITES UPDATE ---//
   await axios({
