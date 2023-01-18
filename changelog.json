@@ -41,11 +41,25 @@
 		]
 	},
 	{
-		"version": "1.1.2 (actual)",
+		"version": "1.1.2",
 		"commits": [
 			"Some bugs crashing BaBot fixed",
 			"Queue interface finished",
 			"Issues on playing Spotify albums fixed"
+		]
+	}
+	,
+	{
+		"version": "1.2.0 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"A system managing inactivity in the BaBot voice channel has been added",
+			"Discoutinuing the status logging function",
+			"Implementing an internal statistics system",
+			"User dashboard and settings added",
+			"Ability to disable trolling\\*",
+			"Introducing levels, XP and points (more info at `/help level`)",
+			"Introducing the first help page",
 		]
 	}
 ]

@@ -35,6 +35,8 @@ discord.js
 - Support server
 - Email contact@theireply.fr
 
+In the objective to log custom status of users, the presence intent is required to access it. Then the history can be retrieved using the `/statushistory` command.
+_
 The presence intent is required to access the custom status of an user, so it can be logged and given back to this user using the `/statushistory` command.
 The message content is mainly used to create some easter egg, which are then reported in a leaderboard (function under development)
 

@@ -7,23 +7,26 @@ const Voice = require('@discordjs/voice');
 const Builders = require('@discordjs/builders');
 const Player = require('./player/index.js');
 const Status = require('./statusbot/index.js');
+const Settings = require(process.cwd() + '/settings.js');
 const client = new Discord.Client({intents: [Discord.IntentsBitField.Flags.Guilds,
   //Discord.IntentsBitField.Flags.GuildPresences,
   Discord.IntentsBitField.Flags.GuildVoiceStates,
   Discord.IntentsBitField.Flags.GuildMessages,
   //Discord.IntentsBitField.Flags.MessageContent
-  ]});
+]});
+
+const client_settings = new Settings();
 const player = new Player(Discord, client, log);
 const status = new Status(Discord, client, log);
 
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["certification done ! No more limit on the max numbers of servers", 3],
-  ["/changelog : version 1.1.2 released", 3],
-  //["BaBot can crash quite often due of its young age, but all errors are patched in up to 8 hours", 3],
-  ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything !", 3],
-  ["I hope this link works -> https://discord.gg/zssHymr656", 3],
+  ["/changelog : version 1.2.0 released", 3],
+  ["a LOT of changes in this new version", 3],
+  ["this new version brings a lot of changes, so probably a lot of bugs too", 3],
+  ["pls don't let me alone in your voice channels 🥺", 3],
+  ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
 ]
 
@@ -115,6 +118,17 @@ client.on('ready', async () => {
     .addSubcommand(subcommand => 
       subcommand.setName('delete')
         .setDescription("Delete all the data BaBot have about you")
+    )
+  );
+  client.application.commands.create({name: "dashboard", description: "Show your personal BaBot control panel", type: 1, dmPermission: true});
+  client.application.commands.create({name: "settings", description: "See and change your BaBot settings", type: 1, dmPermission: true});
+  client.application.commands.create(new Builders.SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Get help about function of BaBot')
+    .setDMPermission(true)
+    .addSubcommand(subcommand => 
+      subcommand.setName('level')
+        .setDescription("Infos about how works the level system")
     )
   );
   //---//
@@ -333,11 +347,73 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       });
       return;
     }
+
+    else if(interaction.commandName === 'dashboard')
+    {
+      let dash_embed = new Discord.EmbedBuilder()
+        .setColor([0x2f, 0x31, 0x36])
+        .setTitle(interaction.user.username + '\'s dashboard')
+        .setDescription("Here's your BaBot profile\nHelp about levels in available with the command `/help level`")
+        .setFields([
+          {name: "Level", value: "Level " + (await client_settings.level(interaction.user.id) + 1) + " (" + await client_settings.pointsCount(interaction.user.id) + ")", inline: true},
+          {name: "XP", value: await client_settings.XPCount(interaction.user.id) + "", inline: true},
+          {name: "Leaderboard position", value: "Not implemented", inline: true},
+          {name: "Saved playlists", value: "Coming soon", inline: false}
+        ])
+      let dash_components = [
+        new Discord.ActionRowBuilder().addComponents([
+          new Discord.ButtonBuilder()
+            .setCustomId("settings")
+            .setStyle(2)
+            .setEmoji({name: "setting", id: "1065258170144018432"})
+            .setLabel("Settings")
+        ])
+      ];
+      
+      await interaction.reply({embeds: [dash_embed], components: dash_components}).catch((e) => {console.log('reply error : ' + e)});
+      return;
+    }
+    else if(interaction.commandName === 'settings')
+    {
+      await interaction.reply(await generate_user_settings(interaction.user)).catch((e) => {console.log('reply error : ' + e)});
+      return;
+    }
+
+    else if(interaction.commandName === 'help')
+    {
+      let subcommand = interaction.options.getSubcommand();
+      if(subcommand == undefined)
+      {
+        await interaction.reply({ content: '❌ Please select a subcommand', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+        return;
+      }
+      log('Main-privacy', 'Command `help` -> `' + subcommand + '` received from user ' + interaction.user.tag);
+
+      if(subcommand === 'level')
+      {
+        await interaction.reply({
+          content: '',
+          embeds: [{
+            title: "BaBot and his level system",
+            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points",
+            fields: [
+              {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
+              {name: "<:level2:1065239416798453921> Level 2 : > 500 points", value: "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"},
+              {name: "<:level3:1065239432321568848> Level 3 : > 1000 points", value: "Active users of BaBot. They can :\n- Bypass the `disable troll` setting\n- all previous advantages"},
+              {name: "<:golden:1065239445625917520> Golden : Made a donation", value: "A top level granted to donators. They can :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- all previous advantages"},
+            ]
+          }]
+        }).catch((e) => { console.log('reply error : ' + e)});
+      }
+      else await interaction.reply({ content: '❌ This subcommand doesn\'t exists', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+      return;
+    }
     //---//
   }
   else if(interaction.isButton())
   {
-    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve'].includes(interaction.customId))
+    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings'].includes(interaction.customId) ||
+      interaction.customId.startsWith('btn_disable_troll_'))
     {
       log('Main-privacy', 'Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
       if(interaction.customId === "privacy_cancel")
@@ -410,6 +486,32 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           }]
         });
         return;
+      }
+      else if(interaction.customId === "settings")
+      {
+        await interaction.reply(await generate_user_settings(interaction.user)).catch((e) => {console.log('reply error : ' + e)});
+        return;
+      }
+
+      else if(interaction.customId.startsWith('btn_disable_troll_'))
+      {
+        let panel_id = interaction.customId.split('_').splice(-1)[0];
+        if(panel_id !== interaction.user.id)
+        {
+          await interaction.reply({content: "❌ As I can see, this is not your settings panel right ?", ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          return;
+        }
+        let config = await client_settings.get(interaction.user.id, 0, 'config');
+        if(config === false)
+        {
+          await interaction.reply({content: "❌ The settings are currently broken :cry:", ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          return;
+        }
+
+        if(config.limited_troll) config.limited_troll = false;
+        else config.limited_troll = true;
+        await client_settings.set(interaction.user.id, 0, 'config', config);
+        await interaction.update(await generate_user_settings(interaction.user)).catch((e) => {console.log('update error : ' + e)});
       }
     }
   }
@@ -499,6 +601,10 @@ client.on('guildDelete', async (guild) => {
   await update_stats();
 });
 
+client.on('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
+  player.voiceStateUpdate(newVoiceState);
+});
+
 //----- ENTRY POINT -----//
 (async () => {
   if(fs.existsSync(__dirname + '/env_data/env.json'))
@@ -517,12 +623,42 @@ client.on('guildDelete', async (guild) => {
 })();
 //-----//
 
+async function generate_user_settings(user)
+{
+  let user_config = await client_settings.get(user.id, 0, 'config')
+  if(user_config === false)
+  {
+    return {content: '❌ The settings panel is currently broken AFAIK', ephemeral: true};
+  }
+
+  let settings_embed = new Discord.EmbedBuilder()
+    .setColor([0x2f, 0x31, 0x36])
+    .setTitle(user.username + '\'s control panel')
+    .setDescription("- **Disable troll** : Limit the number of troll that you can receive from others users. Perfect if you have annoying friends");
+  let settings_components = [
+    new Discord.ActionRowBuilder().addComponents([
+      new Discord.ButtonBuilder()
+        .setCustomId("btn_disable_troll_" + user.id)
+        .setStyle(user_config.limited_troll ? 3 : 2)
+        .setLabel("Disable troll")
+    ])
+  ];
+  
+  return {embeds: [settings_embed], components: settings_components};
+}
+
+
+
 async function update_stats()//Executed when guilds count change or bot is restarted
 {
   if(settings.dev) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let shards_count = client.shard.count;
+
+  fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guilds_count, shards_count: shards_count}));
+
+  //--- WEBSITES UPDATE ---//
   await axios({
     url: "https://discords.com/bots/api/bot/1052586565395828778",
     method: "POST",
@@ -578,6 +714,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
     //console.log(e);
     log('Main', 'Error when actualizing data on discord.bots.gg');
   });
+  //---//
 
   //--- Stats Webhook ---//
   await axios({
@@ -628,9 +765,9 @@ function isJsonString(str) {
 function update_status()//Change status of the bot every minute
 {
   setInterval(async () => {
-    let random_status = Math.floor(Math.random() * (custom_status.length + 3));
+    let random_status = Math.floor(Math.random() * (custom_status.length + 1));
     let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
-    let next_status = random_status < 3 ? [(250 - guild_count) + " guilds slot remaining", 3] : custom_status[random_status - 3];
+    let next_status = random_status < 1 ? [guild_count + " servers", 3] : custom_status[random_status - 1];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);
 }
