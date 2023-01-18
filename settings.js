@@ -128,6 +128,28 @@ module.exports = class Settings {
 		}
 		return 0;
 	}
+
+	async leaderboardPosition(id)
+	{
+		let leaderboard = [];
+		let users_profiles = await fs.readdir(process.cwd() + '/env_data/users/')
+		for(let e of users_profiles)
+		{
+			let xp_user = await this.XPCount(e);
+			if(xp_user !== false)
+			{
+				leaderboard.push([e, xp_user]);
+			}
+		}
+		leaderboard.sort((a, b) => a[1]-b[1]);
+		leaderboard = leaderboard.map(x => x[0]);
+		let position = leaderboard.indexOf(id)
+		if(position !== -1)
+		{
+			return position+1;
+		}
+		return false;
+	}
 }
 
 

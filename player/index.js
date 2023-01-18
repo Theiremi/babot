@@ -242,6 +242,7 @@ module.exports = class Player {
 				//---//
 
 				interaction.editReply({ content: '✅ Song played\nPS : Annoyed by friends trolling you too much ? You can disable trolling on `/settings` panel' }).catch((e) => { console.log('editReply error : ' + e)});
+				settings.addXP(interaction.user.id, 50);
 			}
 		}
 		//-----//
@@ -333,28 +334,33 @@ module.exports = class Player {
 					await this.#play_song(interaction.guildId);
 				}
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_last")//Works
 			{
 				this.#prev_song(interaction.guildId);
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_play")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].player.unpause(true);
 				this.#_guilds_play_data[interaction.guildId].is_playing = true;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId))
+				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_pause")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].player.pause(true);
 				this.#_guilds_play_data[interaction.guildId].is_playing = false;
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId)).catch((e) => { console.log('Update error : ' + e)});
+				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_next")//Works
 			{
 				this.#next_song(interaction.guildId, true);
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_volume")//Works
 			{
@@ -384,6 +390,7 @@ module.exports = class Player {
 			{
 				this.#_guilds_play_data[interaction.guildId].loop = true;
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unloop")//Works
 			{
@@ -394,6 +401,7 @@ module.exports = class Player {
 			{
 				this.#_guilds_play_data[interaction.guildId].shuffle = true;
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unshuffle")//Works
 			{
@@ -403,6 +411,7 @@ module.exports = class Player {
 			else if(interaction.customId === "queue")
 			{
 				await interaction.reply(this.#generateQueueInterface(interaction.guildId));
+				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "open_modal_add")//Works
 			{
@@ -432,8 +441,9 @@ module.exports = class Player {
 				}
 				await interaction.message.delete().catch((e) => { console.log('Delete message error : ' + e)});
 				await interaction.reply({content: 'Player closed. You can open it again using `/player`', ephemeral: true});
+				settings.addXP(interaction.user.id, 20);
 			}
-			else if(interaction.customId === "stop")//To test
+			else if(interaction.customId === "stop")
 			{
 				if(this.#get_song(interaction.guildId) !== undefined)
 				{
@@ -442,11 +452,13 @@ module.exports = class Player {
 				this.#_guilds_play_data[interaction.guildId].queue = [];
 				this.#_guilds_play_data[interaction.guildId].current_track = 0;
 				await interaction.update(this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('update error : ' + e)});
+				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "leave")
 			{
 				this.#destroyObject(interaction.guildId);
 				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
+				settings.addXP(interaction.user.id, 50);
 			}
 
 			else if(interaction.customId.startsWith("btn_queue_page_"))
@@ -469,6 +481,7 @@ module.exports = class Player {
 						this.#_guilds_play_data[interaction.guildId].current_track = new_song;
 						await this.#play_song(interaction.guildId);
 						await this.#updatePlayerInterface(interaction.guildId);
+						settings.addXP(interaction.user.id, 30);
 					}
 					await interaction.update(this.#generateQueueInterface(interaction.guildId));
 				}
@@ -482,6 +495,7 @@ module.exports = class Player {
 					if(this.#get_song(interaction.guildId, song, true))
 					{
 						this.#_guilds_play_data[interaction.guildId].queue.splice(song, 1);
+						settings.addXP(interaction.user.id, 40);
 
 						if(this.#_guilds_play_data[interaction.guildId].current_track === song)
 						{
@@ -503,7 +517,7 @@ module.exports = class Player {
 
 			else if(interaction.customId === "close_any")
 			{
-				await interaction.update({content: 'Closing message...', ephemeral: true});
+				await interaction.update({content: 'Closing message...', ephemeral: true}).catch((e) => {console.log('update error : ' + e)});
 				await interaction.message.delete().catch((e) => {console.log('delete error : ' + e)});
 			}
 
@@ -562,6 +576,7 @@ module.exports = class Player {
 					if(return_message !== false)
 					{
 						if(interaction.isRepliable()) interaction.editReply({content: '✅ ' + return_message}).catch((e) => { console.log('editReply error : ' + e)});
+						settings.addXP(interaction.user.id, 10);
 					}
 				}
 				else
@@ -654,6 +669,7 @@ module.exports = class Player {
 					}
 
 					await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+					settings.addXP(interaction.user.id, 10);
 				}
 				else await interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
 			}
@@ -672,6 +688,7 @@ module.exports = class Player {
 				if(return_message !== false)
 				{
 					await interaction.editReply({content: '✅ ' + return_message}).catch((e) => { console.log('editReply error : ' + e)});
+					settings.addXP(interaction.user.id, 5);
 				}
 			}
 			else if(interaction.customId === "select_queue_song")
