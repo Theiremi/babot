@@ -1,18 +1,30 @@
-Démarrer une nouvelle session : 100
-Pause/Play : 10
-Next/Last : 5
-Hide : 20
-Stop : 20
-Leave : 50
-Troll : 50
-Volume : 20
-Volume+1000 : 5
+Démarrer une nouvelle session : 100 v
+Pause/Play : 10 v
+Next/Last : 5 v
+Restart : 10 v
+Add link : 10 v
+Add search : 5 v
+Loop : 20 v
+Shuffle : 20 v
+Queue : 10 v
+Queue play : 30 v
+Queue remove : 40 v
+Hide : 20 v
+Stop : 20 v
+Leave : 50 v
+Troll : 50 v
+Volume : 10 v
+Changelog : 50 v
+Stats : 25 v
+Teleport : 100
+Feedback : 250
 
+Level 1 | < 500 points : Nothing
 
-Level 1 :
+Level 2 | > 500 points :
 - Access to last audio volumes
 
-Level 2 :
+Level 3 | > 1000 points:
 - Bypass limited_troll setting
 
 Golden :

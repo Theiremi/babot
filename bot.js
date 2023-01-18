@@ -22,7 +22,7 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.0 released", 3],
+  ["/changelog : version 1.2.1 released", 3],
   ["a LOT of changes in this new version", 3],
   ["this new version brings a lot of changes, so probably a lot of bugs too", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
@@ -145,7 +145,11 @@ client.on('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {//When user interact with the bot
-  //log('Main', 'New interaction');
+  if(settings.banned_users.includes(interaction.user.id))
+  {
+    await interaction.reply({content: '❌ Sorry, you can\'t use ' + settings.name + '. Your account has been banned from using it', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+    return;
+  }
   if(interaction.isChatInputCommand())
   {
     if(interaction.commandName === 'changelog')
@@ -167,6 +171,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           }
 
           await interaction.reply({content: "", embeds: [{color: 0x2f3136, fields: fields, title: "BaBot changelog"}]});
+          client_settings.addXP(interaction.user.id, 50);
         }
         else await interaction.reply({content: "Changelog data are corrupted"});
       }
@@ -203,6 +208,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           }
         }
       ]});
+      client_settings.addXP(interaction.user.id, 25);
       return;
     }
     else if(interaction.commandName === 'feedback')
@@ -289,7 +295,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           ephemeral: true,
           embeds: [{
             title: "Delete all your BaBot data",
-            description: "**⚠️ All your data will be deleted ⚠️**\nThis includes :\n- Your status history\n- Your saved playlists\n- Your recent activities on BaBot\n**This action is irreversible. Are you sure you want to continue ?**",
+            description: "**⚠️ All your data will be deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a tip**This action is irreversible. Are you sure you want to continue ?**",
             footer: {
               text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
             }
@@ -345,19 +351,21 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }, function(e) {
           interaction.reply({ephemeral: true, content: "I'm not allowed to do that in this channel"});
       });
+      client_settings.addXP(interaction.user.id, 100);
       return;
     }
 
     else if(interaction.commandName === 'dashboard')
     {
+      log('Main-user', 'Command `dashboard` received from user ' + interaction.user.tag);
       let dash_embed = new Discord.EmbedBuilder()
         .setColor([0x2f, 0x31, 0x36])
         .setTitle(interaction.user.username + '\'s dashboard')
         .setDescription("Here's your BaBot profile\nHelp about levels in available with the command `/help level`")
         .setFields([
-          {name: "Level", value: "Level " + (await client_settings.level(interaction.user.id) + 1) + " (" + await client_settings.pointsCount(interaction.user.id) + ")", inline: true},
+          {name: "Level", value: "Level " + (await client_settings.level(interaction.user.id) + 1) + " (" + await client_settings.pointsCount(interaction.user.id) + " points)", inline: true},
           {name: "XP", value: await client_settings.XPCount(interaction.user.id) + "", inline: true},
-          {name: "Leaderboard position", value: "Not implemented", inline: true},
+          {name: "Leaderboard position", value: await client_settings.leaderboardPosition(interaction.user.id) + "th", inline: true},
           {name: "Saved playlists", value: "Coming soon", inline: false}
         ])
       let dash_components = [
@@ -375,6 +383,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     }
     else if(interaction.commandName === 'settings')
     {
+      log('Main-user', 'Command `settings` received from user ' + interaction.user.tag);
       await interaction.reply(await generate_user_settings(interaction.user)).catch((e) => {console.log('reply error : ' + e)});
       return;
     }
@@ -415,7 +424,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings'].includes(interaction.customId) ||
       interaction.customId.startsWith('btn_disable_troll_'))
     {
-      log('Main-privacy', 'Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+      log('Main-root', 'Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
       if(interaction.customId === "privacy_cancel")
       {
         await interaction.update({
@@ -533,7 +542,8 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
 
-      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !", ephemeral: true})
+      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !", ephemeral: true});
+      client_settings.addXP(interaction.user.id, 250);
       return;
     }
   }
