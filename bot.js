@@ -22,9 +22,8 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.1 released", 3],
-  ["a LOT of changes in this new version", 3],
-  ["this new version brings a lot of changes, so probably a lot of bugs too", 3],
+  ["/changelog : version 1.2.2 released", 3],
+  ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
@@ -129,6 +128,14 @@ client.on('ready', async () => {
     .addSubcommand(subcommand => 
       subcommand.setName('level')
         .setDescription("Infos about how works the level system")
+    )
+    .addSubcommand(subcommand => 
+      subcommand.setName('start')
+        .setDescription("Getting started with BaBot")
+    )
+    .addSubcommand(subcommand => 
+      subcommand.setName('donator')
+        .setDescription("Getting started with BaBot")
     )
   );
   //---//
@@ -409,7 +416,46 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
               {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
               {name: "<:level2:1065239416798453921> Level 2 : > 500 points", value: "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"},
               {name: "<:level3:1065239432321568848> Level 3 : > 1000 points", value: "Active users of BaBot. They can :\n- Bypass the `disable troll` setting\n- all previous advantages"},
-              {name: "<:golden:1065239445625917520> Golden : Made a donation", value: "A top level granted to donators. They can :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- all previous advantages"},
+              {name: "<:golden:1065239445625917520> Golden : Made a donation", value: "A top level granted to donators. Get all the infos about donators using `/help donator`"},
+            ]
+          }]
+        }).catch((e) => { console.log('reply error : ' + e)});
+      }
+      else if(subcommand === 'donator')
+      {
+        await interaction.reply({
+          content: '',
+          embeds: [{
+            title: "<:golden:1065239445625917520> Make a tip for BaBot !",
+            description: "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
+            fields: [
+              {name: "What can I do if a make a tip ?", value: "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- All the advantages from the lower levels (see `/help level`)"},
+              {name: "Do the advantages varies depending of my tip ?", value: "Every tip give access to the <:golden:1065239445625917520>Golden level.\nHowever, depending of your tip, you can obtain the ability to spread your Golden level to all users of a server :\n- **5$** : Allow all users of 3 chosen servers to use Golden perks\n- **15$** : Allow all users of 10 chosen servers to use Golden perks"},
+              {name: "What happens if I don't make a tip", value: "There's no problem !\nYou can continue to use BaBot as usual, and all the free functions *should* stay free for a long time (at least I hope)"},
+              {name: "Where can I make a tip ?", value: "My patreon page is here for that : [Patreon page](https://patreon.com/user?u=85252153)\nBtw thank you ! Thanks to you, BaBot will have a future !"},
+            ],
+          }],
+          components: [
+            new Discord.ActionRowBuilder().addComponents([
+              new Discord.ButtonBuilder()
+                .setStyle(5)
+                .setEmoji({name: "golden", id: "1065239445625917520"})
+                .setLabel("Make a tip !")
+                .setURL('https://patreon.com/user?u=85252153')
+            ])
+          ]
+        }).catch((e) => { console.log('reply error : ' + e)});
+      }
+      else if(subcommand === 'start')
+      {
+        await interaction.reply({
+          content: '',
+          embeds: [{
+            title: "BaBot : The basics",
+            description: "**BaBot is mainly focused on voice channels features, but also includes some extra functions that might be useful to know**\nThe ergonomy of BaBot is our priority, so **feel free to try commands** to understand how they works",
+            fields: [
+              {name: "Main commands", value: "- **</player:1052609017802924062>** : Open a player interface to use BaBot to play music\n- **</troll:1054878390278176808>** : Send the bot play a funny song in the voice channel of an user without evidences"},
+              {name: "Manage your profile", value: "BaBot include a levelling system giving you advantages depending of your activity (see `/help level`)\n**To manage your BaBot profile, use these commands :**\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"},
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -663,7 +709,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
 {
   if(settings.dev) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
-  let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
+  //let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let shards_count = client.shard.count;
 
   fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, shards_count: shards_count}));
@@ -689,7 +735,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
     headers: {
       Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzI1NjA0NzV9.t8kc9JXiBX9gJ_GAlg12W38qUjMjcAuXY2K5R77ALUE"
     },
-    data: "users=" + users_count + "&guilds=" + guild_count
+    data: "users=&guilds=" + guild_count
   }).then(function(){
     log('Main', 'Data actualized on discordbotlist.com');
   }, function(e) {
