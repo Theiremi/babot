@@ -272,7 +272,6 @@ module.exports = class Player {
 			{
 				if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
 				{
-					clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
 					this.#destroyObject(interaction.guildId);
 
 					await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
@@ -727,8 +726,11 @@ module.exports = class Player {
 			{
 				this.#_log_function('Player-object', '[' + voiceState.guild.id + '] Starting inactivity counter');
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
-					ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command `/player` !', embeds: [], components: []});
-					ctx.#destroyObject(guild_id);
+					if(ctx.#isObjectValid(guild_id))
+					{
+						ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command `/player` !', embeds: [], components: []});
+						ctx.#destroyObject(guild_id);
+					}
 				}, 60000*0.5, this, voiceState.guild.id);
 				await this.#updatePlayerInterface(voiceState.guild.id);
 			}
@@ -830,6 +832,10 @@ module.exports = class Player {
 	{
 		try
 		{
+			if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
+			{
+				clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+			}
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
 		catch(e)

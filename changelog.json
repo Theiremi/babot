@@ -62,12 +62,19 @@
 		]
 	},
 	{
-		"version": "1.2.1 (actual)",
+		"version": "1.2.1",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Full implementation of ways to gain XP using BaBot",
 			"Added banned users list for a future better moderation (should not concern you)",
 			"Leaderboard implemented (private, you can only see your rank)"
+		]
+	},
+	{
+		"version": "1.2.2 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Improved help pages of BaBot"
 		]
 	}
 ]
