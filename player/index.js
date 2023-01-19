@@ -832,9 +832,9 @@ module.exports = class Player {
 	{
 		try
 		{
-			if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
+			if(this.#_guilds_play_data[guild_id].inactive_timer !== false)
 			{
-				clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+				clearTimeout(this.#_guilds_play_data[guild_id].inactive_timer);
 			}
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}

@@ -24,6 +24,7 @@ let settings = {};
 let custom_status = [//List of all status randomly displayed by the bot
   ["/changelog : version 1.2.2 released", 3],
   ["/help start", 3],
+  ["why my player is gold ? -> /help faq", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
@@ -135,7 +136,11 @@ client.on('ready', async () => {
     )
     .addSubcommand(subcommand => 
       subcommand.setName('donator')
-        .setDescription("Getting started with BaBot")
+        .setDescription("Why should you give some money for BaBot")
+    )
+    .addSubcommand(subcommand => 
+      subcommand.setName('faq')
+        .setDescription("Get the answer to the common questions")
     )
   );
   //---//
@@ -365,12 +370,34 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     else if(interaction.commandName === 'dashboard')
     {
       log('Main-user', 'Command `dashboard` received from user ' + interaction.user.tag);
+      let user_level = await client_settings.level(interaction.user.id);
+      let level_name = "";
+      let emoji_level = ""
+      switch(user_level)
+      {
+        case 0:
+          emoji_level = "<:level1:1065239400549724281>";
+          level_name = "1";
+          break;
+        case 1:
+          emoji_level = "<:level2:1065239416798453921>";
+          level_name = "2";
+          break;
+        case 2:
+          emoji_level = "<:level3:1065239432321568848>";
+          level_name = "3";
+          break;
+        case 3:
+          emoji_level = "<:golden:1065239445625917520>";
+          level_name = "**Golden**";
+          break;
+      }
       let dash_embed = new Discord.EmbedBuilder()
         .setColor([0x2f, 0x31, 0x36])
         .setTitle(interaction.user.username + '\'s dashboard')
         .setDescription("Here's your BaBot profile\nHelp about levels in available with the command `/help level`")
         .setFields([
-          {name: "Level", value: "Level " + (await client_settings.level(interaction.user.id) + 1) + " (" + await client_settings.pointsCount(interaction.user.id) + " points)", inline: true},
+          {name: "Level", value: emoji_level + "Level " + level_name + " (" + await client_settings.pointsCount(interaction.user.id) + " points)", inline: true},
           {name: "XP", value: await client_settings.XPCount(interaction.user.id) + "", inline: true},
           {name: "Leaderboard position", value: await client_settings.leaderboardPosition(interaction.user.id) + "th", inline: true},
           {name: "Saved playlists", value: "Coming soon", inline: false}
@@ -411,6 +438,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           embeds: [{
             title: "BaBot and his level system",
+            color: 0x2f3136,
             description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points",
             fields: [
               {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
@@ -427,10 +455,11 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           embeds: [{
             title: "<:golden:1065239445625917520> Make a tip for BaBot !",
+            color: 0x2f3136,
             description: "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
             fields: [
               {name: "What can I do if a make a tip ?", value: "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- All the advantages from the lower levels (see `/help level`)"},
-              {name: "Do the advantages varies depending of my tip ?", value: "Every tip give access to the <:golden:1065239445625917520>Golden level.\nHowever, depending of your tip, you can obtain the ability to spread your Golden level to all users of a server :\n- **5$** : Allow all users of 3 chosen servers to use Golden perks\n- **15$** : Allow all users of 10 chosen servers to use Golden perks"},
+              {name: "Do the advantages varies depending of my tip ?", value: "Every tip give access to the <:golden:1065239445625917520>Golden level.\nHowever, depending of your tip, you can obtain the ability to spread your Golden level to all users of a server :\n- **5$** : Allow all users of 3 chosen servers to use Golden perks\n- **15$** : Allow all users of 10 chosen servers to use Golden perks\nNB : When the player is displayed in gold, that means an user has applied Golden on the current server"},
               {name: "What happens if I don't make a tip", value: "There's no problem !\nYou can continue to use BaBot as usual, and all the free functions *should* stay free for a long time (at least I hope)"},
               {name: "Where can I make a tip ?", value: "My patreon page is here for that : [Patreon page](https://patreon.com/user?u=85252153)\nBtw thank you ! Thanks to you, BaBot will have a future !"},
             ],
@@ -452,10 +481,27 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           embeds: [{
             title: "BaBot : The basics",
+            color: 0x2f3136,
             description: "**BaBot is mainly focused on voice channels features, but also includes some extra functions that might be useful to know**\nThe ergonomy of BaBot is our priority, so **feel free to try commands** to understand how they works",
             fields: [
               {name: "Main commands", value: "- **</player:1052609017802924062>** : Open a player interface to use BaBot to play music\n- **</troll:1054878390278176808>** : Send the bot play a funny song in the voice channel of an user without evidences"},
               {name: "Manage your profile", value: "BaBot include a levelling system giving you advantages depending of your activity (see `/help level`)\n**To manage your BaBot profile, use these commands :**\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"},
+              {name: "Get in depth help", value: "For help on specific subjects, feel free to dive into the others section of this help center"},
+              {name: "I have some questions", value: "You can consult the FAQ at `/help faq` to get answer to your questions\nIf you don't find find the response, feel free to ask it in our [Support Server](https://discord.gg/zssHymr656)"},
+            ]
+          }]
+        }).catch((e) => { console.log('reply error : ' + e)});
+      }
+      else if(subcommand === 'faq')
+      {
+        await interaction.reply({
+          content: '',
+          embeds: [{
+            title: "BaBot FAQ",
+            color: 0x2f3136,
+            description: "**You have some questions ? You're in the right place !**",
+            fields: [
+              {name: "Why the BaBot player is gold ?", value: "A gold player indicates that a Golden user has extended his Golden on the server (see `/help donator`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"}
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
