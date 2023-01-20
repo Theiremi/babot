@@ -22,7 +22,7 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.2 released", 3],
+  ["/changelog : version 1.2.3 released", 3],
   ["/help start", 3],
   ["why my player is gold ? -> /help faq", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
@@ -634,7 +634,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
 
-      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !", ephemeral: true});
+      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`", ephemeral: true});
       client_settings.addXP(interaction.user.id, 250);
       return;
     }
@@ -779,7 +779,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
     url: "https://discordbotlist.com/api/v1/bots/1052586565395828778/stats",
     method: "POST",
     headers: {
-      Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzI1NjA0NzV9.t8kc9JXiBX9gJ_GAlg12W38qUjMjcAuXY2K5R77ALUE"
+      Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzQxOTc0NTh9.h5PevLBjmEyE8cUxE3FenA-Hg_XU2nQtNnsCWe9OxzM"
     },
     data: "users=&guilds=" + guild_count
   }).then(function(){
