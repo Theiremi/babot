@@ -150,6 +150,32 @@ module.exports = class Settings {
 		}
 		return false;
 	}
+
+	async isGuildGolden(id)
+	{
+		let config = await this.get(id, 1, 'config');
+		if(config === false) return false;
+
+		if(config.golden)
+		{
+			for(let e of config.golden)
+			{
+				if(e === true) return true;
+				let user_config = await this.get(e, 0, 'config');
+				if(user_config !== false)
+				{
+					if(user_config.extended_servers)
+					{
+						if(user_config.extended_servers.includes(id))
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 }
 
 

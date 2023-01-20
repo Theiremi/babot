@@ -137,7 +137,7 @@ module.exports = class Player {
 				}
 
 				this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
-				await interaction.reply(this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
+				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
 				if(this.#isObjectValid(interaction.guildId)) this.#_guilds_play_data[interaction.guildId].player_interfaces.push(await interaction.fetchReply());
 			}
 			else if(interaction.commandName === 'troll')
@@ -301,7 +301,7 @@ module.exports = class Player {
 					return;
 				}
 
-				if(await settings.level(interaction.user.id) < 3)
+				if(await settings.level(interaction.user.id) < 3 && !await settings.isGuildGolden(interaction.guildId))
 				{
 					await interaction.reply({ephemeral: true, content: "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"});
 					return;
@@ -332,38 +332,38 @@ module.exports = class Player {
 				{
 					await this.#play_song(interaction.guildId);
 				}
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_last")//Works
 			{
 				this.#prev_song(interaction.guildId);
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_play")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].player.unpause(true);
 				this.#_guilds_play_data[interaction.guildId].is_playing = true;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_pause")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].player.pause(true);
 				this.#_guilds_play_data[interaction.guildId].is_playing = false;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId)).catch((e) => { console.log('Update error : ' + e)});
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => { console.log('Update error : ' + e)});
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_next")//Works
 			{
 				this.#next_song(interaction.guildId, true);
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_volume")//Works
 			{
-				let player_interface = this.#generatePlayerInterface(interaction.guildId);
+				let player_interface = await this.#generatePlayerInterface(interaction.guildId);
 				player_interface.components.push(new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.StringSelectMenuBuilder()
 						.setCustomId("select_volume")
@@ -388,28 +388,28 @@ module.exports = class Player {
 			else if(interaction.customId === "loop")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].loop = true;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unloop")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].loop = false;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 			}
 			else if(interaction.customId === "shuffle")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].shuffle = true;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unshuffle")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].shuffle = false;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 			}
 			else if(interaction.customId === "queue")
 			{
-				await interaction.reply(this.#generateQueueInterface(interaction.guildId));
+				await interaction.reply(await this.#generateQueueInterface(interaction.guildId));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "open_modal_add")//Works
@@ -450,7 +450,7 @@ module.exports = class Player {
 				}
 				this.#_guilds_play_data[interaction.guildId].queue = [];
 				this.#_guilds_play_data[interaction.guildId].current_track = 0;
-				await interaction.update(this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('update error : ' + e)});
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('update error : ' + e)});
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "leave")
@@ -482,7 +482,7 @@ module.exports = class Player {
 						await this.#updatePlayerInterface(interaction.guildId);
 						settings.addXP(interaction.user.id, 30);
 					}
-					await interaction.update(this.#generateQueueInterface(interaction.guildId));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId)).catch((e) => {console.log('update error : ' + e)});
 				}
 			}
 			else if(interaction.customId.startsWith("btn_queue_remove_"))
@@ -667,7 +667,7 @@ module.exports = class Player {
 						this.#_guilds_play_data[interaction.guildId].player.play(resource);*/
 					}
 
-					await interaction.update(this.#generatePlayerInterface(interaction.guildId));
+					await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
 					settings.addXP(interaction.user.id, 10);
 				}
 				else await interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
@@ -731,7 +731,7 @@ module.exports = class Player {
 						ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command `/player` !', embeds: [], components: []});
 						ctx.#destroyObject(guild_id);
 					}
-				}, 60000*0.5, this, voiceState.guild.id);
+				}, 60000*20, this, voiceState.guild.id);
 				await this.#updatePlayerInterface(voiceState.guild.id);
 			}
 		}
@@ -832,9 +832,9 @@ module.exports = class Player {
 	{
 		try
 		{
-			if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
+			if(this.#_guilds_play_data[guild_id].inactive_timer !== false)
 			{
-				clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
+				clearTimeout(this.#_guilds_play_data[guild_id].inactive_timer);
 			}
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
@@ -849,7 +849,7 @@ module.exports = class Player {
 	}
 
 	//----- Player interface management -----//
-	#generatePlayerInterface(guild_id)//Works
+	async #generatePlayerInterface(guild_id)//Works
 	{
 		if(this.#isObjectValid(guild_id))
 		{
@@ -941,7 +941,7 @@ module.exports = class Player {
 			);
 
 			let player_embed = new this.#_discord.EmbedBuilder()
-				.setColor([0x62, 0xD5, 0xE9])
+				.setColor((await settings.isGuildGolden(guild_id)) ? [0xFF, 0xD7, 0x00] : [0x62, 0xD5, 0xE9])
 
 			if(this.#get_song(guild_id) !== undefined)
 			{
@@ -967,7 +967,7 @@ module.exports = class Player {
 	{
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
-			await message.edit(custom_message === undefined ? this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { console.log('Probably useless error 1 : ' + e)})
+			await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { console.log('Probably useless error 1 : ' + e)})
 		}
 	}
 
@@ -1348,12 +1348,16 @@ async function resolve_yt_video(link, search)
 {
 	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
 	{
+		console.log(Date.now());
 		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
+		console.log(Date.now());
 		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
 		if(!isJsonString(video_data_process.stdout)) return false;
+		console.log(Date.now());
 
 		let video_data = JSON.parse(video_data_process.stdout);
 		if(video_data == undefined) return false;
+		console.log(Date.now());
 
 		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
 		if(video_data &&
@@ -1493,10 +1497,12 @@ function spawnAsync(command, args, options)
 	return new Promise((resolve, reject) => {
 		let stdout_data = "";
 		let stderr_data = "";
+		console.log("1:" + Date.now());
 		let spawn_process = child_process.spawn(command, args, options);
 		spawn_process.stdout.on('data', function(data) {
 			stdout_data += data.toString('utf-8');
 		});
+		console.log("1:" + Date.now());
 		spawn_process.stderr.on('data', function(data) {
 			stderr_data += data.toString('utf-8');
 		});
