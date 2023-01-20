@@ -78,12 +78,21 @@
 		]
 	},
 	{
-		"version": "1.2.3 (actual)",
+		"version": "1.2.3",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Added an FAQ",
 			"Implemented servers Golden extension",
-			"Improved user dashboard",
+			"Improved user dashboard"
+		]
+	},
+	{
+		"version": "1.2.4 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Added ability to close popups without a player running",
+			"Trying to fix lags during content loading",
+			"Improved leaving messages"
 		]
 	}
 ]

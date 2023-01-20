@@ -136,6 +136,7 @@ module.exports = class Player {
 					return;
 				}
 
+				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function('Player-player', '[' + interaction.guildId + '] Wow, a golden player spawned !');
 				this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
 				if(this.#isObjectValid(interaction.guildId)) this.#_guilds_play_data[interaction.guildId].player_interfaces.push(await interaction.fetchReply());
@@ -250,7 +251,7 @@ module.exports = class Player {
 		//----- Buttons Interactions -----//
 		else if(interaction.isButton())
 		{
-			if(!['btn_restart', 'btn_last', 'btn_play', 'btn_pause', 'btn_next', 'btn_volume', 'loop', 'unloop', 'shuffle', 'unshuffle', 'queue', 'open_modal_add', 'hide', 'stop', 'leave', 'close_any', 'initial_duck', 'btn_inactive_leave', 'btn_stay', 'btn_stay_forever'].includes(interaction.customId) &&
+			if(!['btn_restart', 'btn_last', 'btn_play', 'btn_pause', 'btn_next', 'btn_volume', 'loop', 'unloop', 'shuffle', 'unshuffle', 'queue', 'open_modal_add', 'hide', 'stop', 'leave', 'initial_duck', 'btn_inactive_leave', 'btn_stay', 'btn_stay_forever'].includes(interaction.customId) &&
 				!interaction.customId.startsWith('btn_queue_page_') &&
 				!interaction.customId.startsWith('btn_queue_play_') &&
 				!interaction.customId.startsWith('btn_queue_remove_')) return false;
@@ -274,7 +275,7 @@ module.exports = class Player {
 				{
 					this.#destroyObject(interaction.guildId);
 
-					await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
+					await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 				}
 				else await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
 				return;
@@ -439,7 +440,7 @@ module.exports = class Player {
 					}
 				}
 				await interaction.message.delete().catch((e) => { console.log('Delete message error : ' + e)});
-				await interaction.reply({content: 'Player closed. You can open it again using `/player`', ephemeral: true});
+				await interaction.reply({content: 'Player closed. You can open it again using </player:1052609017802924062>', ephemeral: true});
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "stop")
@@ -456,7 +457,7 @@ module.exports = class Player {
 			else if(interaction.customId === "leave")
 			{
 				this.#destroyObject(interaction.guildId);
-				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command `/player` !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
+				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 				settings.addXP(interaction.user.id, 50);
 			}
 
@@ -512,12 +513,6 @@ module.exports = class Player {
 					}
 					await interaction.update(this.#generateQueueInterface(interaction.guildId));
 				}
-			}
-
-			else if(interaction.customId === "close_any")
-			{
-				await interaction.update({content: 'Closing message...', ephemeral: true}).catch((e) => {console.log('update error : ' + e)});
-				await interaction.message.delete().catch((e) => {console.log('delete error : ' + e)});
 			}
 
 			else if(interaction.customId === "initial_duck")
@@ -728,7 +723,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
 					if(ctx.#isObjectValid(guild_id))
 					{
-						ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command `/player` !', embeds: [], components: []});
+						ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command </player:1052609017802924062> !', embeds: [], components: []});
 						ctx.#destroyObject(guild_id);
 					}
 				}, 60000*20, this, voiceState.guild.id);
@@ -948,7 +943,7 @@ module.exports = class Player {
 				player_embed.setTitle("Playing \"" + this.#get_song(guild_id).name + "\"");
 				player_embed.setURL(this.#get_song(guild_id).link);
 				player_embed.setImage(this.#get_song(guild_id).thumbnail);
-				player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
+				//player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
 			}
 			else
 			{
@@ -1348,16 +1343,12 @@ async function resolve_yt_video(link, search)
 {
 	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
 	{
-		console.log(Date.now());
 		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
-		console.log(Date.now());
 		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
 		if(!isJsonString(video_data_process.stdout)) return false;
-		console.log(Date.now());
 
 		let video_data = JSON.parse(video_data_process.stdout);
 		if(video_data == undefined) return false;
-		console.log(Date.now());
 
 		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
 		if(video_data &&
@@ -1498,7 +1489,7 @@ function spawnAsync(command, args, options)
 		let stdout_data = "";
 		let stderr_data = "";
 		console.log("1:" + Date.now());
-		let spawn_process = child_process.spawn(command, args, options);
+		let spawn_process = child_process.execFile(command, args, options);
 		spawn_process.stdout.on('data', function(data) {
 			stdout_data += data.toString('utf-8');
 		});

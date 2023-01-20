@@ -439,7 +439,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           embeds: [{
             title: "BaBot and his level system",
             color: 0x2f3136,
-            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points",
+            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points\n*NB : Upvoting BaBot also gives XP*",
             fields: [
               {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
               {name: "<:level2:1065239416798453921> Level 2 : > 500 points", value: "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"},
@@ -513,11 +513,17 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   }
   else if(interaction.isButton())
   {
-    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings'].includes(interaction.customId) ||
+    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings', 'close_any'].includes(interaction.customId) ||
       interaction.customId.startsWith('btn_disable_troll_'))
     {
       log('Main-root', 'Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
-      if(interaction.customId === "privacy_cancel")
+      if(interaction.customId === "close_any")
+      {
+        await interaction.update({content: 'Closing message...', ephemeral: true}).catch((e) => {console.log('update error : ' + e)});
+        await interaction.message.delete().catch((e) => {console.log('delete error : ' + e)});
+      }
+
+      else if(interaction.customId === "privacy_cancel")
       {
         await interaction.update({
           content: '',
