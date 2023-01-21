@@ -87,12 +87,19 @@
 		]
 	},
 	{
-		"version": "1.2.4 (actual)",
+		"version": "1.2.4",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Added ability to close popups without a player running",
 			"Trying to fix lags during content loading",
 			"Improved leaving messages"
+		]
+	},
+	{
+		"version": "1.2.5 (actual)",
+		"commits": [
+			"Cleaned internal logs",
+			"Pushing a fix to improve playlists loading on my poor RPI 4"
 		]
 	}
 ]

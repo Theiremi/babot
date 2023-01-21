@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const worker_threads = require('worker_threads');
 const fsc = require('fs');
 const Voice = require('@discordjs/voice');
 const Builders = require('@discordjs/builders');
@@ -962,7 +963,13 @@ module.exports = class Player {
 	{
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
-			await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { console.log('Probably useless error 1 : ' + e)})
+			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
+			if(!success)
+			{
+				this.#_log_function('Player-interface', '[' + guild_id + '] Deleted interface message removed from the internal list');
+				let current_pos = this.#_guilds_play_data[guild_id].player_interfaces.indexOf(message);
+				if(current_pos !== -1) this.#_guilds_play_data[guild_id].player_interfaces.splice(current_pos, 1);
+			}
 		}
 	}
 
@@ -1277,6 +1284,7 @@ module.exports = class Player {
 				let link = this.#get_song(guild_id).link;
 				this.#_log_function('Player-song', '[' + guild_id + '] Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
+				console.log(Date.now());
 				let play_link_process = await axios({
 					url: this.#get_song(guild_id).play_link,
 					method: 'get',
@@ -1285,6 +1293,7 @@ module.exports = class Player {
 				}).catch((e) => {
 					this.#_log_function('Player-song', '[' + guild_id + '] Error fetching song');
 				});
+				console.log(Date.now());
 
 				const transcoder = new prism.FFmpeg({args: [
 					'-analyzeduration', '0',
@@ -1294,9 +1303,13 @@ module.exports = class Player {
 					'-ac', '2',
 					'-s:a', '240'
 				]});
+				console.log(Date.now());
 				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
+				console.log(Date.now());
 				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
+				console.log(Date.now());
 				let resource = Voice.createAudioResource(play_link_process.data.pipe(transcoder).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
+				console.log(Date.now());
 				
 				/*this.#_guilds_play_data[guild_id].transformer = new PlayerTransform({
 					volume: this.#_guilds_play_data[guild_id].volume
@@ -1304,6 +1317,7 @@ module.exports = class Player {
 				let resource = Voice.createAudioResource(play_link_process.data.pipe(this.#_guilds_play_data[guild_id].transformer).pipe(new prism.opus.OggDemuxer()), {inputType: "opus"});*/
 				
 				this.#_guilds_play_data[guild_id].player.play(resource);
+				console.log(Date.now());
 
 				this.#_guilds_play_data[guild_id].is_playing = true;
 			}
@@ -1483,23 +1497,25 @@ async function radio_search(term)
 	return [];
 }
 
-function spawnAsync(command, args, options)
+async function spawnAsync(command, args, options)
 {
-	return new Promise((resolve, reject) => {
-		let stdout_data = "";
-		let stderr_data = "";
-		console.log("1:" + Date.now());
-		let spawn_process = child_process.execFile(command, args, options);
-		spawn_process.stdout.on('data', function(data) {
-			stdout_data += data.toString('utf-8');
+	return new Promise(async (resolve, reject) => {
+		console.log("New worker " + Date.now());
+		let worker = new worker_threads.Worker(
+			"let data = require('worker_threads').workerData;\
+			let spawn = require('child_process').spawnSync;\
+			let spawn_process = spawn(data.command, data.args, data.options);\
+			require('worker_threads').parentPort.postMessage({stdout: spawn_process.stdout, stderr: spawn_process.stderr});\
+			"
+		, {
+			eval: true,
+			workerData: {command, args, options}
 		});
-		console.log("1:" + Date.now());
-		spawn_process.stderr.on('data', function(data) {
-			stderr_data += data.toString('utf-8');
+		worker.on('message', function (msg)
+		{
+			console.log("worker returned result " + Date.now());
+			resolve(msg);
 		});
-		spawn_process.on('close', function() {
-			resolve({stdout: stdout_data, stderr: stderr_data});
-		})
 	});
 }
 
