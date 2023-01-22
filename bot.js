@@ -22,9 +22,8 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.3 released", 3],
+  ["/changelog : version 1.2.6 released", 3],
   ["/help start", 3],
-  ["why my player is gold ? -> /help faq", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
   ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
@@ -76,17 +75,8 @@ client.on('ready', async () => {
 
   //--- BOT STATS ---//
   //Deprecated section : only useful when the bot was in less than 200 guilds
-  /*let all_guilds = await client.guilds.fetch();
-  log('Main', 'Operating in ' + all_guilds.size + ' guilds :');
-  let members_count = 0;
-  for(let e of all_guilds)
-  {
-    e = await e[1].fetch();
-    log('Main', '  - ' + e.id + ' : ' + e.name + ' | Members : ' + e.approximateMemberCount + ', Online : ' + e.approximatePresenceCount);
-    members_count += e.approximateMemberCount;
-  }
-  log('Main', 'Wow, the total member count is about ' + members_count + ' members potentially using me !');*/
-  await update_stats();
+  log('Main', 'I\'m the shard ' + client.shard.ids + '/' + client.shard.count + ' and I operate in ' + client.guilds.cache.size + ' guilds');
+  //await update_stats();//Activating this introduces a lot of strange things
   //---//
 
   //--- DEFINING COMMANDS ---//
@@ -102,7 +92,6 @@ client.on('ready', async () => {
   client.application.commands.create({name: "known_issues", description: "List of all issues in BaBot waiting to be fixed", type: 1, dmPermission: true});
   client.application.commands.create({name: "feedback", description: "Send a feedback to the developer", type: 1, dmPermission: true});
   client.application.commands.create({name: "stats", description: "See general statistics about BaBot", type: 1, dmPermission: true});
-  client.application.commands.create({name: "teleport", description: "Teleport a BaBot dev on your server", type: 1, dmPermission: false});
   client.application.commands.create(new Builders.SlashCommandBuilder()
     .setName('privacy')
     .setDescription('All legal actions that you can take on data stored by BaBot')
@@ -214,7 +203,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         {
           color: 0x2f3136,
           title: "Hi ! My name is BaBot",
-          description: "I'm in **" + (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0) + "** servers\nI'm actually handling **" + player.playerCount() + "** music players simultaneously\nI'm up since <t:" + uptime + ":R>\nMy server RAM usage : **" + (Math.round((await si.mem()).active/10000000) / 100) + '/' + (Math.round((await si.mem()).total/10000000) / 100) + 'GB**\nMy server CPU load : **' + (Math.round((await si.currentLoad()).currentLoad * 10) / 10) + '%**\nMy internal temperature : **' + (Math.round((await si.cpuTemperature()).main * 10) / 10) + '**°C (avg) **' + (Math.round((await si.cpuTemperature()).max * 10) / 10) + '**°C (max)',
+          description: "I'm in **" + (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** servers\nI'm actually handling **" + player.playerCount() + "** music players simultaneously\nI'm up since <t:" + uptime + ":R>\nMy server RAM usage : **" + (Math.round((await si.mem()).active/10000000) / 100) + '/' + (Math.round((await si.mem()).total/10000000) / 100) + 'GB**\nMy server CPU load : **' + (Math.round((await si.currentLoad()).currentLoad * 10) / 10) + '%**\nMy internal temperature : **' + (Math.round((await si.cpuTemperature()).main * 10) / 10) + '**°C (avg) **' + (Math.round((await si.cpuTemperature()).max * 10) / 10) + '**°C (max)',
           footer: {
             text: "Servers can sometimes be overloaded. Check here the servers status if you experience lags and feel free to report anormal values with `/feedback`"
           }
@@ -334,36 +323,6 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         }).catch((e) => { console.log('reply error : ' + e)});
       }
       else await interaction.reply({ content: '❌ This subcommand doesn\'t exists', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
-      return;
-    }
-    else if(interaction.commandName === 'teleport')
-    {
-      log('Main-teleport', 'Command `teleport` received from user ' + interaction.user.tag);
-      if(!interaction.inGuild() || interaction.member == undefined)//The user is in a guild, and a Guildmember object for this user exists
-      {
-        await interaction.reply({ephemeral: true, content: "You're not in a guild"});
-        return;
-      }
-
-      interaction.guild.invites.create(interaction.channel).then(function(invite){
-        axios({
-            url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
-            method: "POST",
-            headers: {
-              'Accept-Encoding': 'deflate'
-            },
-            data: {username: "Teleport request", embeds: [{title: "New teleport request", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked a teleport to this server : ' + invite.url, author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
-        }).then(function(){
-            log('Main-teleport', 'New teleport request send via webhook');
-        }, function(e) {
-            console.log(e);
-            log('Main-teleport', 'Error when sending teleport request of ' + interaction.user.tag + ' (' + interaction.user.id + '). Link : ' + invite.url);
-        });
-        interaction.reply({ephemeral: true, content: "Your request has been send ! A dev should be here soon !"});
-      }, function(e) {
-          interaction.reply({ephemeral: true, content: "I'm not allowed to do that in this channel"});
-      });
-      client_settings.addXP(interaction.user.id, 100);
       return;
     }
 
@@ -760,7 +719,7 @@ async function generate_user_settings(user)
 async function update_stats()//Executed when guilds count change or bot is restarted
 {
   if(settings.dev) return;//Only update stats on websites and others in production mode
-  let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
+  let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
   //let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let shards_count = client.shard.count;
 
@@ -874,7 +833,7 @@ function update_status()//Change status of the bot every minute
 {
   setInterval(async () => {
     let random_status = Math.floor(Math.random() * (custom_status.length + 1));
-    let guild_count = (await client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
+    let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
     let next_status = random_status < 1 ? [guild_count + " servers", 3] : custom_status[random_status - 1];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);

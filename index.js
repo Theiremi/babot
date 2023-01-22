@@ -8,8 +8,11 @@ const fs = require('fs');
 
 		if(isJsonString(settings_file))
 		{
-			let token = JSON.parse(settings_file).token;
-			let manager = new Discord.ShardingManager('bot.js', {token: token});
+			let settings = JSON.parse(settings_file);
+			let manager = new Discord.ShardingManager('bot.js', {token: settings.token, totalShards: settings.shards});
+			manager.on('shardCreate', async function(shard){
+				console.log('ShardManager / Shard ' + shard.id + ' started')
+			})
 			manager.spawn();
 			console.log('ShardManager / Environment variables loaded');
 		}
