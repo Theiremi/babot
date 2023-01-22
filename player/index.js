@@ -144,7 +144,7 @@ module.exports = class Player {
 			}
 			else if(interaction.commandName === 'troll')
 			{
-				await interaction.deferReply({ephemeral: true});
+				await interaction.deferReply({ephemeral: true}).catch(e => console.log('deferReply error : ' + e));
 				if(!interaction.options.getMember('user') || !interaction.options.getString('song'))
 				{
 					interaction.editReply({ content: this.#_locales.error_user_not_found[interaction.locale] ?? this.#_locales.error_user_not_found.default, ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
@@ -334,20 +334,20 @@ module.exports = class Player {
 				{
 					await this.#play_song(interaction.guildId);
 				}
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_last")//Works
 			{
 				this.#prev_song(interaction.guildId);
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_play")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].player.unpause(true);
 				this.#_guilds_play_data[interaction.guildId].is_playing = true;
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "btn_pause")//Works
@@ -360,7 +360,7 @@ module.exports = class Player {
 			else if(interaction.customId === "btn_next")//Works
 			{
 				this.#next_song(interaction.guildId, true);
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_volume")//Works
@@ -384,34 +384,34 @@ module.exports = class Player {
 							{label: '10000 %', value: "10000", emoji: {name: "💀"}, default: this.#_guilds_play_data[interaction.guildId].volume === 100, description: "Adieu les oreilles"}
 						])
 				]));
-				await interaction.update(player_interface);
+				await interaction.update(player_interface).catch(e => console.log('update error : ' + e));
 			}
 
 			else if(interaction.customId === "loop")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].loop = true;
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unloop")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].loop = false;
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 			}
 			else if(interaction.customId === "shuffle")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].shuffle = true;
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "unshuffle")//Works
 			{
 				this.#_guilds_play_data[interaction.guildId].shuffle = false;
-				await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 			}
 			else if(interaction.customId === "queue")
 			{
-				await interaction.reply(await this.#generateQueueInterface(interaction.guildId));
+				await interaction.reply(await this.#generateQueueInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 10);
 			}
 			else if(interaction.customId === "open_modal_add")//Works
@@ -468,7 +468,7 @@ module.exports = class Player {
 
 				if(!isNaN(new_page))
 				{
-					await interaction.update(this.#generateQueueInterface(interaction.guildId, new_page));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId, new_page)).catch(e => console.log('update error : ' + e));
 				}
 			}
 			else if(interaction.customId.startsWith("btn_queue_play_"))
@@ -512,7 +512,7 @@ module.exports = class Player {
 							await this.#updatePlayerInterface(interaction.guildId);
 						}
 					}
-					await interaction.update(this.#generateQueueInterface(interaction.guildId));
+					await interaction.update(this.#generateQueueInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				}
 			}
 
@@ -581,7 +581,7 @@ module.exports = class Player {
 						interaction.reply({content: '❌ Your search request cannot exceed 250 characters', ephemeral: true});
 						return;
 					}
-					await interaction.deferReply();
+					await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
 					this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Search term "' + value + '" given');
 					let yt = await yt_search(value);
 					let displayed_yt = "";
@@ -663,7 +663,7 @@ module.exports = class Player {
 						this.#_guilds_play_data[interaction.guildId].player.play(resource);*/
 					}
 
-					await interaction.update(await this.#generatePlayerInterface(interaction.guildId));
+					await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 					settings.addXP(interaction.user.id, 10);
 				}
 				else await interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
@@ -688,7 +688,7 @@ module.exports = class Player {
 			}
 			else if(interaction.customId === "select_queue_song")
 			{
-				await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, parseInt(interaction.values[0])));
+				await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, parseInt(interaction.values[0]))).catch(e => console.log('update error : ' + e));
 			}
 			else interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
 		}
@@ -803,7 +803,7 @@ module.exports = class Player {
 			}
 			else
 			{
-				this.#_guilds_play_data[guild_id].player = new Voice.AudioPlayer({noSubscriber: Voice.NoSubscriberBehavior.Pause});
+				this.#_guilds_play_data[guild_id].player = new Voice.AudioPlayer({noSubscriber: Voice.NoSubscriberBehavior.Pause, maxMissedFrames: 50});
 				this.#_guilds_play_data[guild_id].player.addListener(Voice.AudioPlayerStatus.Idle, () => {this_class.#next_song(guild_id)});
 				this.#_guilds_play_data[guild_id].player.on('error', function() { this_class.#destroyObject(guild_id); })
 				this.#_guilds_play_data[guild_id].player_subscription = this.#_guilds_play_data[guild_id].voice_connection.subscribe(this.#_guilds_play_data[guild_id].player);
@@ -1305,11 +1305,13 @@ module.exports = class Player {
 				]});
 				console.log(Date.now());
 				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
-				console.log(Date.now());
 				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
-				console.log(Date.now());
+
 				let resource = Voice.createAudioResource(play_link_process.data.pipe(transcoder).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
-				console.log(Date.now());
+				/*resource.playStream.on('data', function(data)
+				{
+					//console.log(data.length);
+				})*/
 				
 				/*this.#_guilds_play_data[guild_id].transformer = new PlayerTransform({
 					volume: this.#_guilds_play_data[guild_id].volume
@@ -1317,7 +1319,6 @@ module.exports = class Player {
 				let resource = Voice.createAudioResource(play_link_process.data.pipe(this.#_guilds_play_data[guild_id].transformer).pipe(new prism.opus.OggDemuxer()), {inputType: "opus"});*/
 				
 				this.#_guilds_play_data[guild_id].player.play(resource);
-				console.log(Date.now());
 
 				this.#_guilds_play_data[guild_id].is_playing = true;
 			}
