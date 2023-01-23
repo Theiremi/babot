@@ -8,12 +8,15 @@ const Builders = require('@discordjs/builders');
 const Player = require('./player/index.js');
 const Status = require('./statusbot/index.js');
 const Settings = require(process.cwd() + '/settings.js');
-const client = new Discord.Client({intents: [Discord.IntentsBitField.Flags.Guilds,
-  //Discord.IntentsBitField.Flags.GuildPresences,
-  Discord.IntentsBitField.Flags.GuildVoiceStates,
-  Discord.IntentsBitField.Flags.GuildMessages,
-  //Discord.IntentsBitField.Flags.MessageContent
-]});
+const client = new Discord.Client({
+  intents: [Discord.IntentsBitField.Flags.Guilds,
+    //Discord.IntentsBitField.Flags.GuildPresences,
+    Discord.IntentsBitField.Flags.GuildVoiceStates,
+    Discord.IntentsBitField.Flags.GuildMessages,
+    //Discord.IntentsBitField.Flags.MessageContent
+  ],
+  presence: {activities: [{name: "Starting... It will take time for BaBot to be fully functional", type: 3}]}
+});
 
 const client_settings = new Settings();
 const player = new Player(Discord, client, log);
@@ -22,7 +25,7 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.6 released", 3],
+  ["/changelog : version 1.2.7 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
@@ -74,9 +77,14 @@ client.on('ready', async () => {
   //---//
 
   //--- BOT STATS ---//
-  //Deprecated section : only useful when the bot was in less than 200 guilds
-  log('Main', 'I\'m the shard ' + client.shard.ids + '/' + client.shard.count + ' and I operate in ' + client.guilds.cache.size + ' guilds');
+  log('Main', 'I\'m the shard ' + (client.shard.ids[0] + 1) + '/' + client.shard.count + ' and I operate in ' + client.shard.mode + ' mode in ' + client.guilds.cache.size + ' guilds');
   //await update_stats();//Activating this introduces a lot of strange things
+  client.shard.parentPort.on('message', function(msg) {
+    if(msg.action === "scheduled_restart")
+    {
+      player.shutdownRequest(msg.timestamp);
+    }
+  })
   //---//
 
   //--- DEFINING COMMANDS ---//
@@ -171,12 +179,12 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
             fields.push({inline: false, name: e.version, value: commits});
           }
 
-          await interaction.reply({content: "", embeds: [{color: 0x2f3136, fields: fields, title: "BaBot changelog"}]});
+          await interaction.reply({content: "", embeds: [{color: 0x2f3136, fields: fields, title: "BaBot changelog"}]}).catch(e => console.log('reply error : ' + e));
           client_settings.addXP(interaction.user.id, 50);
         }
-        else await interaction.reply({content: "Changelog data are corrupted"});
+        else await interaction.reply({content: "Changelog data are corrupted"}).catch(e => console.log('reply error : ' + e));
       }
-      else await interaction.reply({content: "Changelog data not found"});
+      else await interaction.reply({content: "Changelog data not found"}).catch(e => console.log('reply error : ' + e));
       return;
     }
 
@@ -188,9 +196,9 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       {
         let file_content = await fs.promises.readFile(__dirname + '/env_data/known_issues.json', {encoding: 'utf-8'});
 
-        await interaction.reply({content: "", embeds: [{color: 0x2f3136, description: file_content, title: "BaBot current issues", footer: {text :"BaBot is a really young bot, and I'm not a really good developer, so many errors occurs. However, I do best to patch these !"}}]});
+        await interaction.reply({content: "", embeds: [{color: 0x2f3136, description: file_content, title: "BaBot current issues", footer: {text :"BaBot is a really young bot, and I'm not a really good developer, so many errors occurs. However, I do best to patch these !"}}]}).catch(e => console.log('reply error : ' + e));
       }
-      else await interaction.reply({content: "Changelog data not found"});
+      else await interaction.reply({content: "Changelog data not found"}).catch(e => console.log('reply error : ' + e));
       return;
     }
 
@@ -203,7 +211,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         {
           color: 0x2f3136,
           title: "Hi ! My name is BaBot",
-          description: "I'm in **" + (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** servers\nI'm actually handling **" + player.playerCount() + "** music players simultaneously\nI'm up since <t:" + uptime + ":R>\nMy server RAM usage : **" + (Math.round((await si.mem()).active/10000000) / 100) + '/' + (Math.round((await si.mem()).total/10000000) / 100) + 'GB**\nMy server CPU load : **' + (Math.round((await si.currentLoad()).currentLoad * 10) / 10) + '%**\nMy internal temperature : **' + (Math.round((await si.cpuTemperature()).main * 10) / 10) + '**°C (avg) **' + (Math.round((await si.cpuTemperature()).max * 10) / 10) + '**°C (max)',
+          description: "I'm in **" + (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** servers\nThere is a total of **" + client.shard.count + "** shards running\nYou're on the shard **" + (client.shard.ids + 1) + "**\nI'm actually handling **" + (await client.shard.broadcastEval(() => { return player.playerCount()}).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** music players, and **" + player.playerCount() + "** in your shard\nI'm up since <t:" + uptime + ":R>\nMy server RAM usage : **" + (Math.round((await si.mem()).active/10000000) / 100) + '/' + (Math.round((await si.mem()).total/10000000) / 100) + 'GB**\nMy server CPU load : **' + (Math.round((await si.currentLoad()).currentLoad * 10) / 10) + '%**\nMy internal temperature : **' + (Math.round((await si.cpuTemperature()).main * 10) / 10) + '**°C (avg) **' + (Math.round((await si.cpuTemperature()).max * 10) / 10) + '**°C (max)',
           footer: {
             text: "Servers can sometimes be overloaded. Check here the servers status if you experience lags and feel free to report anormal values with `/feedback`"
           }
@@ -263,7 +271,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           ephemeral: true,
           embeds: [{
             title: "Retrieve all your data",
-            description: "An archive containing your data will be sent to you through your DMs\nThis process can take up to one week\n**Are you sure you want to continue ?**",
+            description: "An archive containing your data will be sent to you through your DMs immediately\n**Are you sure you want to continue ?**",
             footer: {
               text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
             }
@@ -296,9 +304,9 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           ephemeral: true,
           embeds: [{
             title: "Delete all your BaBot data",
-            description: "**⚠️ All your data will be deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a tip**This action is irreversible. Are you sure you want to continue ?**",
+            description: "**⚠️ All your data will be immediately deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a tip\n**This action is irreversible. Are you sure you want to continue ?**",
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
             }
           }],
           components: [
@@ -488,9 +496,9 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           embeds: [{
             title: "Request canceled",
-            description: "Your request has been canceled. You can now close this popup",
+            description: "Your request has been canceled. You can now safely close this popup",
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
             }
           }],
           components: []
@@ -499,57 +507,44 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }
       else if(interaction.customId === "privacy_delete")
       {
-        await axios({
-            url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
-            method: "POST",
-            headers: {
-              'Accept-Encoding': 'deflate, br'
-            },
-            data: {username: "Delete data request", embeds: [{title: "New request of data deletion", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked to delete all their data', author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
-        }).then(function(){
-            log('Main-feedback', 'New deletion request logged in the server');
-        }, function(e) {
-            console.log(e);
-            log('Main-feedback', 'Error when logging deletion request of ' + interaction.user.tag + ' (' + interaction.user.id + ')');
-        });
+        let delete_return = client_settings.erase(interaction.user.id, 0);
 
         await interaction.update({
           content: '',
           embeds: [{
-            title: "Your request is on the way",
-            description: "Your request to delete your data has been received.\nIt will be processed in up to 3 days (it's a manual process)",
+            title: "Delete all your BaBot data",
+            description: delete_return ? "All your data have succesfully been deleted" : "It seems that an issue ocurred when deleting your data, please try again later",
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
             }
-          }]
+          }],
+          components: []
         });
         return;
       }
       else if(interaction.customId === "privacy_retrieve")
       {
-        await axios({
-            url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
-            method: "POST",
-            headers: {
-              'Accept-Encoding': 'deflate, br'
-            },
-            data: {username: "Retrieve data request", embeds: [{title: "New request of data retrieving", description: "The user " + interaction.user.tag + ' (' + interaction.user.id + ') asked to retrieve all their data', author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
-        }).then(function(){
-            log('Main-feedback', 'New retrieve request logged in the server');
-        }, function(e) {
-            console.log(e);
-            log('Main-feedback', 'Error when logging retrieve request of ' + interaction.user.tag + ' (' + interaction.user.id + ')');
-        });
+        await interaction.deferUpdate({ephemeral: true});
+        let dm_channel = await interaction.user.createDM();
+        let archive = await client_settings.compress(interaction.user.id, 0).catch(() => false);
+        if(archive !== false)
+        {
+          await dm_channel.send({
+            content: "🗃️ Your datas are available in the archive down below\n❕This archive doesn't contains any executable files",
+            files: [new Discord.AttachmentBuilder(archive, {name: "BaBot_data-" + interaction.user.id + ".zip"})]
+          });
+        }
 
-        await interaction.update({
+        await interaction.editReply({
           content: '',
           embeds: [{
-            title: "Your request is on the way",
-            description: "Your request to retrieve your data has been received.\nIt will be processed in up to 3 days (it's a manual process)",
+            title: "Retrieve all your data",
+            description: archive ? "Your data should have been send to you in DM" : "An error ocurred when generating the archive. There is probably no data to retrieve",
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
             }
-          }]
+          }],
+          components: []
         });
         return;
       }
@@ -599,7 +594,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
 
-      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`", ephemeral: true});
+      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`", ephemeral: true}).catch(e => console.log('reply error : ' + e));
       client_settings.addXP(interaction.user.id, 250);
       return;
     }
@@ -722,8 +717,6 @@ async function update_stats()//Executed when guilds count change or bot is resta
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
   //let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
   let shards_count = client.shard.count;
-
-  fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, shards_count: shards_count}));
 
   //--- WEBSITES UPDATE ---//
   await axios({

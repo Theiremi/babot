@@ -16,6 +16,7 @@ module.exports = class Player {
 	#_client;
 	#_log_function
 	#_locales;
+	#_shutdown = false;
 	constructor(discord, client, log)
 	{
 		this.#_discord = discord;
@@ -243,7 +244,7 @@ module.exports = class Player {
 				troll_connection.subscribe(troll_player);
 				//---//
 
-				interaction.editReply({ content: '✅ Song played\nPS : Annoyed by friends trolling you too much ? You can disable trolling on `/settings` panel' }).catch((e) => { console.log('editReply error : ' + e)});
+				interaction.editReply({ content: '✅ Song played\nPS : Annoyed by friends trolling you too much ? You can disable trolling in the </settings:1065334689021296671> panel' }).catch((e) => { console.log('editReply error : ' + e)});
 				settings.addXP(interaction.user.id, 50);
 			}
 		}
@@ -427,7 +428,7 @@ module.exports = class Player {
 				])
 				.setCustomId("modal_add")
 				.setTitle('Add a song')
-				);
+				).catch(e => console.log('showModal error : ' + e));
 			}
 
 			else if(interaction.customId === "hide")//To test
@@ -732,15 +733,20 @@ module.exports = class Player {
 			}
 		}
 	}
+
+	async shutdownRequest(timestamp)
+	{
+		this.#_shutdown = timestamp;
+	}
 	//-----//
 
 	//----- Guild object management -----//
 	async #initializeObject(guild_id, channel_id, only_connection = false)//Works
 	{
-		if(!this.#isObjectValid(guild_id) || (only_connection &&
+		if((!this.#isObjectValid(guild_id) && !only_connection) ||
+			(only_connection &&
 			this.#_guilds_play_data[guild_id] !== undefined &&
-			this.#_guilds_play_data[guild_id].player !== undefined &&
-			this.#_guilds_play_data[guild_id].player_subscription !== undefined))
+			this.#_guilds_play_data[guild_id].player !== undefined))
 		{
 			this.#_log_function('Player-object', '[' + guild_id + '] New player object created in channel ' + channel_id);
 
@@ -944,6 +950,7 @@ module.exports = class Player {
 				player_embed.setTitle("Playing \"" + this.#get_song(guild_id).name + "\"");
 				player_embed.setURL(this.#get_song(guild_id).link);
 				player_embed.setImage(this.#get_song(guild_id).thumbnail);
+				if(this.#_shutdown !== false) player_embed.setDescription("⚠️ BaBot will restart <t:" + this.#_shutdown + ":R>");
 				//player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
 			}
 			else
@@ -1284,7 +1291,6 @@ module.exports = class Player {
 				let link = this.#get_song(guild_id).link;
 				this.#_log_function('Player-song', '[' + guild_id + '] Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
-				console.log(Date.now());
 				let play_link_process = await axios({
 					url: this.#get_song(guild_id).play_link,
 					method: 'get',
@@ -1293,6 +1299,7 @@ module.exports = class Player {
 				}).catch((e) => {
 					this.#_log_function('Player-song', '[' + guild_id + '] Error fetching song');
 				});
+				if(play_link_process === undefined) return false;
 				console.log(Date.now());
 
 				const transcoder = new prism.FFmpeg({args: [
@@ -1501,7 +1508,6 @@ async function radio_search(term)
 async function spawnAsync(command, args, options)
 {
 	return new Promise(async (resolve, reject) => {
-		console.log("New worker " + Date.now());
 		let worker = new worker_threads.Worker(
 			"let data = require('worker_threads').workerData;\
 			let spawn = require('child_process').spawnSync;\
@@ -1514,7 +1520,6 @@ async function spawnAsync(command, args, options)
 		});
 		worker.on('message', function (msg)
 		{
-			console.log("worker returned result " + Date.now());
 			resolve(msg);
 		});
 	});
