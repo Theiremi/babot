@@ -103,11 +103,21 @@
 		]
 	},
 	{
-		"version": "1.2.6 (actual)",
+		"version": "1.2.6",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
-			"Pushing sharding farther to imporve performance",
+			"Pushing sharding farther to improve performance",
 			"Fixed musics not playing like this one : https://youtu.be/Rw37Xc__Bj0"
+		]
+	},
+	{
+		"version": "1.2.7 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Fixed issue between troll and player"
+			"Improving internal statistics system",
+			"Automated privacy commands",
+			"Added a system to schedule the updates"
 		]
 	}
 ]

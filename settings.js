@@ -1,5 +1,6 @@
 const fsc = require('fs');
 const fs = fsc.promises;
+const AdmZip = require('adm-zip');
 
 module.exports = class Settings {
 	constructor()
@@ -45,6 +46,40 @@ module.exports = class Settings {
 		await fs.writeFile(folder + id + '/' + file, JSON.stringify(content));
 
 		return true;
+	}
+	async erase(id, type)
+	{
+		let folder = ""
+		if(type === 0) folder = process.cwd() + '/env_data/users/'
+		else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+		else return false;
+
+		if(!fsc.existsSync(folder + id)) return true;
+
+		let erase_command = await fs.rm(folder + id, {recursive: true}).catch(() => false);
+		return erase_command !== false ? true : false;
+	}
+
+	async compress(id, type)
+	{
+		return new Promise(function(resolve, reject) {
+			let folder = ""
+			if(type === 0) folder = process.cwd() + '/env_data/users/'
+			else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+			else {
+				reject(false);
+				return;
+			}
+
+			if(!fsc.existsSync(folder + id)) {
+				reject(false);
+				return;
+			}
+
+			let archive = new AdmZip();
+			archive.addLocalFolder(folder + id, '');
+			archive.toBuffer(resolve, reject);
+		});
 	}
 
 	async canTroll(from, to)
