@@ -1,0 +1,11 @@
+{
+	"privacy": {
+		"privacy_description": "All legal actions that you can take on data stored by BaBot"
+			
+		
+	},
+	"errors": {
+		"user_banned": "❌ Vous ne pouvez pas utiliser {name}, car votre compte est banni",
+		"missing_subcommand": "❌ Please select a subcommand"
+	}
+}
