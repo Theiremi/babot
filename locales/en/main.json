@@ -1,0 +1,19 @@
+{
+	"privacy": {
+		"privacy_description": "All legal actions that you can take on data stored by BaBot"
+			
+		
+	},
+	"feedback": {
+		"modal_placeholder": "Any positive or negative feedback are welcome !",
+		"modal_textinput_label": "Your feedback",
+		"modal_title": "Send a feedback",
+		"submitted": "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`"
+	},
+	"errors": {
+		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned",
+		"missing_subcommand": "❌ Please select a subcommand",
+		"unknown_subcommand": "❌ This subcommand doesn't exists",
+		"settings_panel_fail": "❌ The settings panel is currently broken :cry:"
+	}
+}
