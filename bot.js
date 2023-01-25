@@ -8,6 +8,7 @@ const Builders = require('@discordjs/builders');
 const Player = require('./player/index.js');
 const Status = require('./statusbot/index.js');
 const Settings = require(process.cwd() + '/settings.js');
+const I18n = require(__dirname + '/locales.js');
 const client = new Discord.Client({
   intents: [Discord.IntentsBitField.Flags.Guilds,
     //Discord.IntentsBitField.Flags.GuildPresences,
@@ -18,6 +19,7 @@ const client = new Discord.Client({
   presence: {activities: [{name: "Starting... It will take time for BaBot to be fully functional", type: 3}]}
 });
 
+const i18n = new I18n('main');
 const client_settings = new Settings();
 const player = new Player(Discord, client, log);
 const status = new Status(Discord, client, log);
@@ -25,11 +27,11 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.2.7 released", 3],
+  ["/changelog : version 1.3.0 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
-  ["as BaBot is free, one of the best way to help is to send your /feedback. Feel free to say anything ! (it gives points btw)", 3],
-  ["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
+  ["want to help BaBot ? Look how with '/help contribute'", 3],
+  //["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
 ]
 
 let uptime = Math.round(Date.now() / 1000);//Used to determine uptime when stats is executed
@@ -96,48 +98,62 @@ client.on('ready', async () => {
   client.application.commands.create(status.options());
 
   //Global chat commands
-  client.application.commands.create({name: "changelog", description: "Display history of change applied to BaBot", type: 1, dmPermission: true});
-  client.application.commands.create({name: "known_issues", description: "List of all issues in BaBot waiting to be fixed", type: 1, dmPermission: true});
-  client.application.commands.create({name: "feedback", description: "Send a feedback to the developer", type: 1, dmPermission: true});
-  client.application.commands.create({name: "stats", description: "See general statistics about BaBot", type: 1, dmPermission: true});
+  client.application.commands.create({name: "changelog", description: i18n.get("changelog.command_description"), descriptionLocalizations: i18n.all("changelog.command_description"), type: 1, dmPermission: true});
+  client.application.commands.create({name: "known_issues", description: i18n.get("known_issues.command_description"), descriptionLocalizations: i18n.all("known_issues.command_description"), type: 1, dmPermission: true});
+  client.application.commands.create({name: "feedback", description: i18n.get("feedback.command_description"), descriptionLocalizations: i18n.all("feedback.command_description"), type: 1, dmPermission: true});
+  client.application.commands.create({name: "stats", description: i18n.get("stats.command_description"), descriptionLocalizations: i18n.all("stats.command_description"), type: 1, dmPermission: true});
   client.application.commands.create(new Builders.SlashCommandBuilder()
     .setName('privacy')
-    .setDescription('All legal actions that you can take on data stored by BaBot')
+    .setDescription(i18n.get("privacy.command_description"))
+    .setDescriptionLocalizations(i18n.all("privacy.command_description"))
     .setDMPermission(true)
     .addSubcommand(subcommand => 
       subcommand.setName('policy')
-        .setDescription("Show how to access the Privacy Policy of BaBot")
+        .setDescription(i18n.get("privacy.policy.description"))
+        .setDescriptionLocalizations(i18n.all("privacy.policy.description"))
     )
     .addSubcommand(subcommand => 
       subcommand.setName('retrieve')
-        .setDescription("Retreive all the data BaBot have about you")
+        .setDescription(i18n.get("privacy.retrieve.description"))
+        .setDescriptionLocalizations(i18n.all("privacy.retrieve.description"))
     )
     .addSubcommand(subcommand => 
       subcommand.setName('delete')
-        .setDescription("Delete all the data BaBot have about you")
+        .setDescription(i18n.get("privacy.delete.description"))
+        .setDescriptionLocalizations(i18n.all("privacy.delete.description"))
     )
   );
-  client.application.commands.create({name: "dashboard", description: "Show your personal BaBot control panel", type: 1, dmPermission: true});
-  client.application.commands.create({name: "settings", description: "See and change your BaBot settings", type: 1, dmPermission: true});
+  client.application.commands.create({name: "dashboard", description: i18n.get("dashboard.command_description"), descriptionLocalizations: i18n.all("dashboard.command_description"), type: 1, dmPermission: true});
+  client.application.commands.create({name: "settings", description: i18n.get("settings.command_description"), descriptionLocalizations: i18n.all("settings.command_description"), type: 1, dmPermission: true});
   client.application.commands.create(new Builders.SlashCommandBuilder()
     .setName('help')
-    .setDescription('Get help about function of BaBot')
+    .setDescription(i18n.get("help.command_description"))
+    .setDescriptionLocalizations(i18n.all("help.command_description"))
     .setDMPermission(true)
     .addSubcommand(subcommand => 
       subcommand.setName('level')
-        .setDescription("Infos about how works the level system")
+        .setDescription(i18n.get("help.level_description"))
+        .setDescriptionLocalizations(i18n.all("help.level_description"))
     )
     .addSubcommand(subcommand => 
       subcommand.setName('start')
-        .setDescription("Getting started with BaBot")
+        .setDescription(i18n.get("help.start_description"))
+        .setDescriptionLocalizations(i18n.all("help.start_description"))
     )
     .addSubcommand(subcommand => 
       subcommand.setName('donator')
-        .setDescription("Why should you give some money for BaBot")
+        .setDescription(i18n.get("help.donator_description"))
+        .setDescriptionLocalizations(i18n.all("help.donator_description"))
+    )
+    .addSubcommand(subcommand => 
+      subcommand.setName('contribute')
+        .setDescription(i18n.get("help.contribute_description"))
+        .setDescriptionLocalizations(i18n.all("help.contribute_description"))
     )
     .addSubcommand(subcommand => 
       subcommand.setName('faq')
-        .setDescription("Get the answer to the common questions")
+        .setDescription(i18n.get("help.faq_description"))
+        .setDescriptionLocalizations(i18n.all("help.faq_description"))
     )
   );
   //---//
@@ -156,7 +172,7 @@ client.on('ready', async () => {
 client.on('interactionCreate', async (interaction) => {//When user interact with the bot
   if(settings.banned_users.includes(interaction.user.id))
   {
-    await interaction.reply({content: '❌ Sorry, you can\'t use ' + settings.name + '. Your account has been banned from using it', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+    await interaction.reply({content: i18n.place(i18n.get('errors.user_banned', interaction.locale), {name: settings.name}), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
     return;
   }
   if(interaction.isChatInputCommand())
@@ -182,9 +198,9 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           await interaction.reply({content: "", embeds: [{color: 0x2f3136, fields: fields, title: "BaBot changelog"}]}).catch(e => console.log('reply error : ' + e));
           client_settings.addXP(interaction.user.id, 50);
         }
-        else await interaction.reply({content: "Changelog data are corrupted"}).catch(e => console.log('reply error : ' + e));
+        else await interaction.reply({content: i18n.get("changelog.corrupted", interaction.locale)}).catch(e => console.log('reply error : ' + e));
       }
-      else await interaction.reply({content: "Changelog data not found"}).catch(e => console.log('reply error : ' + e));
+      else await interaction.reply({content: i18n.get("changelog.not_found", interaction.locale)}).catch(e => console.log('reply error : ' + e));
       return;
     }
 
@@ -198,7 +214,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
         await interaction.reply({content: "", embeds: [{color: 0x2f3136, description: file_content, title: "BaBot current issues", footer: {text :"BaBot is a really young bot, and I'm not a really good developer, so many errors occurs. However, I do best to patch these !"}}]}).catch(e => console.log('reply error : ' + e));
       }
-      else await interaction.reply({content: "Changelog data not found"}).catch(e => console.log('reply error : ' + e));
+      else await interaction.reply({content: i18n.get("known_issues.not_found", interaction.locale)}).catch(e => console.log('reply error : ' + e));
       return;
     }
 
@@ -210,10 +226,22 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       await interaction.editReply({content: "", embeds: [
         {
           color: 0x2f3136,
-          title: "Hi ! My name is BaBot",
-          description: "I'm in **" + (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** servers\nThere is a total of **" + client.shard.count + "** shards running\nYou're on the shard **" + (client.shard.ids + 1) + "**\nI'm actually handling **" + (await client.shard.broadcastEval(() => { return player.playerCount()}).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0) + "** music players, and **" + player.playerCount() + "** in your shard\nI'm up since <t:" + uptime + ":R>\nMy server RAM usage : **" + (Math.round((await si.mem()).active/10000000) / 100) + '/' + (Math.round((await si.mem()).total/10000000) / 100) + 'GB**\nMy server CPU load : **' + (Math.round((await si.currentLoad()).currentLoad * 10) / 10) + '%**\nMy internal temperature : **' + (Math.round((await si.cpuTemperature()).main * 10) / 10) + '**°C (avg) **' + (Math.round((await si.cpuTemperature()).max * 10) / 10) + '**°C (max)',
+          title: i18n.place(i18n.get("stats.title", interaction.locale), {name: settings.name}),
+          description: i18n.place(i18n.get("stats.content", interaction.locale), {
+            servers_count: (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
+            shards_count: client.shard.count,
+            shard: client.shard.ids[0] + 1,
+            total_players: (await client.shard.broadcastEval(() => { return player.playerCount()}).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
+            shard_players: player.playerCount(),
+            uptime: uptime,
+            used_ram: (Math.round((await si.mem()).active/10000000) / 100),
+            total_ram: (Math.round((await si.mem()).total/10000000) / 100),
+            cpu_usage: (Math.round((await si.currentLoad()).currentLoad * 10) / 10),
+            avg_temp: (Math.round((await si.cpuTemperature()).main * 10) / 10),
+            max_temp: (Math.round((await si.cpuTemperature()).max * 10) / 10)
+          }),
           footer: {
-            text: "Servers can sometimes be overloaded. Check here the servers status if you experience lags and feel free to report anormal values with `/feedback`"
+            text: i18n.get("stats.footer_text", interaction.locale)
           }
         }
       ]});
@@ -228,13 +256,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         new Discord.ActionRowBuilder().addComponents([
           new Discord.TextInputBuilder()
             .setCustomId("feedback")
-            .setPlaceholder('Any positive or negative feedback are welcome !')
+            .setPlaceholder(i18n.get('feedback.modal_placeholder', interaction.locale))
             .setStyle(2)
-            .setLabel('Your feedback')
+            .setLabel(i18n.get('feedback.modal_textinput_label', interaction.locale))
         ])
       ])
       .setCustomId("modal_feedback")
-      .setTitle('Send a feedback')
+      .setTitle(i18n.get('feedback.modal_title', interaction.locale))
       );
       return;
     }
@@ -245,7 +273,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       let subcommand = interaction.options.getSubcommand();
       if(subcommand == undefined)
       {
-        await interaction.reply({ content: '❌ Please select a subcommand', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+        await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
         return;
       }
       log('Main-privacy', 'Command `privacy` -> `' + subcommand + '` received from user ' + interaction.user.tag);
@@ -256,10 +284,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           ephemeral: true,
           embeds: [{
-            title: "Privacy policy",
-            description: "You can consult the BaBot privacy policy in french [at this link](https://www.theireply.fr/babot/pdc.pdf)\n*The english version is not yet available*",
+            title: i18n.get('privacy.policy.embed_title', interaction.locale),
+            description: i18n.get('privacy.policy.embed_content', interaction.locale),
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: i18n.get('privacy.embed_footer', interaction.locale)
             }
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -270,10 +298,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           ephemeral: true,
           embeds: [{
-            title: "Retrieve all your data",
-            description: "An archive containing your data will be sent to you through your DMs immediately\n**Are you sure you want to continue ?**",
+            title: i18n.get('privacy.retrieve.embed_title', interaction.locale),
+            description: i18n.get('privacy.retrieve.embed_content', interaction.locale),
             footer: {
-              text: "For any questions concerning your data, you can contact me at contact@theireply.fr"
+              text: i18n.get('privacy.embed_footer', interaction.locale)
             }
           }],
           components: [
@@ -282,13 +310,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
               components: [
                 {
                   custom_id: "privacy_retrieve",
-                  label: "Yes",
+                  label: i18n.get('privacy.retrieve.btn_yes', interaction.locale),
                   style: 3,
                   type: 2
                 },
                 {
                   custom_id: "privacy_cancel",
-                  label: "No",
+                  label: i18n.get('privacy.retrieve.btn_no', interaction.locale),
                   style: 4,
                   type: 2
                 }
@@ -303,10 +331,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           content: '',
           ephemeral: true,
           embeds: [{
-            title: "Delete all your BaBot data",
-            description: "**⚠️ All your data will be immediately deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a tip\n**This action is irreversible. Are you sure you want to continue ?**",
+            title: i18n.get('privacy.delete.embed_title', interaction.locale),
+            description: i18n.get('privacy.delete.embed_content', interaction.locale),
             footer: {
-              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
+              text: i18n.get('privacy.embed_footer', interaction.locale)
             }
           }],
           components: [
@@ -315,13 +343,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
               components: [
                 {
                   custom_id: "privacy_delete",
-                  label: "Yes",
+                  label: i18n.get('privacy.delete.btn_yes', interaction.locale),
                   style: 4,
                   type: 2
                 },
                 {
                   custom_id: "privacy_cancel",
-                  label: "No !",
+                  label: i18n.get('privacy.delete.btn_no', interaction.locale),
                   style: 3,
                   type: 2
                 }
@@ -330,7 +358,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           ]
         }).catch((e) => { console.log('reply error : ' + e)});
       }
-      else await interaction.reply({ content: '❌ This subcommand doesn\'t exists', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
       return;
     }
 
@@ -361,13 +389,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }
       let dash_embed = new Discord.EmbedBuilder()
         .setColor([0x2f, 0x31, 0x36])
-        .setTitle(interaction.user.username + '\'s dashboard')
-        .setDescription("Here's your BaBot profile\nHelp about levels in available with the command `/help level`")
+        .setTitle(i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
+        .setDescription(i18n.get("dashboard.panel_description", interaction.locale))
         .setFields([
-          {name: "Level", value: emoji_level + "Level " + level_name + " (" + await client_settings.pointsCount(interaction.user.id) + " points)", inline: true},
-          {name: "XP", value: await client_settings.XPCount(interaction.user.id) + "", inline: true},
-          {name: "Leaderboard position", value: await client_settings.leaderboardPosition(interaction.user.id) + "th", inline: true},
-          {name: "Saved playlists", value: "Coming soon", inline: false}
+          {name: i18n.get("dashboard.level_label", interaction.locale), value: i18n.place(i18n.get("dashboard.level_content", interaction.locale), {emoji: emoji_level, level: level_name, points: await client_settings.pointsCount(interaction.user.id)}), inline: true},
+          {name: "XP", value: (await client_settings.XPCount(interaction.user.id)).toString(10), inline: true},
+          {name: i18n.get("dashboard.leaderboard_label", interaction.locale), value: i18n.place(i18n.get("dashboard.leaderboard_content", interaction.locale), {pos: await client_settings.leaderboardPosition(interaction.user.id)}), inline: true},
+          {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming soon", inline: false}
         ])
       let dash_components = [
         new Discord.ActionRowBuilder().addComponents([
@@ -375,17 +403,17 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
             .setCustomId("settings")
             .setStyle(2)
             .setEmoji({name: "setting", id: "1065258170144018432"})
-            .setLabel("Settings")
+            .setLabel(i18n.get("dashboard.settings_btn", interaction.locale))
         ])
       ];
-      
+
       await interaction.reply({embeds: [dash_embed], components: dash_components}).catch((e) => {console.log('reply error : ' + e)});
       return;
     }
     else if(interaction.commandName === 'settings')
     {
       log('Main-user', 'Command `settings` received from user ' + interaction.user.tag);
-      await interaction.reply(await generate_user_settings(interaction.user)).catch((e) => {console.log('reply error : ' + e)});
+      await interaction.reply(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
       return;
     }
 
@@ -394,7 +422,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       let subcommand = interaction.options.getSubcommand();
       if(subcommand == undefined)
       {
-        await interaction.reply({ content: '❌ Please select a subcommand', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+        await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
         return;
       }
       log('Main-privacy', 'Command `help` -> `' + subcommand + '` received from user ' + interaction.user.tag);
@@ -459,6 +487,20 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
       }
+       else if(subcommand === 'contribute')
+      {
+        await interaction.reply({
+          content: '',
+          embeds: [{
+            title: "How to help BaBot",
+            color: 0x2f3136,
+            description: "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (to help it grow)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
+            footer :{
+              text: "A big thanks to anyone who want to help BaBot, as it allows BaBot to survive and grow"
+            }
+          }]
+        }).catch((e) => { console.log('reply error : ' + e)});
+      }
       else if(subcommand === 'faq')
       {
         await interaction.reply({
@@ -468,12 +510,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
             color: 0x2f3136,
             description: "**You have some questions ? You're in the right place !**",
             fields: [
-              {name: "Why the BaBot player is gold ?", value: "A gold player indicates that a Golden user has extended his Golden on the server (see `/help donator`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"}
+              {name: "Why the BaBot player is gold ?", value: "A gold player indicates that a Golden user has extended his Golden on the server (see `/help donator`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"},
+              {name: "How can I help BaBot ?", value: "There are several ways to help BaBot indicated in the `/help contribute` help page"}
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
       }
-      else await interaction.reply({ content: '❌ This subcommand doesn\'t exists', ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
       return;
     }
     //---//
@@ -495,10 +538,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.update({
           content: '',
           embeds: [{
-            title: "Request canceled",
-            description: "Your request has been canceled. You can now safely close this popup",
+            title: i18n.get("privacy.cancel.embed_title", interaction.locale),
+            description: i18n.get("privacy.cancel.embed_content", interaction.locale),
             footer: {
-              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
+              text: i18n.get("privacy.embed_footer", interaction.locale)
             }
           }],
           components: []
@@ -512,10 +555,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.update({
           content: '',
           embeds: [{
-            title: "Delete all your BaBot data",
-            description: delete_return ? "All your data have succesfully been deleted" : "It seems that an issue ocurred when deleting your data, please try again later",
+            title: i18n.get("privacy.delete.embed_title", interaction.locale),
+            description: delete_return ? i18n.get("privacy.delete.success", interaction.locale) : i18n.get("privacy.delete.fail", interaction.locale),
             footer: {
-              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
+              text: i18n.get("privacy.embed_footer", interaction.locale)
             }
           }],
           components: []
@@ -530,7 +573,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         if(archive !== false)
         {
           await dm_channel.send({
-            content: "🗃️ Your datas are available in the archive down below\n❕This archive doesn't contains any executable files",
+            content: i18n.get("privacy.retrieve.dm_message", interaction.locale),
             files: [new Discord.AttachmentBuilder(archive, {name: "BaBot_data-" + interaction.user.id + ".zip"})]
           });
         }
@@ -538,10 +581,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.editReply({
           content: '',
           embeds: [{
-            title: "Retrieve all your data",
-            description: archive ? "Your data should have been send to you in DM" : "An error ocurred when generating the archive. There is probably no data to retrieve",
+            title: i18n.get("privacy.retrieve.embed_title", interaction.locale),
+            description: archive ? i18n.get("privacy.retrieve.success", interaction.locale) : i18n.get("privacy.retrieve.fail", interaction.locale),
             footer: {
-              text: "For any questions concerning your data, contact our team at contact@theireply.fr"
+              text: i18n.get("privacy.embed_footer", interaction.locale)
             }
           }],
           components: []
@@ -550,7 +593,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }
       else if(interaction.customId === "settings")
       {
-        await interaction.reply(await generate_user_settings(interaction.user)).catch((e) => {console.log('reply error : ' + e)});
+        await interaction.reply(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
         return;
       }
 
@@ -559,20 +602,20 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         let panel_id = interaction.customId.split('_').splice(-1)[0];
         if(panel_id !== interaction.user.id)
         {
-          await interaction.reply({content: "❌ As I can see, this is not your settings panel right ?", ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply({content: i18n.get('errors.settings.not_authorized_user', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
           return;
         }
         let config = await client_settings.get(interaction.user.id, 0, 'config');
         if(config === false)
         {
-          await interaction.reply({content: "❌ The settings are currently broken :cry:", ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply({content: i18n.get('errors.settings_panel_fail', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
           return;
         }
 
         if(config.limited_troll) config.limited_troll = false;
         else config.limited_troll = true;
         await client_settings.set(interaction.user.id, 0, 'config', config);
-        await interaction.update(await generate_user_settings(interaction.user)).catch((e) => {console.log('update error : ' + e)});
+        await interaction.update(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
       }
     }
   }
@@ -594,7 +637,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
 
-      await interaction.reply({content: "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`", ephemeral: true}).catch(e => console.log('reply error : ' + e));
+      await interaction.reply({content: i18n.get('feedback.submitted', interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
       client_settings.addXP(interaction.user.id, 250);
       return;
     }
@@ -685,24 +728,24 @@ client.on('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
 })();
 //-----//
 
-async function generate_user_settings(user)
+async function generate_user_settings(user, locale)
 {
   let user_config = await client_settings.get(user.id, 0, 'config')
   if(user_config === false)
   {
-    return {content: '❌ The settings panel is currently broken AFAIK', ephemeral: true};
+    return {content: i18n.get('errors.settings_panel_fail', locale), ephemeral: true};
   }
 
   let settings_embed = new Discord.EmbedBuilder()
     .setColor([0x2f, 0x31, 0x36])
-    .setTitle(user.username + '\'s control panel')
-    .setDescription("- **Disable troll** : Limit the number of troll that you can receive from others users. Perfect if you have annoying friends");
+    .setTitle(i18n.place(i18n.get("settings.panel_title", locale), {username: user.username}))
+    .setDescription(i18n.get("settings.panel_content", locale));
   let settings_components = [
     new Discord.ActionRowBuilder().addComponents([
       new Discord.ButtonBuilder()
         .setCustomId("btn_disable_troll_" + user.id)
         .setStyle(user_config.limited_troll ? 3 : 2)
-        .setLabel("Disable troll")
+        .setLabel(i18n.get("settings.disable_troll_btn", locale))
     ])
   ];
   

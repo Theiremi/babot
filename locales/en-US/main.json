@@ -1,0 +1,89 @@
+{
+	"changelog": {
+		"command_description": "Display history of change applied to BaBot",
+		"corrupted": "Changelog data are corrupted",
+		"not_found": "Changelog data not found"
+	},
+	"known_issues": {
+		"command_description": "List of all issues in BaBot waiting to be fixed",
+		"not_found": "Th known issues list cannot be found"
+	},
+	"stats": {
+		"command_description": "See general statistics about BaBot",
+		"title": "Hi ! My name is {name}",
+		"content": "I'm in **{servers_count}** servers\nThere is a total of **{shards_count}** shards running\nYou're on the shard **{shard}**\nI'm actually handling **{total_players}** music players, and **{shard_players}** in your shard\nI'm up since <t:{uptime}:R>\nMy server RAM usage : **{used_ram}/{total_ram}GB**\nMy server CPU load : **{cpu_usage}%**\nMy internal temperature : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
+		"footer_text": "Servers can sometimes be overloaded. Check here the servers status if you experience lags and feel free to report anormal values with /feedback"
+	},
+	"privacy": {
+		"command_description": "All legal actions that you can take on data stored by BaBot",
+		"embed_footer": "For any questions concerning your data, contact our team at contact@theireply.fr",
+		"policy": {
+			"description": "Show how to access the Privacy Policy of BaBot",
+			"embed_title": "Privacy policy",
+			"embed_content": "You can consult the BaBot privacy policy in french [at this link](https://www.theireply.fr/babot/pdc.pdf)\n*The english version is not yet available*"
+		},
+		"retrieve": {
+			"description": "Retreive all the data BaBot have about you",
+			"embed_title": "Retrieve all your data",
+			"embed_content": "An archive containing your data will be sent to you through your DMs immediately\n**Are you sure you want to continue ?**",
+			"btn_yes": "Yes",
+			"btn_no": "No",
+			"success": "Your data should have been send to you in DM",
+			"fail": "An error ocurred when generating the archive. There is probably no data to retrieve",
+			"dm_message": "🗃️ Your datas are available in the archive down below\n❕This archive doesn't contains any executable files"
+		},
+		"delete": {
+			"description": "Delete all the data BaBot have about you",
+			"embed_title": "Delete all your BaBot data",
+			"embed_content": "**⚠️ All your data will be immediately deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a tip\n**This action is irreversible. Are you sure you want to continue ?**",
+			"btn_yes": "Yes, delete my data",
+			"btn_no": "No, don't delete my data !",
+			"success": "All your data have succesfully been deleted",
+			"fail": "It seems that an issue ocurred when deleting your data, please report it with `/feedback`"
+		},
+		"cancel": {
+			"embed_title": "Request canceled",
+			"embed_content": "Your request has been canceled. You can now safely close this popup"
+		}
+
+	},
+	"help": {
+		"command_description": "Get help about function of BaBot",
+		"start_description": "Getting started with BaBot",
+		"level_description": "Infos about how works the level system",
+		"donator_description": "Why should you give some money for BaBot",
+		"contribute_description": "How can I help BaBot ?",
+		"faq_description": "Get the answer to the common questions"
+	},
+	"dashboard": {
+		"command_description": "Show your personal BaBot control panel",
+		"panel_title": "{username}'s dashboard",
+		"panel_description": "Here's your BaBot profile\nHelp about levels in available with the command `/help level`",
+		"level_label": "Level",
+		"level_content": "{emoji}Level {level} ({points} points)",
+		"leaderboard_label": "Leaderboard position",
+		"leaderboard_content": "{pos}th",
+		"playlists_label": "Saved playlists",
+		"settings_btn": "Settings"
+	},
+	"settings": {
+		"command_description": "See and change your BaBot settings",
+		"panel_title": "{username}'s control panel",
+		"panel_content": "- **Disable troll** : Limit the number of troll that you can receive from others users. Perfect if you have annoying friends",
+		"disable_troll_btn": "Disable troll",
+		"not_authorized_user": "❌ As I can see, this is not your settings panel right ?"
+	},
+	"feedback": {
+		"command_description": "Send a feedback to the developer",
+		"modal_placeholder": "Any positive or negative feedback are welcome !",
+		"modal_textinput_label": "Your feedback",
+		"modal_title": "Send a feedback",
+		"submitted": "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n<:transparent:1067551646592282694>NB : If you have reported a bug, check progress on it with `/know_issues`"
+	},
+	"errors": {
+		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned",
+		"missing_subcommand": "❌ Please select a subcommand",
+		"unknown_subcommand": "❌ This subcommand doesn't exists",
+		"settings_panel_fail": "❌ The settings panel is currently broken :cry:"
+	}
+}
