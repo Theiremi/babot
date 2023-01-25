@@ -1,17 +1,88 @@
 {
+	"changelog": {
+		"command_description": "Affiche l'historique des changements apportés à BaBot",
+		"corrupted": "Le changelog est corrompu",
+		"not_found": "Les données du changelog sont introuvables"
+	},
+	"known_issues": {
+		"command_description": "Liste des problèmes de BaBot en attente de résolution",
+		"not_found": "La liste des problèmes est introuvable"
+	},
+	"stats": {
+		"command_description": "Voir des statistiques à propos de BaBot",
+		"title": "Salut ! Je m'appelle {name}",
+		"content": "Je suis dans **{servers_count}** serveurs\nIl y a actuellement **{shards_count}** shards en fonctionnement\nVous êtes pris en charge par le shard **{shard}**\nJe gère **{total_players}** lecteurs de musiques, dont **{shard_players}** dans votre shard\nJe suis en ligne depuis <t:{uptime}:R>\nMon utilisation de RAM : **{used_ram}/{total_ram}GB**\nL'utilisation du CPU de mon serveur : **{cpu_usage}%**\nMa température : **{avg_temp}**°C (moyen) **{max_temp}**°C (max)",
+		"footer_text": "Les serveurs peuvent parfois être surchargés. Vérifiez ici l'état des serveurs si vous rencontrez des latences, et n'hésitez pas à m'informer de valeurs anormales avec /feedback"
+	},
 	"privacy": {
-		"privacy_description": "All legal actions that you can take on data stored by BaBot"
+		"command_description": "Toutes les actions sur vos données auxquelles vous avez légalement accès",
+		"embed_footer": "Pour toutes questions concernant vos données, contactez notre équipe à l'adresse contact@theireply.fr",
+		"policy": {
+			"description": "Montre comment accéder à la politique de confidentialité de BaBot",
+			"embed_title": "Politique de Confidentialité",
+			"embed_content": "Vous pouvez consulter la politique de confidentialité de BaBot avec [ce lien](https://www.theireply.fr/babot/pdc.pdf)\n*La version anglaise n'est pas encore disponible*"
+		},
+		"retrieve": {
+			"description": "Récupérer toutes les données que BaBot possède vous concernant",
+			"embed_title": "Récupérer toutes vos données",
+			"embed_content": "Une archive contenant vos données vous sera envoyée en MP\n**Êtes-vous sûr(e) de vouloir continuer ?**",
+			"btn_yes": "Oui",
+			"btn_no": "Non",
+			"success": "Vous devriez avoir reçu vos données en MP",
+			"fail": "Une erreur s'est produite lors de la création de votre archive. Il n'y a probablement aucune donnée à récupérer",
+			"dm_message": "🗃️Vos données sont disponibles dans l'archive ci-dessous\n❕Cette archive ne contient aucun fichier exécutable"
+		},
+		"delete": {
+			"description": "Supprime toutes les données que BaBot possède vous concernant",
+			"embed_title": "Supprimer toutes vos données",
+			"embed_content": "**⚠️ Toutes vos données seront immédiatement supprimées ⚠️**\nCela inclut :\n- Vos playlists sauvegardées\n- vos activités récentes sur BaBot\n- Votre XP\n- Vos avantages si vous avez fait un don\n**Cette action est irréversible. Êtes-vous sûr(e) de vouloir continuer ?**",
+			"btn_yes": "Oui, supprimer mes données",
+			"btn_no": "Non, ne pas supprimer mes données !",
+			"success": "Toutes vos données ont bien été supprimées",
+			"fail": "Il semble qu'un problème soit survenu lors de la suppression de vos données, veuillez le signaler avec `/feedback`"
+		},
+		"cancel": {
+			"embed_title": "Demande annulée",
+			"embed_content": "Votre demande a bien été annulée. Vous pouvez maintenant fermer cette popup sans risque"
+		}
+	},
+	"help": {
+		"command_description": "Obtenir de l'aide à propos des fonctions de BaBot",
+		"start_description": "Débuter avec BaBot",
+		"level_description": "Infos à propos du système de niveaux",
+		"donator_description": "Pourquoi vous devriez donner de l'argent à BaBot",
+		"contribute_description": "Comment puis-je aider BaBot ?",
+		"faq_description": "Trouvez la réponse aux questions les plus fréquentes"
+	},
+	"dashboard": {
+		"command_description": "Affiche votre interface BaBot personnelle",
+		"panel_title": "Interface de {username}",
+		"panel_description": "Voici votre profil BaBot\nVous pouvez obtenir de l'aide à propos des niveaux avec `/help level`",
+		"level_label": "Niveau",
+		"level_content": "{emoji}Niveau {level} ({points} points)",
+		"leaderboard_label": "Classement",
+		"leaderboard_content": "{pos}ème",
+		"playlists_label": "Playlists enregistrées",
+		"settings_btn": "Paramètres"
+	},
+	"settings": {
+		"command_description": "Voir et modifier ses paramètres BaBot",
+		"panel_title": "Panneau de configuration de {username}",
+		"panel_content": "- **Désactiver le troll** : Limite le nombre de trolls vocaux que vous pouvez recevoir. Parfait si vous avez des amis embêtants",
+		"disable_troll_btn": "Désactiver le troll",
+		"not_authorized_user": "❌ À ce que je vois, ce n'est pas votre panneau de configuration, me trompe-je ?"
 	},
 	"feedback": {
-		"modal_placeholder": "Any positive or negative feedback are welcome !",
-		"modal_textinput_label": "Your feedback",
-		"modal_title": "Send a feedback",
-		"submitted": "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`"
+		"command_description": "Envoyer un commentaire aux développeurs",
+		"modal_placeholder": "N'importe quel commentaire positif ou négatif est le bienvenu !",
+		"modal_textinput_label": "Votre commentaire",
+		"modal_title": "Envoyer un commentaire",
+		"submitted": "✅ Merci pour votre commentaire !\n<:transparent:1067551646592282694> Les retours des utilisateurs nous aident grandement à améliorer BaBot !\n<:transparent:1067551646592282694> NB : Si vous avez reporté un problème, vérifiez sa résolution avec `/known_issues`"
 	},
 	"errors": {
 		"user_banned": "❌ Vous ne pouvez pas utiliser {name}, car votre compte est banni",
-		"missing_subcommand": "❌ Please select a subcommand",
-		"unknown_subcommand": "❌ This subcommand doesn't exists",
-		"settings_panel_fail": "❌ The settings panel is currently broken :cry:"
+		"missing_subcommand": "❌ Veuillez sélectionner une sous-commande",
+		"unknown_subcommand": "❌ Cette sous-commande n'existe pas",
+		"settings_panel_fail": "❌ Le panneau de configuration est actuellement en panne :cry:"
 	}
 }
