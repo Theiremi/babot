@@ -1,17 +1,88 @@
 {
+	"changelog": {
+		"command_description": "Siehe update Historie zu BaBot",
+		"corrupted": "Update log ist beschädigt",
+		"not_found": "Update log Daten nicht gefunden"
+	},
+	"known_issues": {
+		"command_description": "Liste aller Fehler in BaBot, die auf Behebung warten",
+		"not_found": "Fehler Liste konnte nicht gefunden werden"
+	},
+	"stats": {
+		"command_description": "Siehe allgemeine Statistiken über BaBot",
+		"title": "Hey! Mein Name is {name}",
+		"content": "Ich bin auf **{servers_count}** Servern\nInsgesamt **{shards_count}** Shards laufen\nDieser server ist auf Shard **#{shard}**\nIch spiele gerade **{total_players}** mal Musik, und **{shard_players}** auf deiner Shard\nIch bin Online für <t:{uptime}:R>\nMein Server RAM Auslastung: **{used_ram}/{total_ram}GB**\nMeine Server CPU Last : **{cpu_usage}%**\nMeine Server Temperatur : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
+		"footer_text": "Server können manchmal überlastet sein. Überprüfe hier den Serverstatus, wenn du lags hast und melde abnormale Werte mit /feedback"
+	},
 	"privacy": {
-		"privacy_description": "All legal actions that you can take on data stored by BaBot"
+		"command_description": "Alle rechtlichen Aktionen, die du von BaBot gespeicherte Daten ausführen können",
+		"embed_footer": "Bei Fragen zu deinen Daten wende dich an unser Team unter contact@theireply.fr",
+		"policy": {
+			"description": "Wie du auf die Datenschutzrichtlinie von BaBot zugreifen kannst",
+			"embed_title": "Datenschutzerklärung",
+			"embed_content": "Du kannst die BaBot Datenschutzrichtlinien in Französisch [unter diesem Link](https://www.theireply.fr/babot/pdc.pdf)\neinsehen **die englische Version ist noch nicht verfügbar*"
+		},
+		"retrieve": {
+			"description": "Alle Daten die BaBot über dich hat exportieren",
+			"embed_title": "Alle Daten exportieren",
+			"embed_content": "Ein Archiv, das deine Daten enthält, wird dir über deine DMs sofort gesendet\n**Bist du sicher, dass du fortfahren möchtest?**",
+			"btn_yes": "Ja",
+			"btn_no": "Nein",
+			"success": "Ihre Daten sollten in DM gesendet worden sein",
+			"fail": "Beim Generieren des Archivs ist ein Fehler aufgetreten. Es gibt wahrscheinlich keine Daten zum Abrufen",
+			"dm_message": "🗃️ Ihre Daten sind im Archiv unten verfügbar\n❕Dieses Archiv enthält keine ausführbaren Dateien"
+		},
+		"delete": {
+			"description": "Alle Daten die BaBot über dich hat löschen",
+			"embed_title": "Lösche alle deine BaBot Daten",
+			"embed_content": "**⚠️ Alle deine Daten werden sofort gelöscht ⚠️**\nDazu gehören:\n- Deine gespeicherten Wiedergabelisten\n- Deine letzten Aktivitäten auf BaBot\n- Dein XP\n- Deine Vorteile, wenn du eine spende gemacht hast\n**Diese Aktion ist unumkehrbar. Bist du sicher, dass du fortfahren möchtest?**",
+			"btn_yes": "Ja, lösche meine Daten",
+			"btn_no": "Nein, lösche meine Daten nicht",
+			"success": "All deine Daten wurden erfolgreich gelöscht",
+			"fail": "Beim Löschen deiner Daten ist ein Fehler aufgetreten, bitte melde es mit `/feedback`"
+		},
+		"cancel": {
+			"embed_title": "Anfrage abgebrochen",
+			"embed_content": "Deine Anfrage wurde abgebrochen. Du kannst nun dieses Pop-up sicher schließen"
+		}
+	},
+	"help": {
+		"command_description": "Erhalte Hilfe über die Funktion von BaBot",
+		"start_description": "Erste Schritte mit BaBot",
+		"level_description": "Informationen darüber, wie das Level System funktioniert",
+		"donator_description": "Warum solltest du BaBot etwas Geld geben",
+		"contribute_description": "Wie kann ich BaBot helfen?",
+		"faq_description": "Erhalte Antworten über oft gestellte fragen"
+	},
+	"dashboard": {
+		"command_description": "Zeige dein persönliches BaBot Control Panel",
+		"panel_title": "{username}'s Dashboard",
+		"panel_description": "Hier ist dein BaBot Profil\nHilfe über verfügbare Level mit dem `/help Level` Befehl ",
+		"level_label": "Level",
+		"level_content": "{emoji} Level {level} ({points} Punkte)",
+		"leaderboard_label": "Leaderboard Position",
+		"leaderboard_content": "{pos}",
+		"playlists_label": "Gespeicherte Wiedergabelisten",
+		"settings_btn": "Einstellungen"
+	},
+	"settings": {
+		"command_description": "BaBot Einstellungen ansehen und ändern",
+		"panel_title": "{username}'s Systemsteuerung",
+		"panel_content": "- **Trolle deaktivieren** : Begrenzt die Anzahl der Trollen, die du von anderen Benutzern erhalten kannst. Perfekt, wenn du nervende Freunde hast lol",
+		"disable_troll_btn": "Trolle deaktivieren",
+		"not_authorized_user": "❌ Wie ich sehen kann, ist dies nicht Ihr Einstellungen-Panel, nicht wahr?"
 	},
 	"feedback": {
-		"modal_placeholder": "Any positive or negative feedback are welcome !",
-		"modal_textinput_label": "Your feedback",
-		"modal_title": "Send a feedback",
-		"submitted": "✅ Thank you for your feedback !\nAny return from users helps me to improve BaBot !\n NB : If you have reported a bug, check progress on it with `/know_issues`"
+		"command_description": "Sende ein Feedback an den Entwickler",
+		"modal_placeholder": "Jedes positive oder negative Feedback ist willkommen!",
+		"modal_textinput_label": "Dein Feedback",
+		"modal_title": "Feedback senden",
+		"submitted": "✅ Vielen Dank für dein Feedback!\nJede Rückkehr von Benutzern hilft uns, BaBot zu verbessern!\n<:transparent:1067551646592282694>NB : Wenn du einen Fehler gemeldet hast, überprüfe den Status mit `/know_issues`"
 	},
 	"errors": {
-		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned",
-		"missing_subcommand": "❌ Please select a subcommand",
-		"unknown_subcommand": "❌ This subcommand doesn't exists",
-		"settings_panel_fail": "❌ The settings panel is currently broken :cry:"
+		"user_banned": "❌ Entschuldigung, du kannst {name} nicht verwenden. Dein Account wurde gesperrt",
+		"missing_subcommand": "❌ Bitte wähle einen Unterbefehl aus",
+		"unknown_subcommand": "❌ Dieser Unterbefehl existiert nicht",
+		"settings_panel_fail": "❌ Die Systemeinstellungen sind derzeit nicht funktionsfähig :cry:"
 	}
 }
