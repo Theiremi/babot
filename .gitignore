@@ -1,6 +1,5 @@
 /node_modules/*
 /statusbot/*
 !/statusbot/index.js
-/babot.log
-/known_issues.json
 /env_data/*
+/known_issues.json
