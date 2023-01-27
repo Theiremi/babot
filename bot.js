@@ -27,13 +27,14 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.3.0 released", 3],
+  ["/changelog : version 1.3.1 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],
   //["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
 ]
 
+let total_players = 0;
 let uptime = Math.round(Date.now() / 1000);//Used to determine uptime when stats is executed
 client.on('ready', async () => {
   //--- NAMING BOT ---//
@@ -85,6 +86,14 @@ client.on('ready', async () => {
     if(msg.action === "scheduled_restart")
     {
       player.shutdownRequest(msg.timestamp);
+    }
+    else if(msg.action === "player_count")
+    {
+      client.shard.send({action: "player_count", count: player.playerCount()});
+    }
+    else if(msg.action === "total_player_count")
+    {
+      total_players = msg.count;
     }
   })
   //---//
@@ -231,7 +240,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
             servers_count: (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
             shards_count: client.shard.count,
             shard: client.shard.ids[0] + 1,
-            total_players: (await client.shard.broadcastEval(() => { return player.playerCount()}).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
+            total_players: total_players,
             shard_players: player.playerCount(),
             uptime: uptime,
             used_ram: (Math.round((await si.mem()).active/10000000) / 100),
@@ -780,9 +789,9 @@ async function update_stats()//Executed when guilds count change or bot is resta
     url: "https://discordbotlist.com/api/v1/bots/1052586565395828778/stats",
     method: "POST",
     headers: {
-      Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzQxOTc0NTh9.h5PevLBjmEyE8cUxE3FenA-Hg_XU2nQtNnsCWe9OxzM"
+      Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzQ3NTg0Nzl9.0VS2pg8rcm1_Vgj_D5ayOKiXooRGT77xaocejvykU0g"
     },
-    data: "users=&guilds=" + guild_count
+    data: "users=" + await client_settings.count(0) + "&guilds=" + guild_count
   }).then(function(){
     log('Main', 'Data actualized on discordbotlist.com');
   }, function(e) {

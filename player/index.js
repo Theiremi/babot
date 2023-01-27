@@ -8,7 +8,9 @@ const axios = require('axios');
 const prism = require('prism-media');
 const { PlayerTransform } = require('./ffmpeg_transform.js');
 const Settings = require(process.cwd() + '/settings.js');
+const I18n = require(process.cwd() + '/locales.js');
 const settings = new Settings();
+const i18n = new I18n('player');
 
 module.exports = class Player {
 	#_guilds_play_data = {};
@@ -22,7 +24,6 @@ module.exports = class Player {
 		this.#_discord = discord;
 		this.#_client = client;
 		this.#_log_function = log;
-		this.#_locales = JSON.parse(require('fs').readFileSync(__dirname + '/locales.json'));
 	}
 
 	async options()//Works
@@ -32,37 +33,31 @@ module.exports = class Player {
 		let player_commands = [];
 		player_commands.push(new Builders.SlashCommandBuilder());
 		player_commands[0].setName("player");
-		for(let language in this.#_locales.player_command_desc)
-		{
-			if(language === "default") player_commands[0].setDescription(this.#_locales.player_command_desc[language]);
-			else player_commands[0].setDescriptionLocalization(language, this.#_locales.player_command_desc[language]);
-		}
+		player_commands[0].setDescription(i18n.get("chatinputcommands.player"));
+		player_commands[0].setDescriptionLocalizations(i18n.all("chatinputcommands.player"));
 		player_commands[0].setDMPermission(false);
 
 		player_commands[1] = new Builders.SlashCommandBuilder();
 		player_commands[1].setName("troll");
-		for(let language in this.#_locales.troll_command_desc)
-		{
-			if(language === "default") player_commands[1].setDescription(this.#_locales.troll_command_desc[language]);
-			else player_commands[1].setDescriptionLocalization(language, this.#_locales.troll_command_desc[language]);
-		}
+		player_commands[1].setDescription(i18n.get("chatinputcommands.troll"));
+		player_commands[1].setDescriptionLocalizations(i18n.all("chatinputcommands.troll"));
 		player_commands[1].setDMPermission(false);
 		player_commands[1].addUserOption((option) => {
 			option.setName('user');
-			option.setDescription('The user targeted');
+			option.setDescription(i18n.get("chatinputcommands.troll_user"));
 			option.setRequired(true);
 			return option;
 		});
 		player_commands[1].addStringOption((option) => {
 			option.setName('song');
-			option.setDescription('Select a song');
+			option.setDescription(i18n.get("chatinputcommands.troll_song"));
 			option.addChoices(...song_choices);
 			option.setRequired(true);
 			return option;
 		});
 		player_commands[1].addNumberOption((option) => {
 			option.setName('volume');
-			option.setDescription('Volume');
+			option.setDescription(i18n.get("chatinputcommands.troll_volume"));
 			option.setRequired(false);
 			option.setMinValue(1);
 			option.setMaxValue(10_000);
@@ -86,7 +81,7 @@ module.exports = class Player {
 
 			if(!interaction.inGuild() || interaction.member == undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: this.#_locales.error_guild_only[interaction.locale] ?? this.#_locales.error_guild_only.default});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
 				return;
 			}
 
@@ -95,7 +90,7 @@ module.exports = class Player {
 			{
 				if(interaction.member.voice.channelId === null)
 				{
-					await interaction.reply({ephemeral: true, content: this.#_locales.error_join_channel[interaction.locale] ?? this.#_locales.error_join_channel.default});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)});
 					return;
 				}
 
@@ -107,67 +102,67 @@ module.exports = class Player {
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.ViewChannel) ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
 					{
-						await interaction.reply({ephemeral: true, content: '❌ I\'m not allowed to join your voice channel'});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)});
 						return;
 					}
 					else if(!interaction.member.voice.channel.speakable ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
 					{
-						await interaction.reply({ephemeral: true, content: '❌ I\'m not allowed to speak in your voice channel'});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)});
 						return;
 					}
 					if(!interaction.member.voice.channel.joinable)//Channel is joinable : not full or we have permission to override this
 					{
-						await interaction.reply({ephemeral: true, content: '❌ Your voice channel is full (I need the "Move members" permission to override this)'});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)});
 						return;
 					}
 
-					await this.#initializeObject(interaction.guildId, interaction.member.voice.channelId);
+					await this.#initializeObject(interaction.guildId, interaction.member.voice.channelId, false, interaction.guildLocale);
 					settings.addXP(interaction.user.id, 100);
 				}
 
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 				{
-					await interaction.reply({ephemeral: true, content: '❌ I\'m already used in an other channel'});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)});
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
-					await interaction.reply({ephemeral: true, content: '❌ The player couldn\'t be initialized, but I don\'t know why. Try again'});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)});
 					return;
 				}
 
 				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function('Player-player', '[' + interaction.guildId + '] Wow, a golden player spawned !');
-				this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
-				if(this.#isObjectValid(interaction.guildId)) this.#_guilds_play_data[interaction.guildId].player_interfaces.push(await interaction.fetchReply());
+				let player_message = await interaction.fetchReply().catch(() => false);
+				if(player_message !== false)this.#_guilds_play_data[interaction.guildId].player_interfaces.push(player_message);
 			}
 			else if(interaction.commandName === 'troll')
 			{
 				await interaction.deferReply({ephemeral: true}).catch(e => console.log('deferReply error : ' + e));
 				if(!interaction.options.getMember('user') || !interaction.options.getString('song'))
 				{
-					interaction.editReply({ content: this.#_locales.error_user_not_found[interaction.locale] ?? this.#_locales.error_user_not_found.default, ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					interaction.editReply({ content: i18n.get("errors.user_not_found", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
 				let target = interaction.options.getMember('user');
 				if(target.voice.channelId === null)
 				{
-					interaction.editReply({ content: this.#_locales.error_user_not_in_channel[interaction.locale] ?? this.#_locales.error_user_not_in_channel.default, ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					interaction.editReply({ content: i18n.get("errors.user_not_in_voice_channel", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
 				if(!await settings.canTroll(interaction.user.id, target.user.id))
 				{
-					interaction.editReply({ content: '🤫 This member has asked to not be disturbed by troll\n*<:level3:1065239416798453921> Level 3 allows you to bypass this setting (See `/help level`)*', ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					interaction.editReply({ content: i18n.get("errors.dont_disturb", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
 				if(!fsc.existsSync(__dirname + '/soundboard/' + interaction.options.getString('song')))
 				{
-					interaction.editReply({ content: '❌ I can\'t access this song', ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					interaction.editReply({ content: i18n.get("errors.song_not_found", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
@@ -178,7 +173,7 @@ module.exports = class Player {
 				{
 					if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 					{
-						interaction.editReply({ content: this.#_locales.error_troll_player_used[interaction.locale] ?? this.#_locales.error_troll_player_used.default, ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+						interaction.editReply({content: i18n.get("errors.player_already_used", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 						return;
 					}
 
@@ -244,7 +239,7 @@ module.exports = class Player {
 				troll_connection.subscribe(troll_player);
 				//---//
 
-				interaction.editReply({ content: '✅ Song played\nPS : Annoyed by friends trolling you too much ? You can disable trolling in the </settings:1065334689021296671> panel' }).catch((e) => { console.log('editReply error : ' + e)});
+				interaction.editReply({content: i18n.get("troll_success", interaction.locale)}).catch((e) => { console.log('editReply error : ' + e)});
 				settings.addXP(interaction.user.id, 50);
 			}
 		}
@@ -262,12 +257,12 @@ module.exports = class Player {
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: this.#_locales.error_not_in_channel[interaction.locale] ?? this.#_locales.error_not_in_channel.default, ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
 				return;
 			}
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: this.#_locales.error_guild_only[interaction.locale] ?? this.#_locales.error_guild_only.default});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
 				return;
 			}
 
@@ -275,11 +270,10 @@ module.exports = class Player {
 			{
 				if(this.#_guilds_play_data[interaction.guildId].inactive_timer !== false)
 				{
+					await interaction.update({content: i18n.get("response_msg.leave", this.#_guilds_play_data[interaction.guildId].locale), embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 					this.#destroyObject(interaction.guildId);
-
-					await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 				}
-				else await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
 				return;
 			}
 			if(interaction.customId === "btn_stay")
@@ -289,24 +283,24 @@ module.exports = class Player {
 					clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
 					this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
 
-					await interaction.reply({ephemeral: true, content: "✅ It's ok, I stay here, and I ask you again the next time I'm alone"});
+					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_until_user", interaction.locale)});
 
 					await this.#updatePlayerInterface(interaction.guildId);
 				}
-				else await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
 				return;
 			}
 			if(interaction.customId === "btn_stay_forever")
 			{
 				if(this.#_guilds_play_data[interaction.guildId].inactive_timer === false)
 				{
-					await interaction.reply({ephemeral: true, content: "❌ I'm no longer alone, so idk how do you do that"});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
 					return;
 				}
 
 				if(await settings.level(interaction.user.id) < 3 && !await settings.isGuildGolden(interaction.guildId))
 				{
-					await interaction.reply({ephemeral: true, content: "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"});
+					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.golden_level", interaction.locale)});
 					return;
 				}
 
@@ -314,7 +308,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
 				this.#_guilds_play_data[interaction.guildId].force_active = true;
 
-				await interaction.reply({ephemeral: true, content: "✅ It's ok, I stay here without reasking you later"});
+				await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_forever", interaction.locale)});
 
 				await this.#updatePlayerInterface(interaction.guildId);
 				return;
@@ -323,7 +317,7 @@ module.exports = class Player {
 
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
-				await interaction.reply({content: '❌ You can\'t control me if you\'re not in my channel', ephemeral: true});
+				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
 				return;
 			}
 
@@ -382,7 +376,7 @@ module.exports = class Player {
 							{label: '250 %', value: "250", emoji: {name: "📢"}, default: this.#_guilds_play_data[interaction.guildId].volume === 2.5},
 							{label: '500 %', value: "500", emoji: {name: "💥"}, default: this.#_guilds_play_data[interaction.guildId].volume === 5},
 							{label: '1000 %', value: "1000", emoji: {name: "💥"}, default: this.#_guilds_play_data[interaction.guildId].volume === 10},
-							{label: '10000 %', value: "10000", emoji: {name: "💀"}, default: this.#_guilds_play_data[interaction.guildId].volume === 100, description: "Adieu les oreilles"}
+							{label: '10000 %', value: "10000", emoji: {name: "💀"}, default: this.#_guilds_play_data[interaction.guildId].volume === 100}
 						])
 				]));
 				await interaction.update(player_interface).catch(e => console.log('update error : ' + e));
@@ -421,13 +415,13 @@ module.exports = class Player {
 					new this.#_discord.ActionRowBuilder().addComponents([
 						new this.#_discord.TextInputBuilder()
 							.setCustomId("link")
-							.setPlaceholder('Enter a link or a search term')
+							.setPlaceholder(i18n.get("add_song_modal.placeholder", interaction.locale))
 							.setStyle(1)
-							.setLabel('Song / Playlist')
+							.setLabel(i18n.get("add_song_modal.label", interaction.locale))
 					])
 				])
 				.setCustomId("modal_add")
-				.setTitle('Add a song')
+				.setTitle(i18n.get("add_song_modal.title", interaction.locale))
 				).catch(e => console.log('showModal error : ' + e));
 			}
 
@@ -442,7 +436,7 @@ module.exports = class Player {
 					}
 				}
 				await interaction.message.delete().catch((e) => { console.log('Delete message error : ' + e)});
-				await interaction.reply({content: 'Player closed. You can open it again using </player:1052609017802924062>', ephemeral: true});
+				await interaction.reply({content: i18n.get("response_msg.hide", interaction.locale), ephemeral: true});
 				settings.addXP(interaction.user.id, 20);
 			}
 			else if(interaction.customId === "stop")
@@ -458,8 +452,8 @@ module.exports = class Player {
 			}
 			else if(interaction.customId === "leave")
 			{
+				await interaction.update({content: i18n.get("response_msg.leave", this.#_guilds_play_data[interaction.guildId].locale), embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 				this.#destroyObject(interaction.guildId);
-				await interaction.update({content: 'Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !', embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 				settings.addXP(interaction.user.id, 50);
 			}
 
@@ -521,7 +515,7 @@ module.exports = class Player {
 			{
 				await interaction.reply({content: 'Quack !'});
 			}
-			else await interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
+			else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 		}
 		//-----//
 
@@ -532,17 +526,17 @@ module.exports = class Player {
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: this.#_locales.error_not_in_channel[interaction.locale] ?? this.#_locales.error_not_in_channel.default, ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
 				return;
 			}
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: this.#_locales.error_guild_only[interaction.locale] ?? this.#_locales.error_guild_only.default});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
 				return;
 			}
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
-				await interaction.reply({content: '❌ You can\'t control me if you\'re not in my channel', ephemeral: true});
+				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
 				return;
 			}
 
@@ -553,7 +547,7 @@ module.exports = class Player {
 				let value = interaction.fields.getTextInputValue('link');
 				if(value == undefined)
 				{
-					await interaction.reply({content: '❌ You need to input one or multiple links or search terms', ephemeral: true});
+					await interaction.reply({content: i18n.get("add_song_modal.enter_song", interaction.locale), ephemeral: true});
 					return;
 				}
 
@@ -579,7 +573,7 @@ module.exports = class Player {
 				{
 					if(value.length > 250)
 					{
-						interaction.reply({content: '❌ Your search request cannot exceed 250 characters', ephemeral: true});
+						interaction.reply({content: i18n.get("add_song_modal.search_too_long", interaction.locale), ephemeral: true});
 						return;
 					}
 					await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
@@ -611,21 +605,21 @@ module.exports = class Player {
 						search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
 							new this.#_discord.StringSelectMenuBuilder()
 								.setCustomId("select_add_song")
-								.setPlaceholder('Choose your desired song')
+								.setPlaceholder(i18n.get("add_song_modal.search_placeholder", this.#_guilds_play_data[interaction.guildId].locale))
 								.addOptions(options_yt.concat(options_radios))
 						]));
 					}
 					search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
 						new this.#_discord.ButtonBuilder()
 							.setCustomId("close_any")
-							.setLabel('Cancel')
+							.setLabel(i18n.get("buttons.cancel", this.#_guilds_play_data[interaction.guildId].locale))
 							.setStyle(4)
 					]));
 					interaction.editReply({content: '', embeds: [search_embed], components: search_select_list}).catch((e) => { console.log('editReply error : ' + e)});
 				}
 			}
 			//---//
-			else interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
+			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 		}
 		//-----//
 
@@ -635,17 +629,17 @@ module.exports = class Player {
 			if(!['select_volume', 'select_add_song', 'select_queue_song'].includes(interaction.customId)) return false;
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: this.#_locales.error_not_in_channel[interaction.locale] ?? this.#_locales.error_not_in_channel.default, ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
 				return;
 			}
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: this.#_locales.error_guild_only[interaction.locale] ?? this.#_locales.error_guild_only.default});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
 				return;
 			}
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
-				await interaction.reply({content: '❌ You can\'t control me if you\'re not in my channel', ephemeral: true});
+				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
 				return;
 			}
 
@@ -667,7 +661,7 @@ module.exports = class Player {
 					await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 					settings.addXP(interaction.user.id, 10);
 				}
-				else await interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
+				else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 			}
 			else if(interaction.customId === "select_add_song")
 			{
@@ -691,7 +685,7 @@ module.exports = class Player {
 			{
 				await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, parseInt(interaction.values[0]))).catch(e => console.log('update error : ' + e));
 			}
-			else interaction.reply({content: '❌ How do you do that ?', ephemeral: true});
+			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 		}
 		//-----//
 	}
@@ -725,7 +719,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
 					if(ctx.#isObjectValid(guild_id))
 					{
-						ctx.#updatePlayerInterface(guild_id, {content: 'I\'ve left due to inactivity. See you next time with the command </player:1052609017802924062> !', embeds: [], components: []});
+						ctx.#updatePlayerInterface(guild_id, {content: i18n.get("response_msg.inactivity", this.#_guilds_play_data[voiceState.guild.id].locale), embeds: [], components: []});
 						ctx.#destroyObject(guild_id);
 					}
 				}, 60000*20, this, voiceState.guild.id);
@@ -741,7 +735,7 @@ module.exports = class Player {
 	//-----//
 
 	//----- Guild object management -----//
-	async #initializeObject(guild_id, channel_id, only_connection = false)//Works
+	async #initializeObject(guild_id, channel_id, only_connection = false, locale)//Works
 	{
 		if((!this.#isObjectValid(guild_id) && !only_connection) ||
 			(only_connection &&
@@ -753,6 +747,7 @@ module.exports = class Player {
 			if(!only_connection)
 			{
 				this.#_guilds_play_data[guild_id] = {
+					locale: locale,
 					voice_connection: undefined,
 					player: undefined,
 					player_subscription: undefined,
@@ -846,8 +841,6 @@ module.exports = class Player {
 		}
 		
 		delete this.#_guilds_play_data[guild_id];
-
-		this.#_log_function('Player-object', 'There is now ' + this.playerCount() + ' players running');
 	}
 
 	//----- Player interface management -----//
@@ -863,21 +856,21 @@ module.exports = class Player {
 						new this.#_discord.ButtonBuilder()
 							.setCustomId("undefined")
 							.setEmoji({name: "❗"})
-							.setLabel("I'm alone. Can I leave ?")
+							.setLabel(i18n.get("buttons.label_inactive", this.#_guilds_play_data[guild_id].locale))
 							.setStyle(2)
 							.setDisabled(true),
 						new this.#_discord.ButtonBuilder()
 							.setCustomId("btn_inactive_leave")
-							.setLabel("Sure !")
+							.setLabel(i18n.get("buttons.inactive_leave", this.#_guilds_play_data[guild_id].locale))
 							.setStyle(3),
 						new this.#_discord.ButtonBuilder()
 							.setCustomId("btn_stay")
-							.setLabel("Nope")
+							.setLabel(i18n.get("buttons.stay", this.#_guilds_play_data[guild_id].locale))
 							.setStyle(4),
 						new this.#_discord.ButtonBuilder()
 							.setCustomId("btn_stay_forever")
 							.setEmoji({name: "golden", id: "1065239445625917520"})
-							.setLabel("Stay forever")
+							.setLabel(i18n.get("buttons.stay_forever", this.#_guilds_play_data[guild_id].locale))
 							.setStyle(2)
 				]));
 			}
@@ -919,25 +912,25 @@ module.exports = class Player {
 						.setStyle(this.#_guilds_play_data[guild_id].shuffle ? 3 : 2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("queue")
-						.setLabel('Queue')
+						.setLabel(i18n.get("buttons.queue", this.#_guilds_play_data[guild_id].locale))
 						.setStyle(2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("open_modal_add")
-						.setLabel('Add song')
+						.setLabel(i18n.get("buttons.add_song", this.#_guilds_play_data[guild_id].locale))
 						.setStyle(3),
 				]),
 				new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("hide")
-						.setLabel('Hide')
+						.setLabel(i18n.get("buttons.hide", this.#_guilds_play_data[guild_id].locale))
 						.setStyle(2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("stop")
-						.setLabel('Stop')
+						.setLabel(i18n.get("buttons.stop", this.#_guilds_play_data[guild_id].locale))
 						.setStyle(4),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("leave")
-						.setLabel('Quit')
+						.setLabel(i18n.get("buttons.leave", this.#_guilds_play_data[guild_id].locale))
 						.setStyle(4),
 				])
 			);
@@ -947,16 +940,16 @@ module.exports = class Player {
 
 			if(this.#get_song(guild_id) !== undefined)
 			{
-				player_embed.setTitle("Playing \"" + this.#get_song(guild_id).name + "\"");
+				player_embed.setTitle(i18n.place(i18n.get("player_embed.title_play", this.#_guilds_play_data[guild_id].locale), {song_name: this.#get_song(guild_id).name}));
 				player_embed.setURL(this.#get_song(guild_id).link);
 				player_embed.setImage(this.#get_song(guild_id).thumbnail);
-				if(this.#_shutdown !== false) player_embed.setDescription("⚠️ BaBot will restart <t:" + this.#_shutdown + ":R>");
+				if(this.#_shutdown !== false) player_embed.setDescription(i18n.place(i18n.get("player_embed.restart_msg", this.#_guilds_play_data[guild_id].locale), {timestamp: this.#_shutdown}));
 				//player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
 			}
 			else
 			{
-				player_embed.setTitle("Currently playing anything");
-				player_embed.setDescription("Add a music in the queue to start listening");
+				player_embed.setTitle(i18n.get("player_embed.title_idle", this.#_guilds_play_data[guild_id].locale));
+				player_embed.setDescription(i18n.get("player_embed.description_idle", this.#_guilds_play_data[guild_id].locale));
 				player_embed.setThumbnail('https://www.theireply.fr/babot/image_flou.jpg');
 			}
 
@@ -992,10 +985,10 @@ module.exports = class Player {
 				if(i === selected_song - page * 20) gras = "**";
 				return gras + ((20 * page + i+1) + ". [" + x.name + "](" + x.link + ")").slice(0, 200) + gras + "\n"
 			}).join('');
-			if(queue === "") queue = "No song in queue"
+			if(queue === "") queue = i18n.get("queue_embed.no_song", this.#_guilds_play_data[guild_id].locale)
 			let queue_embed = new this.#_discord.EmbedBuilder()
 				.setColor([0x62, 0xD5, 0xE9])
-				.setTitle('Queue (beta)')
+				.setTitle(i18n.get("queue_embed.title", this.#_guilds_play_data[guild_id].locale))
 				.setDescription(queue);
 
 			let components_queue = [];
@@ -1005,17 +998,17 @@ module.exports = class Player {
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_queue_play_" + selected_song)
 						.setStyle(3)
-						.setLabel("Play Now")
+						.setLabel(i18n.get("buttons.queue_play", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_queue_remove_" + selected_song)
 						.setStyle(4)
-						.setLabel("Remove")
+						.setLabel(i18n.get("buttons.queue_remove", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_queue_page_reset_" + page)
 						.setStyle(2)
-						.setLabel("Unselect this song")
+						.setLabel(i18n.get("buttons.queue_unselect", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false)
 				]));
 			}
@@ -1027,7 +1020,7 @@ module.exports = class Player {
 						.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : [{label: "undefined", value: "undefined"}])
 						.setMaxValues(1)
 						.setMinValues(1)
-						.setPlaceholder("Select a song")
+						.setPlaceholder(i18n.get("queue_embed.select_song", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(queue_portion.length > 0 ? false : true)
 				]));
 			}
@@ -1042,7 +1035,7 @@ module.exports = class Player {
 					.setCustomId("initial_duck")
 					.setStyle(2)
 					.setDisabled(true)
-					.setLabel("Page " + (page+1) + " of " + Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20)),
+					.setLabel(i18n.place(i18n.get("queue_embed.page", this.#_guilds_play_data[guild_id].locale), {current: page+1, total: Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20)})),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId("btn_queue_page_next_" + (page < page_quantity - 1 ? page + 1 : page_quantity - 1))
 					.setStyle(1)
@@ -1051,7 +1044,7 @@ module.exports = class Player {
 				new this.#_discord.ButtonBuilder()
 					.setCustomId("close_any")
 					.setStyle(4)
-					.setLabel("Hide queue")
+					.setLabel(i18n.get("buttons.queue_hide", this.#_guilds_play_data[guild_id].locale))
 			]));
 
 			return {content: '', embeds: [queue_embed], components: components_queue};
@@ -1377,7 +1370,8 @@ async function resolve_yt_video(link, search)
 			video_data.original_url &&
 			video_data.requested_downloads &&
 			video_data.title &&
-			video_data.thumbnail)
+			video_data.thumbnail &&
+			video_data.age_limit === 0)
 		{
 			return {
 				link: video_data.original_url,

@@ -1,0 +1,74 @@
+{
+	"chatinputcommands": {
+		"player": "Player interface",
+		"troll": "Play with discretion a song in the voice channel of an user",
+		"troll_user": "The user targeted",
+		"troll_song": "Select a song",
+		"troll_volume": "Volume"
+	},
+	"response_msg": {
+		"leave": "Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !",
+		"inactivity": "I've left due to inactivity. See you next time with the command </player:1052609017802924062> !",
+		"hide": "Player closed. You can open it again using </player:1052609017802924062>",
+		"stay_until_user": "✅ I stay here and I ask you again the next time I'm alone",
+		"stay_forever": "✅ I stay here forever",
+		"golden_level": "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"
+	},
+	"add_song_modal": {
+		"title": "Add a song",
+		"placeholder": "Enter a link or a search term",
+		"label": "Song / Playlist",
+		"enter_song": "❌ You need to input a link or a search terms",
+		"search_too_long": "❌ Your search request cannot exceed 250 characters",
+		"search_placeholder": "Choose your desired song"
+	},
+	"troll_success": "✅ Song played\n<:transparent:1067551646592282694> NB : Annoyed by friends trolling you too much ? You can disable trolling in the </settings:1065334689021296671> panel",
+	"buttons": {
+		"cancel": "Cancel",
+		"label_inactive": "I'm alone. Can I leave ?",
+		"inactive_leave": "Sure !",
+		"stay": "Nope",
+		"stay_forever": "Stay forever",
+		"queue": "Queue",
+		"add_song": "Add song",
+		"hide": "Hide",
+		"stop": "Stop",
+		"leave": "Quit",
+		"queue_play": "Play Now",
+		"queue_remove": "Remove",
+		"queue_unselect": "Unselect this song",
+		"queue_hide": "Hide queue"
+	},
+	"player_embed": {
+		"title_play": "Playing \"{song_name}\"",
+		"title_idle": "Currently playing anything",
+		"restart_msg": "⚠️ BaBot will restart <t:{timestamp}:R>",
+		"description_idle": "Add a music in the queue to start listening"
+	},
+	"queue_embed": {
+		"title": "Queue",
+		"no_song": "No song in queue",
+		"restart_msg": "⚠️ BaBot will restart <t:{timestamp}:R>",
+		"description_idle": "Add a music in the queue to start listening",
+		"select_song": "Select a song",
+		"page": "Page {current} of {total}"
+	},
+	"errors": {
+		"guild_only": "💥 You can only use this command in a guild",
+		"not_in_voice_channel": "❌ Please join a voice channel to use this command",
+		"user_not_in_voice_channel": "❌ This user isn't in a voice channel",
+		"join": "❌ I'm not allowed to join your voice channel",
+		"speak": "❌ I'm not allowed to speak in your voice channel",
+		"full": "❌ Your voice channel is full (I need the \"Move members\" permission to override this)",
+		"already_used": "❌ I'm already used in an other channel",
+		"unknown_player_error": "💥 The player couldn't be initialized, but I don't know why. Normally this error is impossible to trigger so gg",
+		"user_not_found": "💥 This user doesn't exist",
+		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling\n*<:level3:1065239416798453921> Level 3 allows you to bypass this setting (See `/help level`)*",
+		"song_not_found": "💥 I can't access this song",
+		"player_already_used": "❌ I'm currently playing music. To avoid disturbing my listeners, I refuse to move",
+		"no_player": "❌ I'm no longer in a voice channel. Start a new playing session with the command `/player`",
+		"not_alone": "💥 I'm no longer alone in the voice channel",
+		"not_my_channel": "❌ You can't control me if you're not in my channel",
+		"interaction": "💥 This interaction doesn't exists"
+	}
+}
