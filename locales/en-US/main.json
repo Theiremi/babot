@@ -78,7 +78,7 @@
 		"modal_placeholder": "Any positive or negative feedback are welcome !",
 		"modal_textinput_label": "Your feedback",
 		"modal_title": "Send a feedback",
-		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694>Any return from users helps me to improve BaBot !\n<:transparent:1067551646592282694>NB : If you have reported a bug, check progress on it with `/know_issues`"
+		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !\n<:transparent:1067551646592282694>NB : If you have reported a bug, check progress on it with `/know_issues`"
 	},
 	"errors": {
 		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned..",

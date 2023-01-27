@@ -40,10 +40,10 @@ module.exports = class {
 			{
 				iterated_value = iterated_value[term_part];
 			}
-			else return this.get(term, 'en-US');
+			else return locale === 'en-US' ? 'Text going here not found (pls report it with `/feedback`)' : this.get(term, 'en-US');
 		}
 
-		return typeof iterated_value == "string" ? iterated_value : "The text that goes here is corrupted (pls report it with `/feedback`)";
+		return typeof iterated_value == "string" ? iterated_value : "Text going here corrupted (pls report it with `/feedback`)";
 	}
 
 	all(term)
