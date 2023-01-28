@@ -27,7 +27,7 @@ const status = new Status(Discord, client, log);
 let settings = {};
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.3.1 released", 3],
+  ["/changelog : version 1.3.2 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],
@@ -443,7 +443,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           embeds: [{
             title: "BaBot and his level system",
             color: 0x2f3136,
-            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points\n*NB : Upvoting BaBot also gives XP*",
+            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points\n*NB : Upvoting BaBot on certain sites (See `/help contribute`) also gives XP*",
             fields: [
               {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
               {name: "<:level2:1065239416798453921> Level 2 : > 500 points", value: "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"},
@@ -503,7 +503,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           embeds: [{
             title: "How to help BaBot",
             color: 0x2f3136,
-            description: "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (to help it grow)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
+            description: "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (top.gg, discordbotlist.com, discords.com or botlist.me)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
             footer :{
               text: "A big thanks to anyone who want to help BaBot, as it allows BaBot to survive and grow"
             }
@@ -710,6 +710,7 @@ client.on('guildCreate', async (guild) => {
   await update_stats();
 });
 client.on('guildDelete', async (guild) => {
+ if(!guild.available) return false;
   log('Main', 'I\'m no longer in this guild : ' + guild.id + ' - ' + guild.name);
 
   await update_stats();
@@ -767,10 +768,24 @@ async function update_stats()//Executed when guilds count change or bot is resta
 {
   if(settings.dev) return;//Only update stats on websites and others in production mode
   let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
-  //let users_count = (await client.shard.fetchClientValues('users.cache.size')).reduce((acc, guildCount) => acc + guildCount, 0);
+  let users_count = await client_settings.count(0);
   let shards_count = client.shard.count;
 
   //--- WEBSITES UPDATE ---//
+  await axios({
+    url: "https://top.gg/api/bots/1052586565395828778/stats",
+    method: "POST",
+    headers: {
+      "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJib3QiOnRydWUsImlhdCI6MTY3NDg0MzEzMX0.KzozhjgAXyzCeFFQ6ULxmSffXhyr8IXPYIkjQO5EbqI"
+    },
+    data: "server_count=" + guild_count + "&shard_count=" + shards_count
+  }).then(function(){
+    log('Main', 'Data actualized on discords.com');
+  }, function(e) {
+    //console.log(e);
+    log('Main', 'Error when actualizing data on discords.com');
+  });
+
   await axios({
     url: "https://discords.com/bots/api/bot/1052586565395828778",
     method: "POST",
@@ -791,7 +806,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
     headers: {
       Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzQ3NTg0Nzl9.0VS2pg8rcm1_Vgj_D5ayOKiXooRGT77xaocejvykU0g"
     },
-    data: "users=" + await client_settings.count(0) + "&guilds=" + guild_count
+    data: "users=" + users_count + "&guilds=" + guild_count
   }).then(function(){
     log('Main', 'Data actualized on discordbotlist.com');
   }, function(e) {

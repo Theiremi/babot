@@ -69,7 +69,7 @@
 	"settings": {
 		"command_description": "View and change your BaBot settings.",
 		"panel_title": "{username}'s control panel",
-		"panel_content": "- **Disable troll** : Limit the number of trolls that you can receive from others users. Perfect if you have annoying friends :)",
+		"panel_content": "- **Disable troll** : Prevent you from receiving trolls from others users. Perfect if you have annoying friends :)",
 		"disable_troll_btn": "Disable troll",
 		"not_authorized_user": "❌ As I can see, this is not your settings panel, right ?"
 	},

@@ -154,7 +154,7 @@ module.exports = class Player {
 					return;
 				}
 
-				if(!await settings.canTroll(interaction.user.id, target.user.id))
+				if(!await settings.canTroll(target.user.id))
 				{
 					interaction.editReply({ content: i18n.get("errors.dont_disturb", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
@@ -719,7 +719,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
 					if(ctx.#isObjectValid(guild_id))
 					{
-						ctx.#updatePlayerInterface(guild_id, {content: i18n.get("response_msg.inactivity", this.#_guilds_play_data[voiceState.guild.id].locale), embeds: [], components: []});
+						ctx.#updatePlayerInterface(guild_id, {content: i18n.get("response_msg.inactivity", ctx.#_guilds_play_data[voiceState.guild.id].locale), embeds: [], components: []});
 						ctx.#destroyObject(guild_id);
 					}
 				}, 60000*20, this, voiceState.guild.id);
