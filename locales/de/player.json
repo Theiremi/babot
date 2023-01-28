@@ -1,0 +1,72 @@
+{
+	"chatinputcommands": {
+		"player": "Player Oberfläche",
+		"troll": "Spiele mit Diskretion einen Song im Sprachkanal eines Users",
+		"troll_user": "Der User",
+		"troll_song": "Wähle einen Song",
+		"troll_volume": "Lautstärke"
+	},
+	"response_msg": {
+		"leave": "Danke für die Verwendung von BaBot! Bis zum nächsten Mal mit dem Befehl </player:1052609017802924062>!",
+		"inactivity": "Ich habe aufgrund von Einsamkeit den Chat verlassen. Bis zum nächsten Mal mit dem Befehl </player:1052609017802924062>!",
+		"hide": "Spieler geschlossen. Du kannst ihn erneut öffnen mit </player:1052609017802924062>",
+		"stay_until_user": "✅ Ich bleibe hier und frage dich beim nächsten Mal wieder, wenn ich allein bin",
+		"stay_forever": "✅ Ich bleibe hier für immer",
+		"golden_level": "<:golden:1065239445625917520> Sorry, diese Funktion ist für Gold Level Users reserviert (siehe `/help level`)"
+	},
+	"add_song_modal": {
+		"title": "Lied hinzufügen",
+		"placeholder": "Link oder Suchbegriff eingeben",
+		"label": "Lied / Playlist",
+		"enter_song": "❌ Du musst einen Link oder einen Suchbegriff eingeben",
+		"search_too_long": "❌ Deine Suchabfrage darf 250 Zeichen nicht überschreiten",
+		"search_placeholder": "Wähle deinen gewünschten Song"
+	},
+	"troll_success": "✅ Song gespielt\n<:transparent:1067551646592282694> NB : Genervt von Freunden, die dich zu viel trollen lol? Du kannst Trollen im </settings:1065334689021296671> Panel deaktivieren",
+	"buttons": {
+		"cancel": "Abbrechen",
+		"label_inactive": "Ich bin allein, kann ich gehen..?",
+		"inactive_leave": "Klar!",
+		"stay": "Nope",
+		"stay_forever": "Für immer bleiben",
+		"queue": "Warteliste",
+		"add_song": "Lied hinzufügen",
+		"hide": "Verstecken",
+		"stop": "Stopp",
+		"leave": "Beenden",
+		"queue_play": "Jetzt spielen",
+		"queue_remove": "Entfernen",
+		"queue_unselect": "Dieses Lied abwählen",
+		"queue_hide": "Warteliste ausblenden"
+	},
+	"player_embed": {
+		"title_play": "Spiele \"{song_name}\"",
+		"title_idle": "Momentan spielt irgendetwas",
+		"restart_msg": "⚠️ BaBot startet in <t:{timestamp}:R> neu..",
+		"description_idle": "Musik in die Warteliste hinzufügen um zu hören"
+	},
+	"queue_embed": {
+		"title": "Warteliste",
+		"no_song": "Kein Song in der Warteliste",
+		"select_song": "Wähle einen Song",
+		"page": "Seite {current} von {total}"
+	},
+	"errors": {
+		"guild_only": "💥 Du kannst diesen Befehl nur in einem Server verwenden",
+		"not_in_voice_channel": "❌ Bitte betreten Sie einen Sprachkanal, um diesen Befehl zu verwenden",
+		"user_not_in_voice_channel": "❌ Dieser Benutzer ist nicht in einem Sprachkanal",
+		"join": "❌ Ich bin nicht berechtigt, deinen Sprachkanal beizutreten",
+		"speak": "❌ Ich bin nicht berechtigt, in deinen Sprachkanal zu sprechen",
+		"full": "❌ Dein Sprachkanal ist voll (ich brauche die Berechtigung \"Mitglieder verschieben\" um dies zu überschreiben)",
+		"already_used": "❌ Ich werde bereits in einem anderen Kanal verwendet",
+		"unknown_player_error": "💥 Der Spieler konnte nicht initialisiert werden, aber ich weiß nicht warum. Normalerweise ist dieser Fehler unmöglich auszulösen, also gg",
+		"user_not_found": "💥 Dieser Benutzer existiert nicht",
+		"dont_disturb": "🤫 Dieses Mitglied hat darum gebeten, nicht durch Trollen gestört zu werden\n*<:level3:1065239416798453921> Level 3 erlaubt es dir, diese Einstellung zu umgehen (Siehe `/help level`)*",
+		"song_not_found": "💥 Ich kann nicht auf dieses Lied zugreifen",
+		"player_already_used": "❌ Ich spiele gerade Musik. Um zu vermeiden, dass meine Zuhörer gestört werden, weigere ich mich zu bewegen",
+		"no_player": "❌ Ich bin nicht mehr in einem Sprachkanal. Starte eine neue Wiedergabesitzung mit dem Befehl `/player`",
+		"not_alone": "💥 Ich bin nicht mehr allein im Sprachkanal",
+		"not_my_channel": "❌ Du kannst mich nicht kontrollieren, wenn du nicht in meinem Kanal bist",
+		"interaction": "💥 Diese Interaktion existiert nicht"
+	}
+}
