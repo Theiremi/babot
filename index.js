@@ -14,7 +14,7 @@ manager.on('shardCreate', async function(shard){
 		}
 	})
 });
-manager.spawn();
+manager.spawn({timeout: 120_000});
 setInterval(async function(){
 	await manager.broadcast({action: "player_count"});
 	await sleep(2_000);

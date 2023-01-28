@@ -93,24 +93,16 @@ module.exports = class Settings {
 		});
 	}
 
-	async canTroll(from, to)
+	async canTroll(to)
 	{
 		let to_config = await this.get(to, 0, 'config');
 		if(to_config === false) return false;
 
 		if(to_config.limited_troll)
 		{
-			let from_level = await this.level(from);
-			if(from_level >= 2)
-			{
-				return true;
-			}
-			else return false;
+			return false;
 		}
-		else
-		{
-			return true;
-		}
+		return true;
 	}
 
 	async addXP(id, quantity)

@@ -48,8 +48,6 @@
 	"queue_embed": {
 		"title": "Queue",
 		"no_song": "No song in queue",
-		"restart_msg": "⚠️ BaBot will restart <t:{timestamp}:R>",
-		"description_idle": "Add a music in the queue to start listening",
 		"select_song": "Select a song",
 		"page": "Page {current} of {total}"
 	},
@@ -63,10 +61,10 @@
 		"already_used": "❌ I'm already used in an other channel",
 		"unknown_player_error": "💥 The player couldn't be initialized, but I don't know why. Normally this error is impossible to trigger so gg",
 		"user_not_found": "💥 This user doesn't exist",
-		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling\n*<:level3:1065239416798453921> Level 3 allows you to bypass this setting (See `/help level`)*",
+		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling",
 		"song_not_found": "💥 I can't access this song",
 		"player_already_used": "❌ I'm currently playing music. To avoid disturbing my listeners, I refuse to move",
-		"no_player": "❌ I'm no longer in a voice channel. Start a new playing session with the command `/player`",
+		"no_player": "❌ I'm no longer in a voice channel. Start a new playing session with the command </player:1052609017802924062>",
 		"not_alone": "💥 I'm no longer alone in the voice channel",
 		"not_my_channel": "❌ You can't control me if you're not in my channel",
 		"interaction": "💥 This interaction doesn't exists"
