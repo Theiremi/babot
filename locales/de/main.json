@@ -68,7 +68,7 @@
 	"settings": {
 		"command_description": "BaBot Einstellungen ansehen und ändern",
 		"panel_title": "{username}'s Systemsteuerung",
-		"panel_content": "- **Trolle deaktivieren** : Begrenzt die Anzahl der Trollen, die du von anderen Benutzern erhalten kannst. Perfekt, wenn du nervende Freunde hast lol",
+		"panel_content": "- **Disable troll** : Prevent you from receiving trolls from others users. Perfect if you have annoying friends :)",
 		"disable_troll_btn": "Trolle deaktivieren",
 		"not_authorized_user": "❌ Wie ich sehen kann, ist dies nicht Ihr Einstellungen-Panel, nicht wahr?"
 	},
