@@ -61,10 +61,10 @@
 		"already_used": "❌ Je suis déjà utilisé dans un autre salon",
 		"unknown_player_error": "💥 Le lecteur n'a pas pu être créé, mais je ne sais pas pourquoi. Vous ne devriez jamais pouvoir tomber sur cette erreur donc gg",
 		"user_not_found": "💥 Cet utilisateur n'existe pas",
-		"dont_disturb": "🤫 Cet utilisateur a demandé à ne pas être dérangé par des trolls",
+		"dont_disturb": "🤫 Cet utilisateur a demandé à ne pas être trollé",
 		"song_not_found": "💥 Je ne peux pas accéder à ce son",
 		"player_already_used": "❌ Je suis en train de jouer de la musique dans un autre salon. Pour ne pas déranger mes auditeurs, je préfère ne pas bouger",
-		"no_player": "❌ Je ne suis plus dans un salon vocal. Démarrez une nouvelle session avec la commande `/player`",
+		"no_player": "❌ Je ne suis plus dans un salon vocal. Démarrez une nouvelle session avec la commande </player:1052609017802924062>",
 		"not_alone": "💥 Je ne suis plus seul dans mon salon vocal",
 		"not_my_channel": "❌ Vous ne pouvez pas me contrôler si vous n'êtes pas dans mon salon vocal",
 		"interaction": "💥 Cette interaction n'existe pas"
