@@ -61,10 +61,10 @@
 		"already_used": "❌ Ich werde bereits in einem anderen Kanal verwendet",
 		"unknown_player_error": "💥 Der Spieler konnte nicht initialisiert werden, aber ich weiß nicht warum. Normalerweise ist dieser Fehler unmöglich auszulösen, also gg",
 		"user_not_found": "💥 Dieser Benutzer existiert nicht",
-		"dont_disturb": "🤫 Dieses Mitglied hat darum gebeten, nicht durch Trollen gestört zu werden\n*<:level3:1065239416798453921> Level 3 erlaubt es dir, diese Einstellung zu umgehen (Siehe `/help level`)*",
+		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling",
 		"song_not_found": "💥 Ich kann nicht auf dieses Lied zugreifen",
 		"player_already_used": "❌ Ich spiele gerade Musik. Um zu vermeiden, dass meine Zuhörer gestört werden, weigere ich mich zu bewegen",
-		"no_player": "❌ Ich bin nicht mehr in einem Sprachkanal. Starte eine neue Wiedergabesitzung mit dem Befehl `/player`",
+		"no_player": "❌ I'm no longer in a voice channel. Start a new playing session with the command </player:1052609017802924062>",
 		"not_alone": "💥 Ich bin nicht mehr allein im Sprachkanal",
 		"not_my_channel": "❌ Du kannst mich nicht kontrollieren, wenn du nicht in meinem Kanal bist",
 		"interaction": "💥 Diese Interaktion existiert nicht"
