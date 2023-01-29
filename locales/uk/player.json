@@ -1,0 +1,72 @@
+{
+	"chatinputcommands": {
+		"player": "Player interface",
+		"troll": "Play with discretion a song in the voice channel of an user",
+		"troll_user": "The user targeted",
+		"troll_song": "Select a song",
+		"troll_volume": "Volume"
+	},
+	"response_msg": {
+		"leave": "Thank you for using BaBot ! See you next time with the command </player:1052609017802924062> !",
+		"inactivity": "I've left due to inactivity. See you next time with the command </player:1052609017802924062> !",
+		"hide": "Player closed. You can open it again using </player:1052609017802924062>",
+		"stay_until_user": "✅ I stay here and I ask you again the next time I'm alone",
+		"stay_forever": "✅ I stay here forever",
+		"golden_level": "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"
+	},
+	"add_song_modal": {
+		"title": "Add a song",
+		"placeholder": "Enter a link or a search term",
+		"label": "Song / Playlist",
+		"enter_song": "❌ You need to input a link or a search terms",
+		"search_too_long": "❌ Your search request cannot exceed 250 characters",
+		"search_placeholder": "Choose your desired song"
+	},
+	"troll_success": "✅ Song played\n<:transparent:1067551646592282694> NB : Annoyed by friends trolling you too much ? You can disable trolling in the </settings:1065334689021296671> panel",
+	"buttons": {
+		"cancel": "Cancel",
+		"label_inactive": "I'm alone. Can I leave ?",
+		"inactive_leave": "Sure !",
+		"stay": "Nope",
+		"stay_forever": "Stay forever",
+		"queue": "Queue",
+		"add_song": "Add song",
+		"hide": "Hide",
+		"stop": "Stop",
+		"leave": "Quit",
+		"queue_play": "Play Now",
+		"queue_remove": "Remove",
+		"queue_unselect": "Unselect this song",
+		"queue_hide": "Hide queue"
+	},
+	"player_embed": {
+		"title_play": "Playing \"{song_name}\"",
+		"title_idle": "Currently playing anything",
+		"restart_msg": "⚠️ BaBot will restart <t:{timestamp}:R>",
+		"description_idle": "Add a music in the queue to start listening"
+	},
+	"queue_embed": {
+		"title": "Queue",
+		"no_song": "No song in queue",
+		"select_song": "Select a song",
+		"page": "Page {current} of {total}"
+	},
+	"errors": {
+		"guild_only": "💥 You can only use this command in a guild",
+		"not_in_voice_channel": "❌ Будь ласка, приєднайтеся до голосового каналу, щоб скористатися цією командою",
+		"user_not_in_voice_channel": "❌ Цей користувач не в голосовому каналі",
+		"join": "❌ Мені заборонено приєднуватися до голосового каналу",
+		"speak": "❌ Мені заборонено говорити в голосовому каналі",
+		"full": "❌ Голосовий канал заповнений (мені потрібен дозвіл «Перемістити учасників», щоб змінити це)",
+		"already_used": "❌ Я вже використовувався в іншому каналі",
+		"unknown_player_error": "💥 Не вдалося ініціалізувати програвач, але я не знаю чому. Зазвичай цю помилку неможливо спровокувати, тому gg",
+		"user_not_found": "💥 Цього користувача не існує",
+		"dont_disturb": "🤫 Цей учасник попросив не турбувати його тролінгом",
+		"song_not_found": "💥 Я не можу отримати доступ до цієї пісні",
+		"player_already_used": "❌ Зараз я відтворюю музику. Щоб не заважати слухачам, я відмовляюся переміститися",
+		"no_player": "❌ Я більше не в голосовому каналі. Почніть новий сеанс за допомогою команди </player:1052609017802924062>",
+		"not_alone": "💥 Я більше не один у голосовому каналі",
+		"not_my_channel": "❌ Ви не можете контролювати мене, якщо ви не на моєму каналі",
+		"interaction": "💥 Цієї взаємодії не існує"
+	}
+}
