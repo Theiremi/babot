@@ -68,7 +68,7 @@
 	"settings": {
 		"command_description": "Voir et modifier ses paramètres BaBot.",
 		"panel_title": "Panneau de configuration de {username}",
-		"panel_content": "- **Désactiver le troll** : Vous empêche d'être victime de trolls. Parfait si vous avez des amis embêtants :)",
+		"panel_content": "- **Désactiver le troll** : Vous empêche d'être victime de troll. Parfait si vous avez des amis embêtants :)",
 		"disable_troll_btn": "Désactiver le troll",
 		"not_authorized_user": "❌ À ce que je vois, ce n'est pas votre panneau de configuration, me trompe-je ?"
 	},
