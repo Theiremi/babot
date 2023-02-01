@@ -26,7 +26,7 @@ const status = new Status(Discord, client, log);
 const settings = require(__dirname + '/env_data/env.json');
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.4.0 released", 3],
+  ["/changelog : version 1.4.2 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],

@@ -157,10 +157,18 @@
 		]
 	},
 	{
-		"version": "1.4.1 (actual)",
+		"version": "1.4.1",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Improved /help start"
+		]
+	},
+	{
+		"version": "1.4.2 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Repaired permissions system",
+			"Improved tutorial for player permissions"
 		]
 	}
 ]
