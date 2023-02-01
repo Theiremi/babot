@@ -37,13 +37,18 @@
 		"queue_play": "Play Now",
 		"queue_remove": "Remove",
 		"queue_unselect": "Unselect this song",
-		"queue_hide": "Hide queue"
+		"queue_hide": "Hide queue",
+		"config_finished": "I've finished",
+		"owner_settings": "Owner controls"
 	},
 	"player_embed": {
 		"title_play": "Playing \"{song_name}\"",
 		"title_idle": "Currently playing anything",
+		"title_configure_global": "Manage permissions for this *server*",
+		"title_configure_session": "Manage permissions for this *player*",
 		"restart_msg": "⚠️ BaBot will restart <t:{timestamp}:R>",
-		"description_idle": "Add a music in the queue to start listening"
+		"description_idle": "Add a music in the queue to start listening",
+		"description_configure": "Configure the permissions users have on the player\nClick on the thumbnail for help"
 	},
 	"queue_embed": {
 		"title": "Queue",
@@ -67,6 +72,10 @@
 		"no_player": "❌ I'm no longer in a voice channel. Start a new playing session with the command </player:1052609017802924062>",
 		"not_alone": "💥 I'm no longer alone in the voice channel",
 		"not_my_channel": "❌ You can't control me if you're not in my channel",
-		"interaction": "💥 This interaction doesn't exists"
+		"interaction": "💥 This interaction doesn't exists",
+		"settings": "💥 This settings function is broken :cry:",
+		"disabled_by_owner": "❌ The session owner has disabled this control",
+		"disabled_by_admin": "❌ The server administrators have disabled this control",
+		"owner_only": "❌ Only the session owner ({username}) can use this command"
 	}
 }

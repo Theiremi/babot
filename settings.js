@@ -156,11 +156,11 @@ module.exports = class Settings {
 
 		let total_xp = await this.pointsCount(id);
 		if(total_xp === false) return false;
-		if(total_xp >= 1000)
+		if(total_xp >= 2500)
 		{
 			return 2;
 		}
-		if(total_xp >= 500)
+		if(total_xp >= 750)
 		{
 			return 1;
 		}

@@ -35,6 +35,7 @@ module.exports = class Status {
 
 	async presenceUpdate(oldUser, newUser)
 	{
+		return false;
 		if(!newUser.equals(this.#_last_presence))
 		{
 			this.#_last_presence = newUser;
@@ -171,10 +172,10 @@ module.exports = class Status {
 }
 
 function isJsonString(str) {
-		try {
-				JSON.parse(str);
-		} catch (e) {
-				return false;
-		}
-		return true;
+	try {
+			JSON.parse(str);
+	} catch (e) {
+			return false;
+	}
+	return true;
 }
