@@ -1042,6 +1042,7 @@ module.exports = class Player {
 	{
 		let cmd_prfx = config_mode === 1 ? "session_" : "global_"
 		let guild_permissions = (await settings.get(guild_id, 1, 'config')).permissions;
+		if(guild_permissions === undefined) guild_permissions = {};
 		let displayed_permissions = config_mode === 1 ? this.#_guilds_play_data[guild_id].permissions : guild_permissions;
 		let change_permission = config_mode === 1 ? !guild_permissions?.owner_settings : true;
 		let player_interface_components = [];
@@ -1138,7 +1139,8 @@ module.exports = class Player {
 		if(config_mode === 0) player_embed.setTitle(i18n.get("player_embed.title_configure_global", locale));
 		else player_embed.setTitle(i18n.get("player_embed.title_configure_session", locale));
 		player_embed.setDescription(i18n.get("player_embed.description_configure", locale));
-		player_embed.setThumbnail('https://babot.theireply.fr/config_perms.png');
+		if(config_mode === 0) player_embed.setThumbnail('https://babot.theireply.fr/config_perms.png');
+		else player_embed.setThumbnail('https://babot.theireply.fr/config_perms_player.png');
 
 		return {content: '', ephemeral: true, embeds: [player_embed], components: player_interface_components}
 	}
