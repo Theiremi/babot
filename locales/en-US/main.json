@@ -55,23 +55,23 @@
 		"contribute_description": "How can I help BaBot ?",
 		"faq_description": "Get the answer to frequently asked questions",
 		"start": {
-			"title": "BaBot : The basics",
-			"description": "**BaBot is mainly focused on voice channels features, but also includes some extra functions that might be useful to know**\nThe ergonomy of BaBot is our priority, so **feel free to try commands** to understand how they works",
+			"title": "Getting started with BaBot",
+			"description": "",
 			"field_1": {
-				"name": "Main commands",
-				"value": "- **</player:1052609017802924062>** : Open a player interface to use BaBot to play music\n- **</troll:1054878390278176808>** : Send the bot play a funny song in the voice channel of an user without evidences"
+				"name": "Explain me fast",
+				"value": "- **Use </player:1052609017802924062>** to start listening music\n- **Use </troll:1054878390278176808>** to send BaBot play a funny song in the voice channel of an user without evidences"
 			},
 			"field_2": {
-				"name": "Manage your profile",
-				"value": "BaBot include a levelling system giving you advantages depending of your activity (see `/help level`)\n**To manage your BaBot profile, use these commands :**\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"
+				"name": "I want more details",
+				"value": "You can manage how BaBot should works with :\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"
 			},
 			"field_3": {
-				"name": "Get in depth help",
-				"value": "For help on specific subjects, feel free to dive into the others section of this help center"
+				"name": "I'm a server admin",
+				"value": "BaBot have some settings you can tweak grouped in the `/config` hub"
 			},
 			"field_4": {
-				"name": "I have some questions",
-				"value": "You can consult the FAQ at `/help faq` to get answer to your questions\nIf you don't find the response, feel free to ask it in our [Support Server](https://discord.gg/zssHymr656)"
+				"name": "I've not understand :grin:",
+				"value": "Get more help in the others section of this help center, especially with `/help faq`\nAlso feel free to join our [Support Server](https://discord.gg/zssHymr656) if your question have definitely no answers"
 			}
 		},
 		"level": {
