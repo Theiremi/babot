@@ -146,7 +146,7 @@
 		]
 	},
 	{
-		"version": "1.4.0 (actual)",
+		"version": "1.4.0",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Support for ukrainian language",
@@ -154,6 +154,13 @@
 			"Fixed some memory leaks crashing BaBot periodically",
 			"Added a permission system",
 			"Feature to set language of the guild (`/config language`)"
+		]
+	},
+	{
+		"version": "1.4.1 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Improved /help start"
 		]
 	}
 ]

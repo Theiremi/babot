@@ -908,7 +908,6 @@ module.exports = class Player {
 			{
 				clearTimeout(this.#_guilds_play_data[guild_id].inactive_timer);
 			}
-			this.#killStreams(guild_id);
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
 		catch(e)
@@ -1147,6 +1146,7 @@ module.exports = class Player {
 	async #checkPermission(command, interaction)
 	{
 		let guild_permissions = (await settings.get(interaction.guildId, 1, 'config')).permissions;
+		if(guild_permissions === undefined) guild_permissions = {};
 		if(!guild_permissions.owner_settings)
 		{
 			if(!guild_permissions[command])
@@ -1507,11 +1507,6 @@ module.exports = class Player {
 		return new Promise(async (resolve, reject) => {
 			if(this.#get_song(guild_id) !== undefined)
 			{
-				this.#killStreams(guild_id);
-				if(this.#_guilds_play_data[guild_id].request_controller) {
-					//console.log('test4');
-					this.#_guilds_play_data[guild_id].request_controller.abort();
-				}
 				let link = this.#get_song(guild_id).link;
 				this.#_log_function('Player-song', '[' + guild_id + '] Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
@@ -1527,7 +1522,6 @@ module.exports = class Player {
 					this.#_log_function('Player-song', '[' + guild_id + '] Error fetching song');
 				});
 				if(play_link_process === undefined) return false;
-				this.#_guilds_play_data[guild_id].streams.push(play_link_process.data)
 
 				let transcoder = new prism.FFmpeg({args: [
 					'-analyzeduration', '0',
@@ -1537,11 +1531,8 @@ module.exports = class Player {
 					'-ac', '2',
 					'-s:a', '240'
 				]});
-				this.#_guilds_play_data[guild_id].streams.push(transcoder)
 				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
-				this.#_guilds_play_data[guild_id].streams.push(this.#_guilds_play_data[guild_id].volumeTransformer)
 				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
-				this.#_guilds_play_data[guild_id].streams.push(encoder)
 
 				let resource = Voice.createAudioResource(play_link_process.data.pipe(transcoder).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
 				/*resource.playStream.on('data', function(data)
@@ -1560,16 +1551,6 @@ module.exports = class Player {
 			}
 			resolve();
 		});
-	}
-
-	#killStreams(guild_id)
-	{
-		for(let i in this.#_guilds_play_data[guild_id].streams)
-		{
-			this.#_guilds_play_data[guild_id].streams[i].destroy();
-
-			this.#_guilds_play_data[guild_id].streams.splice(i, 1);
-		}
 	}
 	//-----//
 }
