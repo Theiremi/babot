@@ -1,9 +1,9 @@
+'use strict';
+
 const si = require('systeminformation');
-const os = require('os');
 const fs = require('fs');
 const axios = require('axios');
 const Discord = require('discord.js');
-const Voice = require('@discordjs/voice');
 const Builders = require('@discordjs/builders');
 const Player = require('./player/index.js');
 const Status = require('./statusbot/index.js');
@@ -13,7 +13,7 @@ const client = new Discord.Client({
   intents: [Discord.IntentsBitField.Flags.Guilds,
     //Discord.IntentsBitField.Flags.GuildPresences,
     Discord.IntentsBitField.Flags.GuildVoiceStates,
-    Discord.IntentsBitField.Flags.GuildMessages,
+    //Discord.IntentsBitField.Flags.GuildMessages,
     //Discord.IntentsBitField.Flags.MessageContent
   ],
   presence: {activities: [{name: "Starting... It will take time for BaBot to be fully functional", type: 3}]}
@@ -23,11 +23,10 @@ const i18n = new I18n('main');
 const client_settings = new Settings();
 const player = new Player(Discord, client, log);
 const status = new Status(Discord, client, log);
-
-let settings = {};
+const settings = require(__dirname + '/env_data/env.json');
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.3.2 released", 3],
+  ["/changelog : version 1.4.0 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],
@@ -82,20 +81,23 @@ client.on('ready', async () => {
   //--- BOT STATS ---//
   log('Main', 'I\'m the shard ' + (client.shard.ids[0] + 1) + '/' + client.shard.count + ' and I operate in ' + client.shard.mode + ' mode in ' + client.guilds.cache.size + ' guilds');
   //await update_stats();//Activating this introduces a lot of strange things
-  client.shard.parentPort.on('message', function(msg) {
-    if(msg.action === "scheduled_restart")
-    {
-      player.shutdownRequest(msg.timestamp);
-    }
-    else if(msg.action === "player_count")
-    {
-      client.shard.send({action: "player_count", count: player.playerCount()});
-    }
-    else if(msg.action === "total_player_count")
-    {
-      total_players = msg.count;
-    }
-  })
+  if(client.shard.mode === 'worker')
+  {
+    client.shard.parentPort.on('message', function(msg) {
+      if(msg.action === "scheduled_restart")
+      {
+        player.shutdownRequest(msg.timestamp);
+      }
+      else if(msg.action === "player_count")
+      {
+        client.shard.send({action: "player_count", count: player.playerCount()});
+      }
+      else if(msg.action === "total_player_count")
+      {
+        total_players = msg.count;
+      }
+    })
+  }
   //---//
 
   //--- DEFINING COMMANDS ---//
@@ -134,6 +136,35 @@ client.on('ready', async () => {
   );
   client.application.commands.create({name: "dashboard", description: i18n.get("dashboard.command_description"), descriptionLocalizations: i18n.all("dashboard.command_description"), type: 1, dmPermission: true});
   client.application.commands.create({name: "settings", description: i18n.get("settings.command_description"), descriptionLocalizations: i18n.all("settings.command_description"), type: 1, dmPermission: true});
+  client.application.commands.create(new Builders.SlashCommandBuilder()
+    .setName('config')
+    .setDescription(i18n.get("config.command_description"))
+    .setDescriptionLocalizations(i18n.all("config.command_description"))
+    .setDMPermission(false)
+    .addSubcommand(subcommand => 
+      subcommand.setName('player')
+        .setDescription(i18n.get("config.player.description"))
+        .setDescriptionLocalizations(i18n.all("config.player.description"))
+    )
+    .addSubcommand(subcommand =>
+      subcommand.setName('language')
+        .setDescription(i18n.get("config.languages.description"))
+        .setDescriptionLocalizations(i18n.all("config.language.description"))
+        .addStringOption((option) => {
+          option.setName('locale')
+            .setDescription(i18n.get("config.languages.locale_description"))
+            .setDescriptionLocalizations(i18n.all("config.languages.locale_description"))
+            .setRequired(true)
+          for(let e of i18n.supported())
+          {
+            option.addChoices({name: i18n.get("config.languages.locales." + e), name_localizations: i18n.all("config.languages.locales." + e), value: e});
+          }
+          option.addChoices({name: i18n.get("config.languages.locales.not_mine"), name_localizations: i18n.all("config.languages.locales.not_mine"), value: "not_mine"});
+
+          return option;
+        })
+    )
+  );
   client.application.commands.create(new Builders.SlashCommandBuilder()
     .setName('help')
     .setDescription(i18n.get("help.command_description"))
@@ -373,6 +404,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'dashboard')
     {
+      await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
       log('Main-user', 'Command `dashboard` received from user ' + interaction.user.tag);
       let user_level = await client_settings.level(interaction.user.id);
       let level_name = "";
@@ -416,13 +448,59 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         ])
       ];
 
-      await interaction.reply({embeds: [dash_embed], components: dash_components}).catch((e) => {console.log('reply error : ' + e)});
+      await interaction.editReply({embeds: [dash_embed], components: dash_components}).catch((e) => {console.log('reply error : ' + e)});
       return;
     }
     else if(interaction.commandName === 'settings')
     {
       log('Main-user', 'Command `settings` received from user ' + interaction.user.tag);
       await interaction.reply(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
+      return;
+    }
+
+    else if(interaction.commandName === 'config')
+    {
+      let subcommand = interaction.options.getSubcommand();
+      if(subcommand == undefined)
+      {
+        await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+        return;
+      }
+      log('Main-config', 'Command `config` -> `' + subcommand + '` received from user ' + interaction.user.tag);
+
+      if(!interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild))//Ne peut pas manage la guild
+      {
+        await interaction.reply({ content: i18n.get('errors.not_admin', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+        return;
+      }
+
+      if(subcommand === 'player')
+      {
+        player.configure(interaction);
+      }
+      else if(subcommand === 'language')
+      {
+        let choosen_locale = interaction.options.getString("locale", true);
+
+        if(i18n.exists(choosen_locale))
+        {
+          let config = await client_settings.get(interaction.guildId, 1, 'config');
+          if(config === false)
+          {
+            await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+            return;
+          }
+
+          config.locale = choosen_locale;
+          await client_settings.set(interaction.guildId, 1, 'config', config);
+          await interaction.reply({content: i18n.place(i18n.get('config.languages.change_done', interaction.locale), {language: choosen_locale}), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+        }
+        else
+        {
+          await interaction.reply({content: i18n.get('config.languages.language_doesnt_exists', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+        }
+      }
+      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
       return;
     }
 
@@ -441,14 +519,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({
           content: '',
           embeds: [{
-            title: "BaBot and his level system",
+            title: i18n.get("help.level.title", interaction.locale),
             color: 0x2f3136,
-            description: "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points\n*NB : Upvoting BaBot on certain sites (See `/help contribute`) also gives XP*",
+            description: i18n.get("help.level.description", interaction.locale),
             fields: [
-              {name: "<:level1:1065239400549724281> Level 1 : < 500 points", value: "It's the default level.\nAll the basic function are available"},
-              {name: "<:level2:1065239416798453921> Level 2 : > 500 points", value: "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"},
-              {name: "<:level3:1065239432321568848> Level 3 : > 1000 points", value: "Active users of BaBot. They can :\n- Bypass the `disable troll` setting\n- all previous advantages"},
-              {name: "<:golden:1065239445625917520> Golden : Made a donation", value: "A top level granted to donators. Get all the infos about donators using `/help donator`"},
+              {name: i18n.get("help.level.field_1.name", interaction.locale), value: i18n.get("help.level.field_1.value", interaction.locale)},
+              {name: i18n.get("help.level.field_2.name", interaction.locale), value: i18n.get("help.level.field_2.value", interaction.locale)},
+              {name: i18n.get("help.level.field_3.name", interaction.locale), value: i18n.get("help.level.field_3.value", interaction.locale)},
+              {name: i18n.get("help.level.field_4.name", interaction.locale), value: i18n.get("help.level.field_4.value", interaction.locale)}
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -458,14 +536,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({
           content: '',
           embeds: [{
-            title: "<:golden:1065239445625917520> Make a tip for BaBot !",
+            title: i18n.get("help.donator.title", interaction.locale),
             color: 0x2f3136,
-            description: "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
+            description: i18n.get("help.donator.description", interaction.locale),
             fields: [
-              {name: "What can I do if a make a tip ?", value: "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- All the advantages from the lower levels (see `/help level`)"},
-              {name: "Do the advantages varies depending of my tip ?", value: "Every tip give access to the <:golden:1065239445625917520>Golden level.\nHowever, depending of your tip, you can obtain the ability to spread your Golden level to all users of a server :\n- **5$** : Allow all users of 3 chosen servers to use Golden perks\n- **15$** : Allow all users of 10 chosen servers to use Golden perks\nNB : When the player is displayed in gold, that means an user has applied Golden on the current server"},
-              {name: "What happens if I don't make a tip", value: "There's no problem !\nYou can continue to use BaBot as usual, and all the free functions *should* stay free for a long time (at least I hope)"},
-              {name: "Where can I make a tip ?", value: "My patreon page is here for that : [Patreon page](https://patreon.com/user?u=85252153)\nBtw thank you ! Thanks to you, BaBot will have a future !"},
+              {name: i18n.get("help.donator.field_1.name", interaction.locale), value: i18n.get("help.donator.field_1.value", interaction.locale)},
+              {name: i18n.get("help.donator.field_2.name", interaction.locale), value: i18n.get("help.donator.field_2.value", interaction.locale)},
+              {name: i18n.get("help.donator.field_3.name", interaction.locale), value: i18n.get("help.donator.field_3.value", interaction.locale)},
+              {name: i18n.get("help.donator.field_4.name", interaction.locale), value: i18n.get("help.donator.field_4.value", interaction.locale)}
             ],
           }],
           components: [
@@ -473,7 +551,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
               new Discord.ButtonBuilder()
                 .setStyle(5)
                 .setEmoji({name: "golden", id: "1065239445625917520"})
-                .setLabel("Make a tip !")
+                .setLabel(i18n.get("help.donator.tip_button", interaction.locale))
                 .setURL('https://patreon.com/user?u=85252153')
             ])
           ]
@@ -484,14 +562,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({
           content: '',
           embeds: [{
-            title: "BaBot : The basics",
+            title: i18n.get("help.start.title", interaction.locale),
             color: 0x2f3136,
-            description: "**BaBot is mainly focused on voice channels features, but also includes some extra functions that might be useful to know**\nThe ergonomy of BaBot is our priority, so **feel free to try commands** to understand how they works",
+            description: i18n.get("help.start.description", interaction.locale),
             fields: [
-              {name: "Main commands", value: "- **</player:1052609017802924062>** : Open a player interface to use BaBot to play music\n- **</troll:1054878390278176808>** : Send the bot play a funny song in the voice channel of an user without evidences"},
-              {name: "Manage your profile", value: "BaBot include a levelling system giving you advantages depending of your activity (see `/help level`)\n**To manage your BaBot profile, use these commands :**\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"},
-              {name: "Get in depth help", value: "For help on specific subjects, feel free to dive into the others section of this help center"},
-              {name: "I have some questions", value: "You can consult the FAQ at `/help faq` to get answer to your questions\nIf you don't find find the response, feel free to ask it in our [Support Server](https://discord.gg/zssHymr656)"},
+              {name: i18n.get("help.start.field_1.name", interaction.locale), value: i18n.get("help.start.field_1.value", interaction.locale)},
+              {name: i18n.get("help.start.field_2.name", interaction.locale), value: i18n.get("help.start.field_2.value", interaction.locale)},
+              {name: i18n.get("help.start.field_3.name", interaction.locale), value: i18n.get("help.start.field_3.value", interaction.locale)},
+              {name: i18n.get("help.start.field_4.name", interaction.locale), value: i18n.get("help.start.field_4.value", interaction.locale)}
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -501,11 +579,11 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({
           content: '',
           embeds: [{
-            title: "How to help BaBot",
+            title: i18n.get("help.contribute.title", interaction.locale),
             color: 0x2f3136,
-            description: "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (top.gg, discordbotlist.com, discords.com or botlist.me)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
+            description: i18n.get("help.contribute.description", interaction.locale),
             footer :{
-              text: "A big thanks to anyone who want to help BaBot, as it allows BaBot to survive and grow"
+              text: i18n.get("help.contribute.footer", interaction.locale)
             }
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -515,12 +593,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({
           content: '',
           embeds: [{
-            title: "BaBot FAQ",
+            title: i18n.get("help.faq.title", interaction.locale),
             color: 0x2f3136,
-            description: "**You have some questions ? You're in the right place !**",
+            description: i18n.get("help.faq.description", interaction.locale),
             fields: [
-              {name: "Why the BaBot player is gold ?", value: "A gold player indicates that a Golden user has extended his Golden on the server (see `/help donator`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"},
-              {name: "How can I help BaBot ?", value: "There are several ways to help BaBot indicated in the `/help contribute` help page"}
+              {name: i18n.get("help.faq.field_1.name", interaction.locale), value: i18n.get("help.faq.field_1.value", interaction.locale)},
+              {name: i18n.get("help.faq.field_2.name", interaction.locale), value: i18n.get("help.faq.field_2.value", interaction.locale)},
+              {name: i18n.get("help.faq.field_3.name", interaction.locale), value: i18n.get("help.faq.field_3.value", interaction.locale)}
             ]
           }]
         }).catch((e) => { console.log('reply error : ' + e)});
@@ -655,13 +734,15 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   player.interactionCreate(interaction);
   status.interactionCreate(interaction);
 });
-
+/*
 client.on('presenceUpdate', async (odlUser, newUser) => {
   //log('Main', 'Presence update');
   //status.presenceUpdate(odlUser, newUser)
-});
+});*/
 
+/*
 client.on('messageCreate', async (message) => {
+  return;
   //log('Main', 'Message created');
   let channel_permissions = message.channel.permissionsFor(message.guild.members.me, true);
   if(!message.channel.viewable ||
@@ -671,7 +752,7 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
-  /*if(message.cleanContent.startsWith('m!play'))
+  if(message.cleanContent.startsWith('m!play'))
   {
     log('Main', '[' + message.guildId + '] I made my publicity to ' + message.author.tag);
     console.log(message.cleanContent);
@@ -694,14 +775,14 @@ client.on('messageCreate', async (message) => {
       }
     }]});
   }
-  else */if(message.cleanContent.toLowerCase().indexOf('babot') !== -1 &&
+  else if(message.cleanContent.toLowerCase().indexOf('babot') !== -1 &&
     message.cleanContent.toLowerCase().indexOf('loop') !== -1 &&
     message.cleanContent.toLowerCase().indexOf('stuck') !== -1)//Easter egg that will lopp BaBot responding to itself (bc it receive events for created messages even if it was send by itself)
   {
     message.reply({ content: "Speaking about BaBot stuck in a loop ?"});
     log('Main', '[' + message.guildId + '] I replied to ' + message.author.tag + ' who was speaking about me : ' + message.cleanContent);
   }
-});
+});*/
 
 client.on('guildCreate', async (guild) => {
   guild = await guild.fetch();
@@ -722,19 +803,8 @@ client.on('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
 
 //----- ENTRY POINT -----//
 (async () => {
-  if(fs.existsSync(__dirname + '/env_data/env.json'))
-  {
-    let settings_file = await fs.promises.readFile(__dirname + '/env_data/env.json', {encoding: 'utf-8'});
-
-    if(isJsonString(settings_file))
-    {
-      settings = JSON.parse(settings_file);
-      client.login(settings.token);
-      log('Main', 'Environment variables loaded');
-    }
-    else log('Main', 'ERROR : Environment file isn\'t JSON valid');
-  }
-  else log('Main', 'ERROR : Environment file not found');
+  client.login(settings.token);
+  log('Main', 'Environment variables loaded');
 })();
 //-----//
 
@@ -780,10 +850,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: "server_count=" + guild_count + "&shard_count=" + shards_count
   }).then(function(){
-    log('Main', 'Data actualized on discords.com');
+    log('Main', 'Data actualized on top.gg');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on discords.com');
+    log('Main', 'Error when actualizing data on top.gg');
   });
 
   await axios({
@@ -860,17 +930,16 @@ async function update_stats()//Executed when guilds count change or bot is resta
   //---//
 }
 
-let log_line_started = false;
 function log(code_section, msg)
 {
   let date = new Date();
-  let msg_formatted = (!log_line_started ? '[' + date.getFullYear() + '/' +
+  let msg_formatted = ('[' + date.getFullYear() + '/' +
     ("0" + (date.getMonth() + 1)).slice(-2) + '/' +
     ("0" + date.getDate()).slice(-2) + ' ' +
     ("0" + date.getHours()).slice(-2) + ':' +
     ("0" + date.getMinutes()).slice(-2) + ':' +
     ("0" + date.getSeconds()).slice(-2) + '] ' +
-    '[' + (code_section + '                    ').slice(0, 20) + '] ' : '') + msg + '\n';
+    '[' + (code_section + '                    ').slice(0, 20) + '] ') + msg + '\n';
 
   process.stdout.write(msg_formatted);
 

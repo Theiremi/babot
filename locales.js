@@ -21,6 +21,30 @@ module.exports = class {
 		}
 	}
 
+	exists(locale = undefined)
+	{
+		if(locale === undefined)
+		{
+			if(this.#locales['en-US'] !== undefined)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if(this.#locales[locale] !== undefined)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	supported()
+	{
+		return Object.keys(this.#locales);
+	}
+
 	get(term, locale = undefined)
 	{
 		if(this.#locales[locale] === undefined)

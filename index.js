@@ -1,10 +1,12 @@
+'use strict';
+
 const Discord = require('discord.js');
 const fs = require('fs');
 const schedule = require('node-schedule');
 const settings = require(__dirname + '/env_data/env.json');
 
 let shards_players = {}
-let manager = new Discord.ShardingManager('bot.js', {token: settings.token, mode: 'worker', totalShards: settings.shards});
+let manager = new Discord.ShardingManager('bot.js', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
 manager.on('shardCreate', async function(shard){
 	console.log('ShardManager / Shard ' + shard.id + ' started');
 	shard.on('message', function(msg){
@@ -14,7 +16,7 @@ manager.on('shardCreate', async function(shard){
 		}
 	})
 });
-manager.spawn({timeout: 120_000});
+manager.spawn({timeout: 120_000, delay: 2_000}).catch((e) => console.log(e));
 setInterval(async function(){
 	await manager.broadcast({action: "player_count"});
 	await sleep(2_000);
