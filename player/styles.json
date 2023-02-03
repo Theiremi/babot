@@ -1,0 +1,45 @@
+{
+	"discord": {
+		"restart": {"name": "↩️"},
+		"last": {"name": "⏮️"},
+		"pause": {"name": "⏸️"},
+		"play": {"name": "▶️"},
+		"next": {"name": "⏭️"},
+		"volume": {"name": "🔉"},
+
+		"loop": {"name": "🔁"},
+		"shuffle": {"name": "🔀"},
+		"queue": {},
+		"add_song": {},
+
+		"hide": {},
+		"stop": {},
+		"leave": {},
+		"owner_controls": {}
+	},
+	"line": {
+		"restart": {"name": ":linerestart:", "id": "1070760359167799366"},
+		"last":    {"name": ":lineprev:",    "id": "1070760491657470073"},
+		"pause":   {"name": ":linepause:",   "id": "1070760577061892217"},
+		"play":    {"name": ":lineplay:",    "id": "1070760560897052672"},
+		"next":    {"name": ":linenext:",    "id": "1070760594518585425"},
+		"volume":  {"name": ":linevolume:",  "id": "1070760727415107665"},
+
+		"loop":     {"name": ":lineloop:", "id": "1070763811667181651"},
+		"shuffle":  {"name": ":lineshuffle:", "id": "1070763822136184853"},
+		"queue":    {"name": ":linequeue:", "id": "1070763843170615368"},
+		"add_song": {"name": ":lineadd_song:", "id": "1070763872853692456"},
+
+		"hide":           {},
+		"stop":           {"name": ":linehide:", "id": "1070763885688266783"},
+		"leave":          {},
+		"owner_settings": {"name": ":lineownercontrols:", "id": "1070763894181736509"},
+
+		"play_now": {},
+		"remove": {},
+
+		"volume_low": {},
+		"volume_medium": {},
+		"volume_high": {}
+	}
+}

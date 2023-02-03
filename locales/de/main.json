@@ -1,0 +1,214 @@
+{
+	"changelog": {
+		"command_description": "Sehe update Historie von BaBot.",
+		"corrupted": "Changelog-Daten sind beschädigt..",
+		"not_found": "Changelog Daten konnten nicht gefunden werden.."
+	},
+	"known_issues": {
+		"command_description": "Liste aller Fehler in BaBot, die auf Behebung warten.",
+		"not_found": "Fehler Liste konnte nicht gefunden werden.."
+	},
+	"stats": {
+		"command_description": "Siehe allgemeine Statistiken über BaBot.",
+		"title": "Hey, Mein Name ist {name}!",
+		"content": "Ich bin auf **{servers_count}** Servern\nInsgesamt laufen **{shards_count}** Shards\nDieser server ist auf Shard **#{shard}**\nIch spiele gerade **{total_players}** mal Musik, und **{shard_players}** auf deiner Shard\nIch bin Online für <t:{uptime}:R>\nServer RAM Auslastung: **{used_ram}/{total_ram}GB**\nServer CPU Last : **{cpu_usage}%**\nServer Temperatur : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
+		"footer_text": "Server können manchmal überlastet sein. Überprüfe hier den Serverstatus, wenn du lags hast und melde abnormale Werte mit /feedback."
+	},
+	"privacy": {
+		"command_description": "Alle rechtlichen Aktionen, die du von BaBot gespeicherte Daten ausführen können.",
+		"embed_footer": "Bei Fragen zu deinen Daten wende dich an unser Team unter contact@theireply.fr",
+		"policy": {
+			"description": "Wie du auf die Datenschutzrichtlinie von BaBot zugreifen kannst.",
+			"embed_title": "Datenschutzerklärung",
+			"embed_content": "Du kannst die BaBot Datenschutzrichtlinien in Französisch [unter diesem Link](https://www.theireply.fr/babot/pdc.pdf)\neinsehen **die englische Version ist noch nicht verfügbar*"
+		},
+		"retrieve": {
+			"description": "Alle Daten die wir über dich hat exportieren",
+			"embed_title": "Alle Daten exportieren",
+			"embed_content": "Ein Archiv, das deine Daten enthält, wird dir über deine DMs sofort gesendet\n**Bist du sicher, dass du fortfahren möchtest?**",
+			"btn_yes": "Ja",
+			"btn_no": "Nein",
+			"success": "Ihre Daten sollten in DM gesendet worden sein",
+			"fail": "Beim Generieren des Archivs ist ein Fehler aufgetreten.. Es gibt wahrscheinlich keine Daten zum Exportieren..",
+			"dm_message": "🗃️ Ihre Daten sind im Archiv unten verfügbar.\n❕Dieses Archiv enthält keine ausführbaren Dateien"
+		},
+		"delete": {
+			"description": "Alle Daten die wir über dich haben löschen",
+			"embed_title": "Lösche alle deine BaBot Daten",
+			"embed_content": "**⚠️ Alle deine Daten werden sofort gelöscht ⚠️**\nDazu gehören:\n- Deine gespeicherten Wiedergabelisten\n- Deine letzten Aktivitäten auf BaBot\n- Dein XP\n- Deine Vorteile, wenn du eine spende gemacht hast\n**Diese Aktion ist unumkehrbar. Bist du sicher, dass du fortfahren möchtest?**",
+			"btn_yes": "Ja, lösche meine Daten",
+			"btn_no": "Nein, lösche meine Daten nicht",
+			"success": "All deine Daten wurden erfolgreich gelöscht!",
+			"fail": "Beim Löschen deiner Daten ist ein Fehler aufgetreten, bitte melde es mit `/feedback`"
+		},
+		"cancel": {
+			"embed_title": "Anfrage abgebrochen",
+			"embed_content": "Deine Anfrage wurde abgebrochen. Du kannst nun dieses Pop-up nun schließen!"
+		}
+	},
+	"help": {
+		"command_description": "Erhalte Hilfe über die Funktion von BaBot.",
+		"start_description": "Erste Schritte mit BaBot",
+		"level_description": "Informationen darüber, wie das Level System funktioniert",
+		"donator_description": "Warum solltest du BaBot etwas Geld geben",
+		"contribute_description": "Wie kann ich BaBot helfen?",
+		"faq_description": "Erhalte Antworten über oft gestellte fragen",
+		"start": {
+			"title": "Erste Schritte mit BaBot",
+			"description": "",
+			"field_1": {
+				"name": "Lass mich schnell erklären",
+				"value": "- **Verwende </player:1052609017802924062>** um Musik zu hören.\n- **Verwende </troll:1054878390278176808>** um BaBot ein lustiges Lied im Sprachkanal eines Benutzers ohne Beweise abzuspielen."
+			},
+			"field_2": {
+				"name": "Mehr Details",
+				"value": "Du kannst BaBot mit verwalten:\n- **</dashboard:1065334605076508772>** : Siehe Statistiken und greife auf persönliche Commands zu\n- **</settings:1065334689021296671>** : Konfigurierte die Funktionsweise von BaBot für dich"
+			},
+			"field_3": {
+				"name": "Ich bin ein Server Admin",
+				"value": "BaBot hat einige Einstellungen, die du im `/config` Hub gruppiert einstellen kannst."
+			},
+			"field_4": {
+				"name": "Ich verstehe es nicht :grin:",
+				"value": "Erhalte mehr Hilfe in der anderen Sektion dieses Hilfezentrums, insbesondere mit `/help faq`\nFühle dich auch frei, unserem [Support Server](https://discord.gg/j4aZECVWSQ) beizutreten, wenn deine Frage definitiv keine Antworten hat"
+			}
+		},
+		"level": {
+			"title": "BaBot und sein Levelsystem",
+			"description": "BaBot hat ein Level-System, das es Usern erlaubt, Aktionen je nach Level auszuführen.\nJedes Mal, wenn du BaBot verwendest, erhaltest du XP. Dieses XP wird verwendet, um eine Rangliste der aktivsten BaBot Usern zu etablieren.\nUm das Level jedes Benutzers zu bestimmen, wird die XP von den letzten 7 Tagen gewonnen wurde genommen. Dieser Wert ist die Anzahl der Punkte.\n*NB : Voten für BaBot auf bestimmten Seiten (siehe `/help contribute`) gibt auch XP*",
+			"field_1": {
+				"name": "<:level1:1065239400549724281> Level 1: < 500 Punkte",
+				"value": "Dies ist die Standardstufe.\nAlle Basisfunktionen sind verfügbar."
+			},
+			"field_2": {
+				"name": "<:level2:1065239416798453921> Level 2 : > 500 Punkte",
+				"value": "User, die BaBot manchmal benutzen können :\n- Verwende Lautstärkeneinstellungen von 1000% und 10000%\n- Alle vorherigen Vorteile"
+			},
+			"field_3": {
+				"name": "<:level3:1065239432321568848> Level 3 : > 2500 Punkte",
+				"value": "Aktive Nutzer von BaBot können :\n- Vorteile kommen bald hier.\n- Alle vorherigen Vorteile."
+			},
+			"field_4": {
+				"name": "<:golden:1065239445625917520> Gold: Hat donated",
+				"value": "Ein Top Level gewährt für Donators. Erhalte alle Informationen über Donators mit `/help donator`."
+			}
+		},
+		"donator": {
+			"title": "<:golden:1065239445625917520> Mache eine Donation für BaBot !",
+			"description": "Alle grundlegenden Funktionen von BaBot sind kostenlos, damit dieses Projekt finanziert werden kann, wird jegliche Donation geschätzt!",
+			"field_1": {
+				"name": "Was kann ich tun, wenn ich eine Donation mache?",
+				"value": "Du erhältst folgende Vorteile:\n- BaBot 24/7 benutzen ohne zu bestätigen, dass ich im Sprachkanal bleiben soll\n- Alle Vorteile der unteren Levels (siehe `/help level`)"
+			},
+			"field_2": {
+				"name": "Können die Vorteile je nach Donation variieren?",
+				"value": "Jeder Donation gibt Zugang zum <:golden:1065239445625917520> Golden Level.\nAllerdings, je nach Donation, erhältst du die Fähigkeit dein Golden Level an alle User eines Servers zu verteilen:\n- **5$** : Erlaube allen Usern eines gewählten Servers Golden Vorteille.\n- **15$** : Erlaube allen Benutzern von 5 ausgewählten Servern Golden Vorteille zu verwenden.\nNB : Wenn der Spieler in Gold angezeigt wird, das bedeutet, dass ein User Gold auf dem aktuellen Server angewendet hat."
+			},
+			"field_3": {
+				"name": "Was passiert, wenn ich keinen Donation mache?",
+				"value": "Es gibt kein Problem!\nDu kannst BaBot wie gewohnt weiterhin verwenden und alle freien Funktionen *sollten* lange Zeit frei bleiben (zumindest hoffe ich)."
+			},
+			"field_4": {
+				"name": "Wo kann ich eine Donation machen?",
+				"value": "Meine Patreon-Seite ist hier: [Patreon Seite](https://patreon.com/user?u=85252153)\nBtw danke dir! Dank dir wird BaBot eine Zukunft haben!"
+			},
+			"tip_button": "Mach eine Donation!"
+		},
+		"contribute": {
+			"title": "Wie hilft man BaBot",
+			"description": "**Hier sind die verschiedenen Möglichkeiten um BaBot zu helfen :**\n- Erstelle ein </feedback:1060125997359448064> über BaBot.\n- Vote BaBot auf jeder Seite (top.gg, discordbotlist.com, discords.com oder botlist.me).\n- [BaBot in deine Sprache übersetzen](https://crowdin.com/project/babot).\n- [Mache eine Donation](https://patreon.com/user?u=85252153).",
+			"footer": "Ein großes Dankeschön an alle, die BaBot helfen wollen, da es BaBot erlaubt, zu überleben und zu wachsen."
+		},
+		"faq": {
+			"title": "BaBot FAQ",
+			"description": "**Du hast Fragen? Du bist an der richtigen Stelle!**",
+			"field_1": {
+				"name": "BaBot ist abgestürzt",
+				"value": "Das passiert manchmal, aber BaBot *sollte* automatisch in ein paar Minuten neu starten. Entschuldigung für die Unannehmlichkeiten."
+			},
+			"field_2": {
+				"name": "Wie kann ich BaBot helfen?",
+				"value": "Ein Gold-Spieler zeigt an, dass ein Goldener Benutzer sein Gold auf dem Server erweitert hat (siehe `/help donator`)\n *Allerdings, die ersten 250 Server, die BaBot hinzugefügt haben, haben auch Golden für das Leben aktiviert (btw, wenn du dich Sorgen machst, danke für den Start von BaBot!)*"
+			},
+			"field_3": {
+				"name": "Wie kann ich BaBot helfen?",
+				"value": "Es gibt mehrere Möglichkeiten, BaBot zu helfen, die auf der `/help contribute` Seite angezeigt werden."
+			}
+		}
+	},
+	"dashboard": {
+		"command_description": "Zeige dein persönliches BaBot Control Panel",
+		"panel_title": "{username}'s Dashboard",
+		"panel_description": "Hier ist dein BaBot Profil\nHilfe über verfügbare Level mit dem `/help Level` Befehl ",
+		"level_label": "Level",
+		"level_content": "{emoji} Level {level} ({points} Punkte)",
+		"leaderboard_label": "Leaderboard Position",
+		"leaderboard_content": "{pos}",
+		"playlists_label": "Gespeicherte Wiedergabelisten",
+		"settings_btn": "Einstellungen"
+	},
+	"settings": {
+		"command_description": "BaBot Einstellungen ansehen und ändern",
+		"panel_title": "{username}'s Systemsteuerung",
+		"panel_content": "- **Deaktiviere Troll** : Verhindere, dass du Trolle von anderen Usern erhältst. Perfekt, wenn du nervende Freunde hast:)",
+		"disable_troll_btn": "Trolle deaktivieren",
+		"not_authorized_user": "❌ Wie ich sehen kann, ist dies nicht Ihr Einstellungen-Panel, nicht wahr?"
+	},
+	"config": {
+		"command_description": "Konfiguriere BaBot auf deinem Server.",
+		"player": {
+			"description": "Wähle aus, welche Befehle der player User verwenden können."
+		},
+		"languages": {
+			"description": "Stelle die Sprache ein, die BaBot in diesen Server verwenden soll.",
+			"locale_description": "Wähle eine Sprache aus.",
+			"change_done": "✅ Die bevorzugte Sprache für diesen Server wurde auf {language} aktualisiert.",
+			"language_doesnt_exists": "➡️ BaBot wurde noch nicht in diese Sprache übersetzt, aber Übersetzungen stehen für allen offen! Mehr Infos unter `/help contribute`",
+			"locales": {
+				"en-US": "Englisch",
+				"bg": "Bulgarisch",
+				"zh-CN": "Chinesisch",
+				"cs": "Tschechisch",
+				"da": "Dänisch",
+				"nl": "Niederländisch",
+				"fi": "Finnisch",
+				"fr": "Französisch",
+				"de": "Deutsch",
+				"el": "Griechisch",
+				"hi": "Hinduistisch",
+				"hu": "Ungarisch",
+				"it": "Italienisch",
+				"ja": "Japanisch",
+				"ko": "Koreanisch",
+				"lt": "Litauisch",
+				"no": "Norwegisch",
+				"pl": "Polnisch",
+				"pt-BR": "Portugiesisch",
+				"ro": "Rumänisch",
+				"ru": "Russisch",
+				"es-ES": "Spanisch",
+				"sv-SE": "Schwedisch",
+				"th": "Thailändischen",
+				"tr": "Türkisch",
+				"uk": "Ukrainisch",
+				"vi": "Vietnamesisch",
+				"not_mine": "Ich sehe meine nicht"
+			}
+		}
+	},
+	"feedback": {
+		"command_description": "Sende Feedback an den Entwickler.",
+		"modal_placeholder": "Jedes positive oder negative Feedback ist willkommen!",
+		"modal_textinput_label": "Dein Feedback",
+		"modal_title": "Feedback senden",
+		"submitted": "✅ Vielen Dank für dein Feedback!\nJede Rückkehr von Benutzern hilft uns, BaBot zu verbessern!\n<:transparent:1067551646592282694>NB : Wenn du einen Fehler gemeldet hast, überprüfe den Status mit `/know_issues`"
+	},
+	"errors": {
+		"user_banned": "❌ Entschuldigung, du kannst {name} nicht verwenden. Dein Account wurde gesperrt..",
+		"missing_subcommand": "❌ Bitte wähle einen Unterbefehl aus.",
+		"unknown_subcommand": "❌ Dieser Unterbefehl existiert nicht.",
+		"settings_panel_fail": "❌ Die Systemeinstellungen sind derzeit nicht funktionsfähig.. :cry:",
+		"settings": "💥 Diese Einstellungsfunktion ist kaputt :cry:",
+		"not_admin": "❌ Sorry, nur Member, die die `Manage Guild` Berechtigung besitzen, können diesen Befehl verwenden"
+	}
+}

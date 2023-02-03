@@ -26,11 +26,11 @@ const status = new Status(Discord, client, log);
 const settings = require(__dirname + '/env_data/env.json');
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.4.2 released", 3],
+  ["/changelog : version 1.4.3 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],
-  //["Working together, BaBot can became even better. Join the support server -> https://discord.gg/zssHymr656", 3]
+  ["customize your experience with the player themes ! (only 2 for now, 5 others coming soon)", 3]
 ]
 
 let total_players = 0;
@@ -493,7 +493,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
           config.locale = choosen_locale;
           await client_settings.set(interaction.guildId, 1, 'config', config);
-          await interaction.reply({content: i18n.place(i18n.get('config.languages.change_done', interaction.locale), {language: choosen_locale}), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply({content: i18n.place(i18n.get('config.languages.change_done', interaction.locale), {language: i18n.get("config.languages.locales." + choosen_locale, interaction.locale)}), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
         }
         else
         {
@@ -971,13 +971,13 @@ function update_status()//Change status of the bot every minute
 //--- Error catching ---//
 //Write the error occured in crash.sts before leaving to allow the program to send it when it will restart
 process.on('uncaughtException', error => {
-  console.log(error);
+  console.error(error);
   fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
-  console.log(error);
+  console.error(error);
   fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
   process.exit(1);
 });

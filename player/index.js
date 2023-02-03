@@ -9,6 +9,7 @@ const prism = require('prism-media');
 //const { PlayerTransform } = require('./ffmpeg_transform.js');
 const Settings = require(process.cwd() + '/settings.js');
 const I18n = require(process.cwd() + '/locales.js');
+const styles = require(__dirname + '/styles.json');
 const settings = new Settings();
 const i18n = new I18n('player');
 
@@ -19,6 +20,7 @@ module.exports = class Player {
 	#_log_function
 	#_locales;
 	#_shutdown = false;
+
 	constructor(discord, client, log)
 	{
 		this.#_discord = discord;
@@ -127,7 +129,7 @@ module.exports = class Player {
 						await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 						return;
 					}
-					await this.#initializeObject(interaction.guildId, interaction.member.voice.channelId, false, config.locale, interaction.member.id);
+					await this.#initializeObject(interaction.guildId, interaction.member.voice.channelId, false, config.locale, interaction.member.id, config.style);
 					settings.addXP(interaction.user.id, 100);
 				}
 
@@ -697,24 +699,49 @@ module.exports = class Player {
 		//----- Select menus interactions -----//
 		else if(interaction.isStringSelectMenu())
 		{
-			if(!['select_volume', 'select_add_song', 'select_queue_song'].includes(interaction.customId)) return false;
-			if(!this.#isObjectValid(interaction.guildId))
-			{
-				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
-				return;
-			}
+			if(!['select_volume', 'select_add_song', 'select_queue_song', 'global_player_style', 'session_player_style'].includes(interaction.customId)) return false;
+			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
 				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
 				return;
 			}
+
+			if(interaction.customId === "global_player_style")
+			{
+				let config = await settings.get(interaction.guildId, 1, 'config');
+		        if(config === false)
+		        {
+		          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+		          return;
+		        }
+
+		        config.style = interaction.values[0];
+		        await settings.set(interaction.guildId, 1, 'config', config);
+		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+		        return;
+			}
+
+			if(!this.#isObjectValid(interaction.guildId))
+			{
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
+				return;
+			}
+
+			if(interaction.customId === "session_player_style")
+			{
+		        this.#_guilds_play_data[interaction.guildId].style = interaction.values[0];
+		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+		        return;
+			}
+
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
 				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
 				return;
 			}
 
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
 			if(interaction.customId === "select_volume")//Works
 			{
 				if(!await this.#checkPermission("volume", interaction)) return;
@@ -722,7 +749,8 @@ module.exports = class Player {
 				{
 					this.#_log_function('Player-song', '[' + interaction.guildId + '] Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
 					this.#_guilds_play_data[interaction.guildId].volume = parseInt(interaction.values[0]) / 100;
-					if(this.#get_song(interaction.guildId) !== undefined)
+					if(this.#get_song(interaction.guildId) !== undefined &&
+						this.#_guilds_play_data[interaction.guildId].volumeTransformer)
 					{
 						this.#_guilds_play_data[interaction.guildId].volumeTransformer.setVolume(this.#_guilds_play_data[interaction.guildId].volume);
 						/*this.#_guilds_play_data[interaction.guildId].transformer.changeSettings({volume: this.#_guilds_play_data[interaction.guildId].volume});
@@ -808,7 +836,7 @@ module.exports = class Player {
 	//-----//
 
 	//----- Guild object management -----//
-	async #initializeObject(guild_id, channel_id, only_connection = false, locale, owner)//Works
+	async #initializeObject(guild_id, channel_id, only_connection = false, locale, owner, style)//Works
 	{
 		if((!this.#isObjectValid(guild_id) && !only_connection) ||
 			(only_connection &&
@@ -822,10 +850,12 @@ module.exports = class Player {
 				this.#_guilds_play_data[guild_id] = {
 					locale: locale,
 					owner: owner,
+					style: style || "discord",
 					voice_connection: undefined,
 					player: undefined,
 					player_subscription: undefined,
 					volumeTransformer: undefined,
+					ffmpeg_process: undefined,
 					permissions: [],
 					queue: [
 						/*{
@@ -908,6 +938,8 @@ module.exports = class Player {
 			{
 				clearTimeout(this.#_guilds_play_data[guild_id].inactive_timer);
 			}
+
+			if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
 		catch(e)
@@ -924,6 +956,7 @@ module.exports = class Player {
 		if(this.#isObjectValid(guild_id))
 		{
 			let used_locale = this.#_guilds_play_data[guild_id].locale;
+			let used_style = this.#_guilds_play_data[guild_id].style;
 			let player_interface_components = [];
 			if(this.#_guilds_play_data[guild_id]?.inactive_timer !== false)
 			{
@@ -954,62 +987,68 @@ module.exports = class Player {
 				new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_restart")
-						.setEmoji({name: "↩️"})
+						.setEmoji(this.#emojiStyle("restart", used_style))
 						.setStyle(2)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_last")
-						.setEmoji({name: "⏮️"})
+						.setEmoji(this.#emojiStyle("last", used_style))
 						.setStyle(1),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.is_playing ? "btn_pause" : "btn_play")
-						.setEmoji({name: this.#_guilds_play_data[guild_id]?.is_playing ? "⏸️" : "▶️"})
+						.setEmoji(this.#_guilds_play_data[guild_id]?.is_playing ? this.#emojiStyle("pause", used_style) : this.#emojiStyle("play", used_style))
 						.setStyle(1)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_next")
-						.setEmoji({name: "⏭️"})
+						.setEmoji(this.#emojiStyle("next", used_style))
 						.setStyle(1),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_volume")
-						.setEmoji({name: "🔉"})
+						.setEmoji(this.#emojiStyle("volume", used_style))
 						.setStyle(2),
 				]),
 				new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.loop ? "unloop" : "loop")
-						.setEmoji({name: "🔁"})
+						.setEmoji(this.#emojiStyle("loop", used_style))
 						.setStyle(this.#_guilds_play_data[guild_id]?.loop ? 3 : 2)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.shuffle ? "unshuffle" : "shuffle")
-						.setEmoji({name: "🔀"})
+						.setEmoji(this.#emojiStyle("shuffle", used_style))
 						.setStyle(this.#_guilds_play_data[guild_id]?.shuffle ? 3 : 2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("queue")
 						.setLabel(i18n.get("buttons.queue", used_locale))
+						.setEmoji(this.#emojiStyle("queue", used_style))
 						.setStyle(2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("open_modal_add")
 						.setLabel(i18n.get("buttons.add_song", used_locale))
+						.setEmoji(this.#emojiStyle("add_song", used_style))
 						.setStyle(3),
 				]),
 				new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("hide")
 						.setLabel(i18n.get("buttons.hide", used_locale))
+						.setEmoji(this.#emojiStyle("hide", used_style))
 						.setStyle(2),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("stop")
 						.setLabel(i18n.get("buttons.stop", used_locale))
+						.setEmoji(this.#emojiStyle("stop", used_style))
 						.setStyle(4),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("leave")
 						.setLabel(i18n.get("buttons.leave", used_locale))
+						.setEmoji(this.#emojiStyle("leave", used_style))
 						.setStyle(4),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("owner_settings")
 						.setLabel(i18n.get("buttons.owner_settings", used_locale))
+						.setEmoji(this.#emojiStyle("owner_settings", used_style))
 						.setStyle(2)
 				])
 			);
@@ -1023,7 +1062,7 @@ module.exports = class Player {
 				player_embed.setURL(this.#get_song(guild_id).link);
 				player_embed.setImage(this.#get_song(guild_id).thumbnail);
 				if(this.#_shutdown !== false) player_embed.setDescription(i18n.place(i18n.get("player_embed.restart_msg", used_locale), {timestamp: this.#_shutdown}));
-				//player_embed.setFooter({text: "If you experience lags, please report these with `/feedback` to help to apply a fix"});
+				player_embed.setFooter({text: "NEW : Change style of your player in Owner Settings or /config player !"});
 			}
 			else
 			{
@@ -1040,12 +1079,14 @@ module.exports = class Player {
 
 	async #generatePlayerSettingsInterface(guild_id, config_mode = 0, locale)//Works
 	{
-		let cmd_prfx = config_mode === 1 ? "session_" : "global_"
-		let guild_permissions = (await settings.get(guild_id, 1, 'config')).permissions;
+		let cmd_prfx = config_mode === 1 ? "session_" : "global_";
+		let guild_settings = (await settings.get(guild_id, 1, 'config'));
+		let guild_permissions = guild_settings.permissions;
 		if(guild_permissions === undefined) guild_permissions = {};
 		let displayed_permissions = config_mode === 1 ? this.#_guilds_play_data[guild_id].permissions : guild_permissions;
 		let change_permission = config_mode === 1 ? !guild_permissions?.owner_settings : true;
 		let player_interface_components = [];
+		let used_style = config_mode === 1 ? this.#_guilds_play_data[guild_id].style : guild_settings.style;
 		const color = (perm) => {
 			if(config_mode === 0) return guild_permissions[perm];
 			if(!change_permission) return guild_permissions[perm];
@@ -1063,49 +1104,51 @@ module.exports = class Player {
 			new this.#_discord.ActionRowBuilder().addComponents([
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_restart")
-					.setEmoji({name: "↩️"})
+					.setEmoji(this.#emojiStyle("restart", used_style))
 					.setStyle(color("restart") ? 4 : 3)
 					.setDisabled(disabled("restart")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_last")
-					.setEmoji({name: "⏮️"})
+					.setEmoji(this.#emojiStyle("last", used_style))
 					.setStyle(color("last") ? 4 : 3)
 					.setDisabled(disabled("last")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_play")
-					.setEmoji({name: "▶️"})
+					.setEmoji(this.#emojiStyle("play", used_style))
 					.setStyle(color("play") ? 4 : 3)
 					.setDisabled(disabled("play")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_next")
-					.setEmoji({name: "⏭️"})
+					.setEmoji(this.#emojiStyle("next", used_style))
 					.setStyle(color("next") ? 4 : 3)
 					.setDisabled(disabled("next")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_volume")
-					.setEmoji({name: "🔉"})
+					.setEmoji(this.#emojiStyle("volume", used_style))
 					.setStyle(color("volume") ? 4 : 3)
 					.setDisabled(disabled("volume")),
 			]),
 			new this.#_discord.ActionRowBuilder().addComponents([
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_loop")
-					.setEmoji({name: "🔁"})
+					.setEmoji(this.#emojiStyle("loop", used_style))
 					.setStyle(color("loop") ? 4 : 3)
 					.setDisabled(disabled("loop")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_shuffle")
-					.setEmoji({name: "🔀"})
+					.setEmoji(this.#emojiStyle("shuffle", used_style))
 					.setStyle(color("shuffle") ? 4 : 3)
 					.setDisabled(disabled("shuffle")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_queue")
 					.setLabel(i18n.get("buttons.queue", locale))
+					.setEmoji(this.#emojiStyle("queue", used_style))
 					.setStyle(2)
 					.setDisabled(true),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_open_modal_add")
 					.setLabel(i18n.get("buttons.add_song", locale))
+					.setEmoji(this.#emojiStyle("add_song", used_style))
 					.setStyle(color("open_modal_add") ? 4 : 3)
 					.setDisabled(disabled("open_modal_add")),
 			]),
@@ -1113,23 +1156,38 @@ module.exports = class Player {
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_hide")
 					.setLabel(i18n.get("buttons.hide", locale))
+					.setEmoji(this.#emojiStyle("hide", used_style))
 					.setStyle(color("hide") ? 4 : 3)
 					.setDisabled(disabled("hide")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_stop")
 					.setLabel(i18n.get("buttons.stop", locale))
+					.setEmoji(this.#emojiStyle("stop", used_style))
 					.setStyle(color("stop") ? 4 : 3)
 					.setDisabled(disabled("stop")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_leave")
 					.setLabel(i18n.get("buttons.leave", locale))
+					.setEmoji(this.#emojiStyle("leave", used_style))
 					.setStyle(color("leave") ? 4 : 3)
 					.setDisabled(disabled("leave")),
 				new this.#_discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_owner_settings")
 					.setLabel(i18n.get("buttons.owner_settings", locale))
+					.setEmoji(this.#emojiStyle("owner_settings", used_style))
 					.setStyle(color("owner_settings") ? 4 : 3)
 					.setDisabled(Boolean(config_mode) || disabled("owner_settings")),
+			]),
+			new this.#_discord.ActionRowBuilder().addComponents([
+				new this.#_discord.StringSelectMenuBuilder()
+					.setCustomId(cmd_prfx + "player_style")
+					.setMinValues(1)
+					.setMaxValues(1)
+					.setPlaceholder('Select a custom style for the player')
+					.setOptions(
+						{label: "Line", emoji: this.#emojiStyle("play", "line"), value: "line", default: used_style === "line"},
+						{label: "Discord", emoji: this.#emojiStyle("play", "discord"), value: "discord", default: used_style === "discord"}
+					)
 			])
 		);
 
@@ -1139,10 +1197,24 @@ module.exports = class Player {
 		if(config_mode === 0) player_embed.setTitle(i18n.get("player_embed.title_configure_global", locale));
 		else player_embed.setTitle(i18n.get("player_embed.title_configure_session", locale));
 		player_embed.setDescription(i18n.get("player_embed.description_configure", locale));
+		player_embed.setFooter({text: "NEW : Change style of your player using the select menu below !"})
 		if(config_mode === 0) player_embed.setThumbnail('https://babot.theireply.fr/config_perms.png');
 		else player_embed.setThumbnail('https://babot.theireply.fr/config_perms_player.png');
 
 		return {content: '', ephemeral: true, embeds: [player_embed], components: player_interface_components}
+	}
+
+	#emojiStyle(command, style = undefined)
+	{
+		if(style === undefined) style = "line";
+		if(styles[style])
+		{
+			if(styles[style][command])
+			{
+				return styles[style][command]
+			}
+		}
+		return {};
 	}
 
 	async #checkPermission(command, interaction)
@@ -1159,7 +1231,7 @@ module.exports = class Player {
 				}
 				else
 				{
-					if(this.#_guilds_play_data.owner === interaction.member.id) return true;
+					if(this.#_guilds_play_data[interaction.guildId].owner === interaction.member.id) return true;
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_owner", interaction.locale)})
 					return false;
 				}
@@ -1188,7 +1260,6 @@ module.exports = class Player {
 
 	async #updatePlayerInterface(guild_id, custom_message = undefined)//To test
 	{
-		return;
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
 			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
@@ -1509,6 +1580,7 @@ module.exports = class Player {
 		return new Promise(async (resolve, reject) => {
 			if(this.#get_song(guild_id) !== undefined)
 			{
+				if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
 				let link = this.#get_song(guild_id).link;
 				this.#_log_function('Player-song', '[' + guild_id + '] Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
@@ -1525,7 +1597,7 @@ module.exports = class Player {
 				});
 				if(play_link_process === undefined) return false;
 
-				let transcoder = new prism.FFmpeg({args: [
+				this.#_guilds_play_data[guild_id].ffmpeg_process = new prism.FFmpeg({args: [
 					'-analyzeduration', '0',
 					'-loglevel', '0',
 					'-f', 's16le',
@@ -1536,7 +1608,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
 				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
 
-				let resource = Voice.createAudioResource(play_link_process.data.pipe(transcoder).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
+				let resource = Voice.createAudioResource(play_link_process.data.pipe(this.#_guilds_play_data[guild_id].ffmpeg_process).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
 				/*resource.playStream.on('data', function(data)
 				{
 					//console.log(data.length);
