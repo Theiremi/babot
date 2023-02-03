@@ -164,11 +164,22 @@
 		]
 	},
 	{
-		"version": "1.4.2 (actual)",
+		"version": "1.4.2",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Repaired permissions system",
 			"Improved tutorial for player permissions"
+		]
+	},
+	{
+		"version": "1.4.3 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Included ability to choose your preferred player style (beta)"
+			"Found and fixed the memory leak",
+			"Fixed smalls issues in the permission system",
+			"Integrated newer translations of Ukrainian and German",
+			"Fixed issues updating player"
 		]
 	}
 ]
