@@ -50,6 +50,9 @@
 		"description_idle": "Add a music in the queue to start listening",
 		"description_configure": "Configure the permissions users have on the player\nClick on the thumbnail for help"
 	},
+	"credits": {
+		"flaticon": "Credits to {artist} - Flaticon"
+	},
 	"queue_embed": {
 		"title": "Queue",
 		"no_song": "No song in queue",
