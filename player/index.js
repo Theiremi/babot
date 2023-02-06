@@ -92,40 +92,45 @@ module.exports = class Player {
 				return;
 			}
 
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.commandName + '` received from user ' + interaction.user.tag);
+			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.commandName + '` received');
 			if(interaction.commandName === 'player')//Ask for a player to be displayed
 			{
 				if(interaction.member.voice.channelId === null)
 				{
+					this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)});
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
-					this.#_log_function('Player-player', '[' + interaction.guildId + '] No existing player, creating a new one');
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'No existing player, creating a new one');
 					let channel_permissions = interaction.member.voice.channel.permissionsFor(interaction.guild.members.me, true);
 					if(!interaction.member.voice.channel.viewable ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.ViewChannel) ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
 					{
+						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)});
 						return;
 					}
 					else if(!interaction.member.voice.channel.speakable ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
 					{
+						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)});
 						return;
 					}
 					if(!interaction.member.voice.channel.joinable)//Channel is joinable : not full or we have permission to override this
 					{
+						this.#_log_function([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)});
 						return;
 					}
 					let config = await settings.get(interaction.guildId, 1, 'config');
 					if(config === false)
 					{
+						this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
 						await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 						return;
 					}
@@ -135,17 +140,19 @@ module.exports = class Player {
 
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 				{
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'I\'m already used');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)});
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Unknown player error');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)});
 					return;
 				}
 
-				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function('Player-player', '[' + interaction.guildId + '] Wow, a golden player spawned !');
+				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
 				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
 				let player_message = await interaction.fetchReply().catch(() => false);
 				if(player_message !== false)this.#_guilds_play_data[interaction.guildId].player_interfaces.push(player_message);
@@ -178,7 +185,7 @@ module.exports = class Player {
 					return;
 				}
 
-				this.#_log_function('Player-troll', '[' + interaction.guildId + '] User ' + target.user.tag + ' targeted by troll ' + interaction.options.getString('song') + ' with volume ' + interaction.options.getNumber('volume'));
+				this.#_log_function([{tag: "g", value: interaction.guildId}], 'User ' + target.user.tag + ' targeted by troll ' + interaction.options.getString('song') + ' with volume ' + interaction.options.getNumber('volume'));
 
 				let previous_connection = false;
 				if(this.#isObjectValid(interaction.guildId))
@@ -267,7 +274,7 @@ module.exports = class Player {
 				!interaction.customId.startsWith('global_config_') &&
 				!interaction.customId.startsWith('session_config_')) return false;
 
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
@@ -283,13 +290,15 @@ module.exports = class Player {
 				let config = await settings.get(interaction.guildId, 1, 'config');
 		        if(config === false)
 		        {
-		          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-		          return;
+		        	this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
+		        	await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+		        	return;
 		        }
 
 		        if(!config.permissions) config.permissions = {};
 		        if(config.permissions[target_btn]) config.permissions[target_btn] = false;
 		        else config.permissions[target_btn] = true;
+		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the server to ' + (config.permissions[target_btn] ? "disabled" : "enabled"));
 		        await settings.set(interaction.guildId, 1, 'config', config);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
@@ -365,6 +374,7 @@ module.exports = class Player {
 
 		        if(this.#_guilds_play_data[interaction.guildId].permissions[target_btn]) this.#_guilds_play_data[interaction.guildId].permissions[target_btn] = false;
 		        else this.#_guilds_play_data[interaction.guildId].permissions[target_btn] = true;
+		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the player to ' + (this.#_guilds_play_data[interaction.guildId].permissions[target_btn] ? "disabled" : "enabled"));
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
 			}
@@ -413,16 +423,17 @@ module.exports = class Player {
 			{
 				if(!await this.#checkPermission("volume", interaction)) return;
 				let player_interface = await this.#generatePlayerInterface(interaction.guildId);
+				let used_style = this.#_guilds_play_data[interaction.guildId].style;
 				player_interface.components.push(new this.#_discord.ActionRowBuilder().addComponents([
 					new this.#_discord.StringSelectMenuBuilder()
 						.setCustomId("select_volume")
 						.setPlaceholder('Choose your volume level')
 						.addOptions([
-							{label: '20 %', value: "20", emoji: {name: "🔈"}, default: this.#_guilds_play_data[interaction.guildId].volume === 0.2},
-							{label: '40 %', value: "40", emoji: {name: "🔈"}, default: this.#_guilds_play_data[interaction.guildId].volume === 0.4},
-							{label: '60 %', value: "60", emoji: {name: "🔉"}, default: this.#_guilds_play_data[interaction.guildId].volume === 0.6},
-							{label: '80 %', value: "80", emoji: {name: "🔊"}, default: this.#_guilds_play_data[interaction.guildId].volume === 0.8},
-							{label: '100 %', value: "100", emoji: {name: "🔊"}, default: this.#_guilds_play_data[interaction.guildId].volume === 1},
+							{label: '20 %', value: "20", emoji: this.#emojiStyle("volume_low", used_style), default: this.#_guilds_play_data[interaction.guildId].volume === 0.2},
+							{label: '40 %', value: "40", emoji: this.#emojiStyle("volume_low", used_style), default: this.#_guilds_play_data[interaction.guildId].volume === 0.4},
+							{label: '60 %', value: "60", emoji: this.#emojiStyle("volume_medium", used_style), default: this.#_guilds_play_data[interaction.guildId].volume === 0.6},
+							{label: '80 %', value: "80", emoji: this.#emojiStyle("volume_high", used_style), default: this.#_guilds_play_data[interaction.guildId].volume === 0.8},
+							{label: '100 %', value: "100", emoji: this.#emojiStyle("volume_high", used_style), default: this.#_guilds_play_data[interaction.guildId].volume === 1},
 							{label: '150 %', value: "150", emoji: {name: "📢"}, default: this.#_guilds_play_data[interaction.guildId].volume === 1.5},
 							{label: '200 %', value: "200", emoji: {name: "📢"}, default: this.#_guilds_play_data[interaction.guildId].volume === 2},
 							{label: '250 %', value: "250", emoji: {name: "📢"}, default: this.#_guilds_play_data[interaction.guildId].volume === 2.5},
@@ -612,7 +623,7 @@ module.exports = class Player {
 				return;
 			}
 
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 			//--- Add song to queue ---//
 			if(interaction.customId === "modal_add")//Works
 			{
@@ -627,7 +638,7 @@ module.exports = class Player {
 				if(value.startsWith('https://') || value.startsWith('radio://'))//It's a link
 				{
 					await interaction.deferReply({ephemeral: true}).catch((e) => {console.log('deferReply error : ' + e)});
-					this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Link "' + value + '" given');
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + value + '" given');
 					let current_song_before = this.#get_song(interaction.guildId);
 
 					let return_message = await this.#add_in_queue(interaction.guildId, value).catch((e) =>
@@ -650,7 +661,7 @@ module.exports = class Player {
 						return;
 					}
 					await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
-					this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Search term "' + value + '" given');
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Search term "' + value + '" given');
 					let yt = await yt_search(value);
 					let displayed_yt = "";
 					if(yt === false)
@@ -700,7 +711,7 @@ module.exports = class Player {
 		else if(interaction.isStringSelectMenu())
 		{
 			if(!['select_volume', 'select_add_song', 'select_queue_song', 'global_player_style', 'session_player_style'].includes(interaction.customId)) return false;
-			this.#_log_function('Player', '[' + interaction.guildId + '] Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+			this.#_log_function([{tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
@@ -713,11 +724,13 @@ module.exports = class Player {
 				let config = await settings.get(interaction.guildId, 1, 'config');
 		        if(config === false)
 		        {
-		          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-		          return;
+		        	this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
+		        	await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+		        	return;
 		        }
 
 		        config.style = interaction.values[0];
+		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set style of the server to ' + config.style);
 		        await settings.set(interaction.guildId, 1, 'config', config);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
@@ -732,6 +745,7 @@ module.exports = class Player {
 			if(interaction.customId === "session_player_style")
 			{
 		        this.#_guilds_play_data[interaction.guildId].style = interaction.values[0];
+		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set style of the player to ' + this.#_guilds_play_data[interaction.guildId].style);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
 			}
@@ -747,7 +761,7 @@ module.exports = class Player {
 				if(!await this.#checkPermission("volume", interaction)) return;
 				if(['20', '40', '60', '80', '100', '150', '200', '250', '500', '1000', '10000'].includes(interaction.values[0]))
 				{
-					this.#_log_function('Player-song', '[' + interaction.guildId + '] Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
+					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
 					this.#_guilds_play_data[interaction.guildId].volume = parseInt(interaction.values[0]) / 100;
 					if(this.#get_song(interaction.guildId) !== undefined &&
 						this.#_guilds_play_data[interaction.guildId].volumeTransformer)
@@ -766,7 +780,7 @@ module.exports = class Player {
 			else if(interaction.customId === "select_add_song")
 			{
 				if(!await this.#checkPermission("open_modal_add", interaction)) return;
-				this.#_log_function('Player-modal_add', '[' + interaction.guildId + '] Link "' + interaction.values[0] + '" selected'); 
+				this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + interaction.values[0] + '" selected'); 
 				await interaction.message.delete().catch((e) => { console.log('Probably useless error 5 : ' + e)});
 				await interaction.deferReply({ephemeral: true}).catch((e) => {console.log('deferReply error : ' + e)});
 
@@ -805,7 +819,7 @@ module.exports = class Player {
 				{
 					if(this.#_guilds_play_data[voiceState.guild.id].inactive_timer !== false)
 					{
-						this.#_log_function('Player-object', '[' + voiceState.guild.id + '] I\'m back with some people finally');
+						this.#_log_function([{tag: "g", value: voiceState.guild.id}], 'I\'m back with some people finally');
 						clearTimeout(this.#_guilds_play_data[voiceState.guild.id].inactive_timer);
 						this.#_guilds_play_data[voiceState.guild.id].inactive_timer = false;
 
@@ -816,7 +830,7 @@ module.exports = class Player {
 			}
 			if(this.#_guilds_play_data[voiceState.guild.id].force_active !== true && this.#_guilds_play_data[voiceState.guild.id].inactive_timer === false)
 			{
-				this.#_log_function('Player-object', '[' + voiceState.guild.id + '] Starting inactivity counter');
+				this.#_log_function([{tag: "g", value: voiceState.guild.id}], 'Starting inactivity counter');
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
 					if(ctx.#isObjectValid(guild_id))
 					{
@@ -843,14 +857,14 @@ module.exports = class Player {
 			this.#_guilds_play_data[guild_id] !== undefined &&
 			this.#_guilds_play_data[guild_id].player !== undefined))
 		{
-			this.#_log_function('Player-object', '[' + guild_id + '] New player object created in channel ' + channel_id);
+			this.#_log_function([{tag: "g", value: guild_id}], 'New player object created in channel ' + channel_id);
 
 			if(!only_connection)
 			{
 				this.#_guilds_play_data[guild_id] = {
 					locale: locale,
 					owner: owner,
-					style: style || "discord",
+					style: style || "line",
 					voice_connection: undefined,
 					player: undefined,
 					player_subscription: undefined,
@@ -940,6 +954,7 @@ module.exports = class Player {
 			}
 
 			if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
+			console.log('destroyed lol');
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
 		catch(e)
@@ -1055,6 +1070,7 @@ module.exports = class Player {
 
 			let player_embed = new this.#_discord.EmbedBuilder()
 				.setColor((await settings.isGuildGolden(guild_id)) ? [0xFF, 0xD7, 0x00] : [0x62, 0xD5, 0xE9])
+				.setFooter({text: "NEW : Change style of your player in Owner Settings or /config player !"});
 
 			if(this.#get_song(guild_id) !== undefined)
 			{
@@ -1062,7 +1078,6 @@ module.exports = class Player {
 				player_embed.setURL(this.#get_song(guild_id).link);
 				player_embed.setImage(this.#get_song(guild_id).thumbnail);
 				if(this.#_shutdown !== false) player_embed.setDescription(i18n.place(i18n.get("player_embed.restart_msg", used_locale), {timestamp: this.#_shutdown}));
-				player_embed.setFooter({text: "NEW : Change style of your player in Owner Settings or /config player !"});
 			}
 			else
 			{
@@ -1185,7 +1200,7 @@ module.exports = class Player {
 					.setMaxValues(1)
 					.setPlaceholder('Select a custom style for the player')
 					.setOptions(
-						{label: "Line", emoji: this.#emojiStyle("play", "line"), value: "line", default: used_style === "line"},
+						{label: "Line", emoji: this.#emojiStyle("play", "line"), value: "line", default: used_style === "line", description: i18n.place(i18n.get("credits.flaticon", locale), {artist: "Pixel perfect"})},
 						{label: "Discord", emoji: this.#emojiStyle("play", "discord"), value: "discord", default: used_style === "discord"}
 					)
 			])
@@ -1265,7 +1280,7 @@ module.exports = class Player {
 			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
 			if(!success)
 			{
-				this.#_log_function('Player-interface', '[' + guild_id + '] Deleted interface message removed from the internal list');
+				this.#_log_function([{tag: "g", value: guild_id}], 'Deleted interface message removed from the internal list');
 				let current_pos = this.#_guilds_play_data[guild_id].player_interfaces.indexOf(message);
 				if(current_pos !== -1) this.#_guilds_play_data[guild_id].player_interfaces.splice(current_pos, 1);
 			}
@@ -1285,6 +1300,8 @@ module.exports = class Player {
 				return gras + ((20 * page + i+1) + ". [" + x.name + "](" + x.link + ")").slice(0, 200) + gras + "\n"
 			}).join('');
 			if(queue === "") queue = i18n.get("queue_embed.no_song", this.#_guilds_play_data[guild_id].locale)
+
+			let used_style = this.#_guilds_play_data[guild_id].style;
 			let queue_embed = new this.#_discord.EmbedBuilder()
 				.setColor([0x62, 0xD5, 0xE9])
 				.setTitle(i18n.get("queue_embed.title", this.#_guilds_play_data[guild_id].locale))
@@ -1297,11 +1314,13 @@ module.exports = class Player {
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_queue_play_" + selected_song)
 						.setStyle(3)
+						.setEmoji(this.#emojiStyle("play_now", used_style))
 						.setLabel(i18n.get("buttons.queue_play", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
 					new this.#_discord.ButtonBuilder()
 						.setCustomId("btn_queue_remove_" + selected_song)
 						.setStyle(4)
+						.setEmoji(this.#emojiStyle("remove", used_style))
 						.setLabel(i18n.get("buttons.queue_remove", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
 					new this.#_discord.ButtonBuilder()
@@ -1364,7 +1383,7 @@ module.exports = class Player {
 					{
 						if(link.match(/[\?|&]list=([^#\&\?]+)/) && !force_search)//Is a playlist
 						{
-							this.#_log_function('Player-queue', '[' + guild_id + '] Processing youtube playlist ' + link);
+							this.#_log_function([{tag: "g", value: guild_id}], 'Processing youtube playlist ' + link);
 							let playlist_items = await resolve_yt_playlist(link.match(/[\?|&]list=([^#\&\?]+)/)[1]);
 							if(playlist_items === false) return reject('This playlist is unavailable');
 							if(playlist_items === []) return reject('This playlist is empty');
@@ -1381,7 +1400,7 @@ module.exports = class Player {
 							let return_resolve = await resolve_yt_video(link, force_search);
 							if(return_resolve !== false)
 							{
-								this.#_log_function('Player-queue', '[' + guild_id + '] Video ' + link + ' from youtube added to queue');
+								this.#_log_function([{tag: "g", value: guild_id}], 'Video ' + link + ' from youtube added to queue');
 								let current_song_before = this.#get_song(guild_id);
 
 								if(!this.#isObjectValid(guild_id)) return;
@@ -1409,7 +1428,7 @@ module.exports = class Player {
 
 						if(matches[1] === "track")
 						{
-							this.#_log_function('Player-queue', '[' + guild_id + '] Music ' + link + ' from deezer added to queue');
+							this.#_log_function([{tag: "g", value: guild_id}], 'Music ' + link + ' from deezer added to queue');
 							this.#add_in_queue(guild_id, music_data_query.data.title + " " + music_data_query.data.artist.name + " music", true).then(function(){
 								resolve('Your music has been added to queue');
 							}, function(){
@@ -1420,7 +1439,7 @@ module.exports = class Player {
 						}
 						else if(matches[1] === "playlist" || matches[1] === "album")
 						{
-							this.#_log_function('Player-queue', '[' + guild_id + '] Processing deezer playlist ' + link);
+							this.#_log_function([{tag: "g", value: guild_id}], 'Processing deezer playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
 							for(let e of music_data_query.data.tracks.data)
 							{
@@ -1465,7 +1484,7 @@ module.exports = class Player {
 
 						if(matches[1] === "track")
 						{
-							this.#_log_function('Player-queue', '[' + guild_id + '] Music ' + link + ' from spotify added to queue');
+							this.#_log_function([{tag: "g", value: guild_id}], 'Music ' + link + ' from spotify added to queue');
 							this.#add_in_queue(guild_id, music_data_query.data.name + " " + music_data_query.data.artists[0].name + " music", true).then(function(){
 								resolve('Your music has been added to queue');
 							}, function(){
@@ -1476,7 +1495,7 @@ module.exports = class Player {
 						}
 						else if(matches[1] === "playlist" || matches[1] === "album")
 						{
-							this.#_log_function('Player-queue', '[' + guild_id + '] Processing spotify playlist ' + link);
+							this.#_log_function([{tag: "g", value: guild_id}], 'Processing spotify playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
 							for(let e of music_data_query.data.tracks.items)
 							{
@@ -1582,7 +1601,7 @@ module.exports = class Player {
 			{
 				if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
 				let link = this.#get_song(guild_id).link;
-				this.#_log_function('Player-song', '[' + guild_id + '] Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
+				this.#_log_function([{tag: "g", value: guild_id}], 'Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
 				this.#_guilds_play_data[guild_id].request_controller = new AbortController();
 				let play_link_process = await axios({
@@ -1593,7 +1612,7 @@ module.exports = class Player {
 					signal: this.#_guilds_play_data[guild_id].request_controller.signal
 				}).catch((e) => {
 					console.log(e);
-					this.#_log_function('Player-song', '[' + guild_id + '] Error fetching song');
+					this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song');
 				});
 				if(play_link_process === undefined) return false;
 

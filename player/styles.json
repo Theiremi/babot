@@ -15,7 +15,11 @@
 		"hide": {},
 		"stop": {},
 		"leave": {},
-		"owner_controls": {}
+		"owner_controls": {},
+
+		"volume_low": {"name": "🔈"},
+		"volume_medium": {"name": "🔉"},
+		"volume_high": {"name": "🔊"}
 	},
 	"line": {
 		"restart": {"name": ":linerestart:", "id": "1070760359167799366"},
@@ -35,11 +39,11 @@
 		"leave":          {},
 		"owner_settings": {"name": ":lineownercontrols:", "id": "1070763894181736509"},
 
-		"play_now": {},
-		"remove": {},
+		"play_now": {"name": ":lineplay_now:", "id": "1071121142020046920"},
+		"remove":   {"name": ":lineremove:", "id": "1071121164807704746"},
 
-		"volume_low": {},
-		"volume_medium": {},
-		"volume_high": {}
+		"volume_low":    {"name": ":linevolume_low:", "id": "1071121186550993126"},
+		"volume_medium": {"name": ":linevolume_medium:", "id": "1071121189872869507"},
+		"volume_high":   {"name": ":linevolume_high:", "id": "1071121185116536843"}
 	}
 }

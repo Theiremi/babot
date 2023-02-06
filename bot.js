@@ -219,7 +219,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   {
     if(interaction.commandName === 'changelog')
     {
-      log('Main', 'Command `changelog` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `changelog` received');
 
       if(fs.existsSync(__dirname + '/changelog.json'))
       {
@@ -246,7 +246,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'known_issues')
     {
-      log('Main', 'Command `known_issues` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `known_issues` received');
 
       if(fs.existsSync(__dirname + '/env_data/known_issues.json'))
       {
@@ -260,7 +260,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'stats')
     {
-      log('Main-stats', 'Command `stats` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `stats` received');
       await interaction.deferReply();
 
       await interaction.editReply({content: "", embeds: [
@@ -290,7 +290,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     }
     else if(interaction.commandName === 'feedback')
     {
-      log('Main-feedback', 'Command `feedback` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `feedback` received');
 
       interaction.showModal(new Discord.ModalBuilder().addComponents([
         new Discord.ActionRowBuilder().addComponents([
@@ -316,7 +316,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
         return;
       }
-      log('Main-privacy', 'Command `privacy` -> `' + subcommand + '` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `privacy` -> `' + subcommand + '` received');
 
       if(subcommand === 'policy')
       {
@@ -405,7 +405,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     else if(interaction.commandName === 'dashboard')
     {
       await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
-      log('Main-user', 'Command `dashboard` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `dashboard` received');
       let user_level = await client_settings.level(interaction.user.id);
       let level_name = "";
       let emoji_level = ""
@@ -453,20 +453,26 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     }
     else if(interaction.commandName === 'settings')
     {
-      log('Main-user', 'Command `settings` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `settings` received');
       await interaction.reply(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
       return;
     }
 
     else if(interaction.commandName === 'config')
     {
+      if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
+      {
+        await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+        return;
+      }
+
       let subcommand = interaction.options.getSubcommand();
       if(subcommand == undefined)
       {
         await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
         return;
       }
-      log('Main-config', 'Command `config` -> `' + subcommand + '` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `config` -> `' + subcommand + '` received');
 
       if(!interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild))//Ne peut pas manage la guild
       {
@@ -491,6 +497,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
             return;
           }
 
+          log([{tag: "g", value: interaction.guildId}], 'Set language of the server to ' + choosen_locale);
           config.locale = choosen_locale;
           await client_settings.set(interaction.guildId, 1, 'config', config);
           await interaction.reply({content: i18n.place(i18n.get('config.languages.change_done', interaction.locale), {language: i18n.get("config.languages.locales." + choosen_locale, interaction.locale)}), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
@@ -512,7 +519,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
         return;
       }
-      log('Main-privacy', 'Command `help` -> `' + subcommand + '` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `help` -> `' + subcommand + '` received');
 
       if(subcommand === 'level')
       {
@@ -614,7 +621,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings', 'close_any'].includes(interaction.customId) ||
       interaction.customId.startsWith('btn_disable_troll_'))
     {
-      log('Main-root', 'Command `' + interaction.customId + '` received from user ' + interaction.user.tag);
+      log([{tag: "u", value: interaction.user.id}], 'Command `' + interaction.customId + '` received');
       if(interaction.customId === "close_any")
       {
         await interaction.update({content: 'Closing message...', ephemeral: true}).catch((e) => {console.log('update error : ' + e)});
@@ -719,10 +726,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           },
           data: {username: "Feedback about BaBot", embeds: [{title: "New feedback", description: interaction.fields.getTextInputValue('feedback'), author: {name: interaction.user.tag + '(' + interaction.user.id + ')', iconURL: interaction.user.avatarURL()}, color: 0x2f3136}]}
       }).then(function(){
-          log('Main-feedback', 'New feedback logged in the server');
+          log([], 'New feedback logged in the server');
       }, function(e) {
-          log('Main-feedback', 'Error when logging feedback of ' + interaction.user.tag + '(' + interaction.user.id + ')');
-          log('Main-feedback', 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
+          log([], 'Error when logging feedback of ' + interaction.user.tag + '(' + interaction.user.id + ')');
+          log([], 'Feedback content : ' + interaction.fields.getTextInputValue('feedback'));
       });
 
       await interaction.reply({content: i18n.get('feedback.submitted', interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
@@ -786,13 +793,13 @@ client.on('messageCreate', async (message) => {
 
 client.on('guildCreate', async (guild) => {
   guild = await guild.fetch();
-  log('Main', 'Added in a new guild : ' + guild.id + ' - ' + guild.name + ' | Members : ' + guild.approximateMemberCount + ', Online : ' + guild.approximatePresenceCount);
+  log([], 'Added in a new guild : ' + guild.id + ' - ' + guild.name + ' | Members : ' + guild.approximateMemberCount + ', Online : ' + guild.approximatePresenceCount);
 
   await update_stats();
 });
 client.on('guildDelete', async (guild) => {
  if(!guild.available) return false;
-  log('Main', 'I\'m no longer in this guild : ' + guild.id + ' - ' + guild.name);
+  log([], 'I\'m no longer in this guild : ' + guild.id + ' - ' + guild.name);
 
   await update_stats();
 });
@@ -804,7 +811,7 @@ client.on('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
 //----- ENTRY POINT -----//
 (async () => {
   client.login(settings.token);
-  log('Main', 'Environment variables loaded');
+  log([], 'Environment variables loaded');
 })();
 //-----//
 
@@ -850,10 +857,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: "server_count=" + guild_count + "&shard_count=" + shards_count
   }).then(function(){
-    log('Main', 'Data actualized on top.gg');
+    log([], 'Data actualized on top.gg');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on top.gg');
+    log([], 'Error when actualizing data on top.gg');
   });
 
   await axios({
@@ -864,10 +871,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: "server_count=" + guild_count
   }).then(function(){
-    log('Main', 'Data actualized on discords.com');
+    log([], 'Data actualized on discords.com');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on discords.com');
+    log([], 'Error when actualizing data on discords.com');
   });
 
   await axios({
@@ -878,10 +885,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: "users=" + users_count + "&guilds=" + guild_count
   }).then(function(){
-    log('Main', 'Data actualized on discordbotlist.com');
+    log([], 'Data actualized on discordbotlist.com');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on discordbotlist.com');
+    log([], 'Error when actualizing data on discordbotlist.com');
   });
 
   await axios({
@@ -892,10 +899,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: "server_count=" + guild_count + "&shard_count=" + shards_count
   }).then(function(){
-    log('Main', 'Data actualized on botlist.me');
+    log([], 'Data actualized on botlist.me');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on botlist.me');
+    log([], 'Error when actualizing data on botlist.me');
   });
 
   await axios({
@@ -906,10 +913,10 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: {guildCount: guild_count, shardCount: shards_count}
   }).then(function(){
-    log('Main', 'Data actualized on discord.bots.gg');
+    log([], 'Data actualized on discord.bots.gg');
   }, function(e) {
     //console.log(e);
-    log('Main', 'Error when actualizing data on discord.bots.gg');
+    log([], 'Error when actualizing data on discord.bots.gg');
   });
   //---//
 
@@ -922,24 +929,29 @@ async function update_stats()//Executed when guilds count change or bot is resta
     },
     data: {username: "BaBot statistics", embeds: [{title: "BaBot statistics update", description: "I'm now in **" + guild_count + "** servers", color: 0x2f3136}]}
   }).then(function(){
-    log('Main-feedback', 'Statistics sent to the server');
+    log([], 'Statistics sent to the server');
   }, function(e) {
     //console.log(e);
-    log('Main-feedback', 'Error when logging statistics on the server');
+    log([], 'Error when logging statistics on the server');
   });
   //---//
 }
 
-function log(code_section, msg)
+function log(sections, msg)
 {
+  if(typeof sections === "string") sections = [{tag: "c", value: sections}];
   let date = new Date();
   let msg_formatted = ('[' + date.getFullYear() + '/' +
     ("0" + (date.getMonth() + 1)).slice(-2) + '/' +
     ("0" + date.getDate()).slice(-2) + ' ' +
     ("0" + date.getHours()).slice(-2) + ':' +
     ("0" + date.getMinutes()).slice(-2) + ':' +
-    ("0" + date.getSeconds()).slice(-2) + '] ' +
-    '[' + (code_section + '                    ').slice(0, 20) + '] ') + msg + '\n';
+    ("0" + date.getSeconds()).slice(-2) + ']');
+  for(let e of sections)
+  {
+    msg_formatted += '[' + e.tag + ':' + e.value + ']'
+  }
+  msg_formatted += ' ' + msg + '\n';
 
   process.stdout.write(msg_formatted);
 

@@ -210,6 +210,7 @@
 		"unknown_subcommand": "❌ This subcommand doesn't exists.",
 		"settings_panel_fail": "❌ The settings panel is currently broken.. :cry:",
 		"settings": "💥 This settings function is broken :cry:",
-		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command"
+		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command",
+		"guild_only": "💥 You can only use this command in a guild"
 	}
 }
