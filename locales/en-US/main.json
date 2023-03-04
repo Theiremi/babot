@@ -99,11 +99,11 @@
 			"description": "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
 			"field_1": {
 				"name": "What can I do if a make a tip ?",
-				"value": "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- All the advantages from the lower levels (see `/help level`)"
+				"value": "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- Customize your player theme\n- Add up to 10 custom troll songs per server"
 			},
 			"field_2": {
 				"name": "Do the advantages varies depending of my tip ?",
-				"value": "Every tip give access to the <:golden:1065239445625917520>Golden level.\nHowever, depending of your tip, you can obtain the ability to spread your Golden level to all users of a server :\n- **5$** : Allow all users of 1 chosen server to use Golden perks\n- **15$** : Allow all users of 5 chosen servers to use Golden perks\nNB : When the player is displayed in gold, that means an user has applied Golden on the current server"
+				"value": "Every tip give access to <:golden:1065239445625917520>Golden.\nHowever, depending of your tip, you can obtain the ability to make Golden available to all users of a server :\n- **5$** : Allow all users of 1 chosen server to use Golden perks\n- **15$** : Allow all users of 5 chosen servers to use Golden perks\nNB : When the player is displayed in gold, that means an user has applied Golden on the current server"
 			},
 			"field_3": {
 				"name": "What happens if I don't make a tip ?",
@@ -117,7 +117,7 @@
 		},
 		"contribute": {
 			"title": "How to help BaBot",
-			"description": "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (top.gg, discordbotlist.com, discords.com or botlist.me)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
+			"description": "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (top.gg, discordbotlist.com, discords.com or botlist.me)\n- [Contribute to the development](https://github.com/Theiremi/babot)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
 			"footer": "A big thanks to anyone who want to help BaBot, as it allows BaBot to survive and grow"
 		},
 		"faq": {
@@ -140,10 +140,8 @@
 	"dashboard": {
 		"command_description": "Show your personal BaBot control panel.",
 		"panel_title": "{username}'s dashboard",
-		"panel_description": "Here's your BaBot profile\nHelp about levels are available with the command `/help level`",
-		"level_label": "Level",
-		"level_content": "{emoji}Level {level} ({points} points)",
-		"leaderboard_label": "Leaderboard position",
+		"panel_description": "Here's your BaBot profile",
+		"leaderboard_label": "Activity leaderboard",
 		"leaderboard_content": "{pos}th",
 		"playlists_label": "Saved playlists",
 		"settings_btn": "Settings"
@@ -195,6 +193,12 @@
 				"vi": "Vietnamese",
 				"not_mine": "I don't see mine"
 			}
+		},
+		"troll": {
+			"description": "Control troll related settings of this guild",
+			"add_troll": "Use this option to import a new troll song in this server",
+			"enable_troll_btn": "Troll Disabled",
+			"disable_troll_btn": "Troll Enabled"
 		}
 	},
 	"feedback": {
@@ -207,8 +211,8 @@
 	"errors": {
 		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned..",
 		"missing_subcommand": "❌ Please select a subcommand.",
-		"unknown_subcommand": "❌ This subcommand doesn't exists.",
-		"settings_panel_fail": "❌ The settings panel is currently broken.. :cry:",
+		"unknown_subcommand": "💥 This subcommand doesn't exists.",
+		"settings_panel_fail": "💥 The settings panel is currently broken.. :cry:",
 		"settings": "💥 This settings function is broken :cry:",
 		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command",
 		"guild_only": "💥 You can only use this command in a guild"

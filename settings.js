@@ -93,18 +93,6 @@ module.exports = class Settings {
 		});
 	}
 
-	async canTroll(to)
-	{
-		let to_config = await this.get(to, 0, 'config');
-		if(to_config === false) return false;
-
-		if(to_config.limited_troll)
-		{
-			return false;
-		}
-		return true;
-	}
-
 	async addXP(id, quantity)
 	{
 		let xp = await this.get(id, 0, 'xp');
@@ -116,7 +104,7 @@ module.exports = class Settings {
 		return this.set(id, 0, 'xp', xp)
 	}
 
-	async pointsCount(id)
+	/*async pointsCount(id)
 	{
 		let xp = await this.get(id, 0, 'xp');
 		if(xp === false) return false;
@@ -129,7 +117,7 @@ module.exports = class Settings {
 		}
 
 		return total_xp
-	}
+	}*/
 
 	async XPCount(id)
 	{
@@ -145,7 +133,7 @@ module.exports = class Settings {
 		return total_xp
 	}
 
-	async level(id)
+	/*async level(id)
 	{
 		let config = await this.get(id, 0, 'config');
 		if(config === false) return false;
@@ -165,7 +153,7 @@ module.exports = class Settings {
 			return 1;
 		}
 		return 0;
-	}
+	}*/
 
 	async leaderboardPosition(id)
 	{
@@ -187,6 +175,29 @@ module.exports = class Settings {
 			return position+1;
 		}
 		return false;
+	}
+
+	async canTroll(guild, to_user)
+	{
+		let guild_config = await this.get(guild, 1, 'config');
+		if(guild_config === false) return false;
+
+		if(guild_config.trollDisabled)
+		{
+			return 1;
+		}
+
+		let to_config = await this.get(to_user, 0, 'config');
+		if(to_config === false) return false;
+
+		if(to_config.limited_troll)
+		{
+			return 2;
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	async isGuildGolden(id)
@@ -212,6 +223,21 @@ module.exports = class Settings {
 				}
 			}
 		}
+		return false;
+	}
+
+	async isUserGolden(id)
+	{
+		let config = await this.get(user, 0, 'config');
+		if(config === false) return false;
+		if(config.golden) return true;
+		return false;
+	}
+
+	async isGolden(guild, user)
+	{
+		if(await this.isGuildGolden(guild)) return true;
+		if(await this.isUserGolden(user)) return true;
 		return false;
 	}
 }
