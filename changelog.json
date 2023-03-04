@@ -183,12 +183,24 @@
 		]
 	},
 	{
-		"version": "1.4.4 (actual)",
+		"version": "1.4.4",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Changed default style",
 			"Improved internal logging system",
 			"Added credits for icon designers"
+		]
+	},
+	{
+		"version": "1.4.5 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Implemented a workaround for the sound stopping every minute"
+			"Added a more complete control on troll command for server admins",
+			"Clarified difference between player and permissions editor",
+			"Removed points and level system",
+			"Added tips in the players"
+			"**Added SoundCloud support**"
 		]
 	}
 ]

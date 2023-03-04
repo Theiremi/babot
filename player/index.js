@@ -10,8 +10,11 @@ const prism = require('prism-media');
 const Settings = require(process.cwd() + '/settings.js');
 const I18n = require(process.cwd() + '/locales.js');
 const styles = require(__dirname + '/styles.json');
+const tip_list = require(process.cwd() + '/tips.json');
 const settings = new Settings();
 const i18n = new I18n('player');
+const babot_env = require(process.cwd() + '/env_data/env.json');
+
 
 module.exports = class Player {
 	#_guilds_play_data = {};
@@ -30,8 +33,6 @@ module.exports = class Player {
 
 	async options()//Works
 	{
-		let song_choices = (await fs.readdir(__dirname + '/soundboard')).map((x) => { return {name: x.split('.')[0], value: x} })
-
 		let player_commands = [];
 		player_commands.push(new Builders.SlashCommandBuilder());
 		player_commands[0].setName("player");
@@ -47,19 +48,23 @@ module.exports = class Player {
 		player_commands[1].addUserOption((option) => {
 			option.setName('user');
 			option.setDescription(i18n.get("chatinputcommands.troll_user"));
+			option.setDescriptionLocalizations(i18n.all("chatinputcommands.troll_user"));
 			option.setRequired(true);
 			return option;
 		});
 		player_commands[1].addStringOption((option) => {
 			option.setName('song');
 			option.setDescription(i18n.get("chatinputcommands.troll_song"));
-			option.addChoices(...song_choices);
+			option.setDescriptionLocalizations(i18n.all("chatinputcommands.troll_song"));
+			option.setAutocomplete(true);
+			//option.addChoices(...song_choices);
 			option.setRequired(true);
 			return option;
 		});
 		player_commands[1].addNumberOption((option) => {
 			option.setName('volume');
 			option.setDescription(i18n.get("chatinputcommands.troll_volume"));
+			option.setDescriptionLocalizations(i18n.all("chatinputcommands.troll_volume"));
 			option.setRequired(false);
 			option.setMinValue(1);
 			option.setMaxValue(10_000);
@@ -173,13 +178,26 @@ module.exports = class Player {
 					return;
 				}
 
-				if(!await settings.canTroll(target.user.id))
+				let cantroll = await settings.canTroll(interaction.guildId, target.user.id)
+				if(cantroll === false)
+				{
+					interaction.editReply({ content: i18n.get("errors.settings", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					return;
+				}
+				else if(cantroll === 1)
+				{
+					interaction.editReply({ content: i18n.get("errors.troll_disabled_guild", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
+					return;
+				}
+				else if(cantroll === 2)
 				{
 					interaction.editReply({ content: i18n.get("errors.dont_disturb", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
-				if(!fsc.existsSync(__dirname + '/soundboard/' + interaction.options.getString('song')))
+				let troll_song = interaction.options.getString('song');
+				troll_song = await this.#resolveTrollSong(interaction.guildId, troll_song);
+				if(troll_song === false)
 				{
 					interaction.editReply({ content: i18n.get("errors.song_not_found", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
@@ -218,7 +236,7 @@ module.exports = class Player {
 						troll_volume = interaction.options.getNumber('volume') / 100;
 					}
 				}
-				let troll_resource = Voice.createAudioResource(fsc.createReadStream(__dirname + '/soundboard/' + interaction.options.getString('song')), {inlineVolume: troll_volume ? true : false});
+				let troll_resource = Voice.createAudioResource(fsc.createReadStream(troll_song), {inlineVolume: troll_volume ? true : false});
 				if(troll_volume) troll_resource.volume.setVolume(troll_volume);
 				//---//
 
@@ -261,6 +279,22 @@ module.exports = class Player {
 				interaction.editReply({content: i18n.get("troll_success", interaction.locale)}).catch((e) => { console.log('editReply error : ' + e)});
 				settings.addXP(interaction.user.id, 50);
 			}
+		}
+		//-----//
+
+		//----- Autocomplete interaction -----//
+		else if(interaction.isAutocomplete())
+		{
+			if(!['troll'].includes(interaction.commandName)) return false;
+
+			if(interaction.commandName === "troll")
+			{
+				let input_field = interaction.options.getString('song');
+				let song_choices = await this.#getTrollList(interaction.guildId);
+				song_choices = song_choices.filter(x => x.name.toLowerCase().indexOf(input_field.toLowerCase()) !== -1)
+				await interaction.respond(song_choices).catch(e => console.log('respond error : ' + e));
+			}
+			else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 		}
 		//-----//
 
@@ -343,7 +377,7 @@ module.exports = class Player {
 					return;
 				}
 
-				if(await settings.level(interaction.user.id) < 3 && !await settings.isGuildGolden(interaction.guildId))
+				if(!await settings.isGolden(interaction.guildId, interaction.user.id))
 				{
 					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.golden_level", interaction.locale)});
 					return;
@@ -420,7 +454,7 @@ module.exports = class Player {
 				settings.addXP(interaction.user.id, 5);
 			}
 			else if(interaction.customId === "btn_volume")//Works
-			{
+			{//5jwe0
 				if(!await this.#checkPermission("volume", interaction)) return;
 				let player_interface = await this.#generatePlayerInterface(interaction.guildId);
 				let used_style = this.#_guilds_play_data[interaction.guildId].style;
@@ -672,6 +706,16 @@ module.exports = class Player {
 					else displayed_yt = yt.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
 					let options_yt = yt.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "Youtube Search"}});
 
+					let sc = await sc_search(value);
+					let displayed_sc = ""
+					if(sc === false)
+					{
+						displayed_sc = "*The SoundCloud search API is sadly unavailable*\n"
+						sc = [];
+					}
+					else displayed_sc = sc.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
+					let options_sc = sc.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "SoundCloud Search"}});
+
 					let radios = await radio_search(value);
 					let displayed_radios = radios.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
 					let options_radios = radios.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "Radio Search"}});
@@ -680,17 +724,18 @@ module.exports = class Player {
 						.setColor([0x62, 0xD5, 0xE9])
 						.setTitle('Search results for "' + value + '"')
 						.setDescription("**Youtube**\n" + (displayed_yt !== "" ? displayed_yt : 'No song found\n') +
+							"**SoundCloud**\n" + (displayed_sc !== "" ? displayed_sc : 'No song found\n') +
 							"**Radios**\n" + (displayed_radios !== "" ? displayed_radios : 'No radios found')
 						);
 
 					let search_select_list = [];
-					if(options_yt.concat(options_radios).length > 0)
+					if(options_yt.concat(options_sc).concat(options_radios).length > 0)
 					{
 						search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
 							new this.#_discord.StringSelectMenuBuilder()
 								.setCustomId("select_add_song")
 								.setPlaceholder(i18n.get("add_song_modal.search_placeholder", this.#_guilds_play_data[interaction.guildId].locale))
-								.addOptions(options_yt.concat(options_radios))
+								.addOptions(options_yt.concat(options_sc).concat(options_radios))
 						]));
 					}
 					search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
@@ -711,7 +756,7 @@ module.exports = class Player {
 		else if(interaction.isStringSelectMenu())
 		{
 			if(!['select_volume', 'select_add_song', 'select_queue_song', 'global_player_style', 'session_player_style'].includes(interaction.customId)) return false;
-			this.#_log_function([{tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
+			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
@@ -843,6 +888,22 @@ module.exports = class Player {
 		}
 	}
 
+	async #getTrollList(guild_id)
+	{
+		let song_choices = (await fs.readdir(__dirname + '/soundboard')).map((x) => { return {name: x.split('.')[0], value: x} });
+
+		if(!fsc.existsSync(process.cwd() + '/env_data/guilds/' + guild_id)) await settings.get(guild_id, 1, 'config');
+		if(!fsc.existsSync(process.cwd() + '/env_data/guilds/' + guild_id + '/soundboard')) await fs.mkdir(process.cwd() + '/env_data/guilds/' + guild_id + '/soundboard');
+		return song_choices.concat((await fs.readdir(process.cwd() + '/env_data/guilds/' + guild_id + '/soundboard')).map((x) => { return {name: x.split('.')[0], value: x} }));
+	}
+
+	async #resolveTrollSong(guild_id, input)
+	{
+		if(fsc.existsSync(process.cwd() + '/env_data/guilds/' + guild_id + '/soundboard/' + input)) return process.cwd() + '/env_data/guilds/' + guild_id + '/soundboard/' + input;
+		if(fsc.existsSync(__dirname + '/soundboard/' + input)) return __dirname + '/soundboard/' + input;
+		return false;
+	}
+
 	async shutdownRequest(timestamp)
 	{
 		this.#_shutdown = timestamp;
@@ -903,6 +964,18 @@ module.exports = class Player {
 				selfDeaf: true,
 				selfMute: false
 			});
+			this.#_guilds_play_data[guild_id].voice_connection.on('stateChange', (oldState, newState) => {
+		        const oldNetworking = Reflect.get(oldState, 'networking');
+		        const newNetworking = Reflect.get(newState, 'networking');
+		      
+		        const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+		            const newUdp = Reflect.get(newNetworkState, 'udp');
+		            clearInterval(newUdp?.keepAliveInterval);
+		        }
+		      
+		        oldNetworking?.off('stateChange', networkStateChangeHandler);
+		        newNetworking?.on('stateChange', networkStateChangeHandler);
+		    });
 
 			this.#_guilds_play_data[guild_id].voice_connection.addListener(Voice.VoiceConnectionStatus.Disconnected, async function() {
 				try {
@@ -954,7 +1027,6 @@ module.exports = class Player {
 			}
 
 			if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
-			console.log('destroyed lol');
 			this.#_guilds_play_data[guild_id].voice_connection.destroy();
 		}
 		catch(e)
@@ -962,6 +1034,7 @@ module.exports = class Player {
 			console.log(e);
 		}
 		
+		this.#_log_function([{tag: "g", value: guild_id}], 'Session destroyed');
 		delete this.#_guilds_play_data[guild_id];
 	}
 
@@ -1070,7 +1143,7 @@ module.exports = class Player {
 
 			let player_embed = new this.#_discord.EmbedBuilder()
 				.setColor((await settings.isGuildGolden(guild_id)) ? [0xFF, 0xD7, 0x00] : [0x62, 0xD5, 0xE9])
-				.setFooter({text: "NEW : Change style of your player in Owner Settings or /config player !"});
+				.setFooter({text: "Tip : " + tip_list[Math.floor(Math.random() * tip_list.length)]});
 
 			if(this.#get_song(guild_id) !== undefined)
 			{
@@ -1083,7 +1156,7 @@ module.exports = class Player {
 			{
 				player_embed.setTitle(i18n.get("player_embed.title_idle", used_locale));
 				player_embed.setDescription(i18n.get("player_embed.description_idle", used_locale));
-				player_embed.setThumbnail('https://www.theireply.fr/babot/image_flou.jpg');
+				player_embed.setThumbnail('https://babot.theireply.fr/player_help.png');
 			}
 
 			return {content: '', embeds: [player_embed], components: player_interface_components}
@@ -1155,7 +1228,7 @@ module.exports = class Player {
 					.setStyle(color("shuffle") ? 4 : 3)
 					.setDisabled(disabled("shuffle")),
 				new this.#_discord.ButtonBuilder()
-					.setCustomId(cmd_prfx + "config_queue")
+					.setCustomId("undefined")
 					.setLabel(i18n.get("buttons.queue", locale))
 					.setEmoji(this.#emojiStyle("queue", used_style))
 					.setStyle(2)
@@ -1198,11 +1271,19 @@ module.exports = class Player {
 					.setCustomId(cmd_prfx + "player_style")
 					.setMinValues(1)
 					.setMaxValues(1)
-					.setPlaceholder('Select a custom style for the player')
+					.setPlaceholder(i18n.get("player_embed.style_placeholder", locale))
 					.setOptions(
 						{label: "Line", emoji: this.#emojiStyle("play", "line"), value: "line", default: used_style === "line", description: i18n.place(i18n.get("credits.flaticon", locale), {artist: "Pixel perfect"})},
 						{label: "Discord", emoji: this.#emojiStyle("play", "discord"), value: "discord", default: used_style === "discord"}
 					)
+			]),
+			new this.#_discord.ActionRowBuilder().addComponents([
+				new this.#_discord.ButtonBuilder()
+					.setCustomId("undefined2")
+					.setLabel(i18n.get("player_embed.configure_msg", locale))
+					.setEmoji({name: "⚠"})
+					.setStyle(1)
+					.setDisabled(true)
 			])
 		);
 
@@ -1275,6 +1356,7 @@ module.exports = class Player {
 
 	async #updatePlayerInterface(guild_id, custom_message = undefined)//To test
 	{
+		if(!this.#isObjectValid(guild_id)) return;
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
 			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
@@ -1350,7 +1432,7 @@ module.exports = class Player {
 					.setEmoji({name: "⬅️"})
 					.setDisabled(page > 0 ? false : true),
 				new this.#_discord.ButtonBuilder()
-					.setCustomId("initial_duck")
+					.setCustomId("undefined")
 					.setStyle(2)
 					.setDisabled(true)
 					.setLabel(i18n.place(i18n.get("queue_embed.page", this.#_guilds_play_data[guild_id].locale), {current: page+1, total: Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20)})),
@@ -1465,7 +1547,7 @@ module.exports = class Player {
 							url: "https://accounts.spotify.com/api/token",
 							method: 'POST',
 							headers: {
-								'Authorization': 'Basic ' + Buffer.from("cc16fd3f4b1a4108ab771c35bfc5291c:373553be22a745ce8e37759c299869d0").toString('base64')
+								'Authorization': 'Basic ' + Buffer.from(babot_env.spotify_api_key).toString('base64')
 							},
 							data: "grant_type=client_credentials"
 						});
@@ -1515,7 +1597,33 @@ module.exports = class Player {
 								await this.#add_in_queue(guild_id, track_name + " " + artist_name + " music", true).catch((e) => { console.log('Probably useless error 3 : ' + e)});
 							}
 						}
-						return reject('Spotify support will be released in the 1.1.1 version. See `/changelog`');
+					}
+					else if(link.match(/^https:\/\/soundcloud.com\//))
+					{
+						if(link.match(/\.com\/[a-zA-Z0-9_-]+\/sets\//))//Is a playlist
+						{
+							reject('SoundCloud playlists are not supported :cry:');
+						}
+						else
+						{
+							let return_resolve = await resolve_sc_music(link);
+							if(return_resolve !== false)
+							{
+								this.#_log_function([{tag: "g", value: guild_id}], 'Video ' + link + ' from soundcloud added to queue');
+								let current_song_before = this.#get_song(guild_id);
+
+								if(!this.#isObjectValid(guild_id)) return;
+								this.#_guilds_play_data[guild_id].queue.push(return_resolve);
+								if(current_song_before === undefined)
+								{
+									await this.#play_song(guild_id);
+									await this.#updatePlayerInterface(guild_id);
+								}
+
+								resolve('Your music has been added to queue');
+							}
+							else return reject('This video is unavailable');
+						}
 					}
 					else return reject('This platform is not supported right now, but feel free to propose it using </feedback:1060125997359448064> !');
 				}
@@ -1599,23 +1707,36 @@ module.exports = class Player {
 		return new Promise(async (resolve, reject) => {
 			if(this.#get_song(guild_id) !== undefined)
 			{
+				let song = this.#get_song(guild_id);
+				this.#_log_function([{tag: "g", value: guild_id}], 'Playing ' + song.link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
+
+				let stream;
+				if(song.play_link.startsWith("file:///"))
+				{
+					if(!fsc.existsSync(song.play_link.replace("file://", "")))
+					{
+						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song : ' + song.play_link);
+						return false;
+					}
+					stream = fsc.createReadStream(song.play_link.replace("file://", ""));
+				}
+				else
+				{
+					let play_link_process = await axios({
+						url: this.#get_song(guild_id).play_link,
+						method: 'get',
+						responseType: 'stream',
+						headers: Object.assign(this.#get_song(guild_id).play_headers, {"Accept-Encoding": "deflate, br"})
+					}).catch((e) => {
+						console.log(e);
+						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song');
+					});
+
+					if(play_link_process === undefined) return false;
+					stream = play_link_process.data;
+				}
+
 				if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
-				let link = this.#get_song(guild_id).link;
-				this.#_log_function([{tag: "g", value: guild_id}], 'Playing ' + link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
-
-				this.#_guilds_play_data[guild_id].request_controller = new AbortController();
-				let play_link_process = await axios({
-					url: this.#get_song(guild_id).play_link,
-					method: 'get',
-					responseType: 'stream',
-					headers: Object.assign(this.#get_song(guild_id).play_headers, {"Accept-Encoding": "deflate, br"}),
-					signal: this.#_guilds_play_data[guild_id].request_controller.signal
-				}).catch((e) => {
-					console.log(e);
-					this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song');
-				});
-				if(play_link_process === undefined) return false;
-
 				this.#_guilds_play_data[guild_id].ffmpeg_process = new prism.FFmpeg({args: [
 					'-analyzeduration', '0',
 					'-loglevel', '0',
@@ -1624,10 +1745,14 @@ module.exports = class Player {
 					'-ac', '2',
 					'-s:a', '240'
 				]});
+				let my_process = this.#_guilds_play_data[guild_id].ffmpeg_process
+				my_process.once('error', function(){
+					my_process.destroy();
+				});
 				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
 				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
 
-				let resource = Voice.createAudioResource(play_link_process.data.pipe(this.#_guilds_play_data[guild_id].ffmpeg_process).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
+				let resource = Voice.createAudioResource(stream.pipe(this.#_guilds_play_data[guild_id].ffmpeg_process).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
 				/*resource.playStream.on('data', function(data)
 				{
 					//console.log(data.length);
@@ -1657,7 +1782,7 @@ async function yt_search(term)
 			"Accept-Encoding": "deflate, br"
 		},
 		params: {
-			key: "AIzaSyDAAk5CiS6FfmAg1r5ClftdooAIB-nomdQ",
+			key: babot_env.youtube_api_key,
 			part: "snippet",
 			maxResults: 5,
 			order: "relevance",
@@ -1713,7 +1838,7 @@ async function resolve_yt_playlist(playlist_id)
 			"Accept-Encoding": "deflate, br"
 		},
 		params: {
-			key: "AIzaSyDAAk5CiS6FfmAg1r5ClftdooAIB-nomdQ",
+			key: babot_env.youtube_api_key,
 			part: "snippet",
 			maxResults: 50,
 			playlistId: playlist_id
@@ -1738,9 +1863,7 @@ async function sc_search(term)
 			"Accept": "application/json, text/javascript"
 		},
 		params: {
-			sc_a_id: "3d1709b864256e6701c60bcc16d925c0c43328fa",
-			user_id: "27375-340005-10682-566993",
-			client_id: "ZQvaVYuPpe0Pg7Ga7V24qFseYl6eTK73",
+			client_id: babot_env.soundcloud_api_key,
 			limit: 5,
 			q: term,
 		},
@@ -1750,12 +1873,13 @@ async function sc_search(term)
 	});
 
 	if(video_data.data.error !== undefined) return false;
+	if(video_data.data.collection === undefined) return false;
 	return video_data.data.collection.map((x) => {return {name: x.title, link: x.permalink_url}});
 }
 
 async function resolve_sc_music(link)
 {
-	if(link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
+	if(link.match(/^https:\/\/soundcloud.com\//))
 	{
 		let video_data_process = await spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-J', link], {encoding: 'utf-8'});
 		if(video_data_process.stderr !== "") console.log(video_data_process.stderr);
@@ -1764,7 +1888,6 @@ async function resolve_sc_music(link)
 		let video_data = JSON.parse(video_data_process.stdout);
 		if(video_data === undefined) return false;
 
-		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
 		if(video_data &&
 			video_data._type === "video" &&
 			video_data.original_url &&
@@ -1772,9 +1895,18 @@ async function resolve_sc_music(link)
 			video_data.title &&
 			video_data.thumbnail)
 		{
+			let temp_filename = video_data.title.replaceAll(/[^a-z0-9]/gi, '_').toLowerCase();
+			spawnAsync('yt-dlp', ['-f', 'bestaudio', '--default-search', 'auto', '--no-playlist', '-o', '/tmp/' + temp_filename, link], {encoding: 'utf-8'});
+			let retry_count = 0;
+			while(!fsc.existsSync("/tmp/" + temp_filename))
+			{
+				await sleep(200);
+				if(retry_count >= 100) break;
+				retry_count++;
+			}
 			return {
 				link: video_data.original_url,
-				play_link: video_data.requested_downloads[0].url,
+				play_link: "file:///tmp/" + temp_filename,
 				name: video_data.title,
 				thumbnail: video_data.thumbnail,
 				play_headers: video_data.requested_downloads[0].http_headers
@@ -1792,7 +1924,7 @@ async function resolve_sc_playlist(playlist_id)
 			"Accept-Encoding": "deflate, br"
 		},
 		params: {
-			key: "AIzaSyDAAk5CiS6FfmAg1r5ClftdooAIB-nomdQ",
+			key: babot_env.youtube_api_key,
 			part: "snippet",
 			maxResults: 50,
 			playlistId: playlist_id
@@ -1847,4 +1979,10 @@ function isJsonString(str) {
         return false;
     }
     return true;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+	setTimeout(resolve, ms);
+  });
 }

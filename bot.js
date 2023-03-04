@@ -26,7 +26,7 @@ const status = new Status(Discord, client, log);
 const settings = require(__dirname + '/env_data/env.json');
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.4.3 released", 3],
+  ["/changelog : version 1.4.5 released", 3],
   ["/help start", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how with '/help contribute'", 3],
@@ -53,7 +53,7 @@ client.on('ready', async () => {
   {
     //Report error with a webhook to a channel in the server
     await axios({
-      url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
+      url: settings.webhook_return + "?wait=true",
       method: "POST",
       headers: {
         'Accept-Encoding': 'deflate, br'
@@ -145,6 +145,17 @@ client.on('ready', async () => {
       subcommand.setName('player')
         .setDescription(i18n.get("config.player.description"))
         .setDescriptionLocalizations(i18n.all("config.player.description"))
+    )
+    .addSubcommand(subcommand => 
+      subcommand.setName('troll')
+        .setDescription(i18n.get("config.troll.description"))
+        .setDescriptionLocalizations(i18n.all("config.troll.description"))
+        .addAttachmentOption(option => 
+          option.setName('troll_song')
+            .setDescription(i18n.get("config.troll.add_troll"))
+            .setDescriptionLocalizations(i18n.all("config.troll.add_troll"))
+            .setRequired(false)
+        )
     )
     .addSubcommand(subcommand =>
       subcommand.setName('language')
@@ -406,34 +417,13 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     {
       await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
       log([{tag: "u", value: interaction.user.id}], 'Command `dashboard` received');
-      let user_level = await client_settings.level(interaction.user.id);
-      let level_name = "";
-      let emoji_level = ""
-      switch(user_level)
-      {
-        case 0:
-          emoji_level = "<:level1:1065239400549724281>";
-          level_name = "1";
-          break;
-        case 1:
-          emoji_level = "<:level2:1065239416798453921>";
-          level_name = "2";
-          break;
-        case 2:
-          emoji_level = "<:level3:1065239432321568848>";
-          level_name = "3";
-          break;
-        case 3:
-          emoji_level = "<:golden:1065239445625917520>";
-          level_name = "**Golden**";
-          break;
-      }
+      let user_golden = await client_settings.isUserGolden(interaction.user.id);
+
       let dash_embed = new Discord.EmbedBuilder()
         .setColor([0x2f, 0x31, 0x36])
-        .setTitle(i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
+        .setTitle(user_golden ? "<:golden:1065239445625917520>" : "" + i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
         .setDescription(i18n.get("dashboard.panel_description", interaction.locale))
         .setFields([
-          {name: i18n.get("dashboard.level_label", interaction.locale), value: i18n.place(i18n.get("dashboard.level_content", interaction.locale), {emoji: emoji_level, level: level_name, points: await client_settings.pointsCount(interaction.user.id)}), inline: true},
           {name: "XP", value: (await client_settings.XPCount(interaction.user.id)).toString(10), inline: true},
           {name: i18n.get("dashboard.leaderboard_label", interaction.locale), value: i18n.place(i18n.get("dashboard.leaderboard_content", interaction.locale), {pos: await client_settings.leaderboardPosition(interaction.user.id)}), inline: true},
           {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming soon", inline: false}
@@ -484,6 +474,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       {
         player.configure(interaction);
       }
+      else if(subcommand === 'troll')
+      {
+        await interaction.reply(await generate_troll_config(interaction.guildId, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
+      }
       else if(subcommand === 'language')
       {
         let choosen_locale = interaction.options.getString("locale", true);
@@ -524,7 +518,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       if(subcommand === 'level')
       {
         await interaction.reply({
-          content: '',
+          content: '**⚠ This help page deals with a deprecated feature of BaBot**',
           embeds: [{
             title: i18n.get("help.level.title", interaction.locale),
             color: 0x2f3136,
@@ -618,7 +612,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   }
   else if(interaction.isButton())
   {
-    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings', 'close_any'].includes(interaction.customId) ||
+    if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings', 'close_any', 'disable_troll'].includes(interaction.customId) ||
       interaction.customId.startsWith('btn_disable_troll_'))
     {
       log([{tag: "u", value: interaction.user.id}], 'Command `' + interaction.customId + '` received');
@@ -712,6 +706,20 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         await client_settings.set(interaction.user.id, 0, 'config', config);
         await interaction.update(await generate_user_settings(interaction.user, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
       }
+      else if(interaction.customId === "disable_troll")
+      {
+        let config = await client_settings.get(interaction.guildId, 1, 'config');
+        if(config === false)
+        {
+          await interaction.reply({content: i18n.get('errors.settings_panel_fail', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          return;
+        }
+
+        if(config.trollDisabled) config.trollDisabled = false;
+        else config.trollDisabled = true;
+        await client_settings.set(interaction.guildId, 1, 'config', config);
+        await interaction.update(await generate_troll_config(interaction.guildId, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+      }
     }
   }
   else if(interaction.isModalSubmit())
@@ -719,7 +727,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
     if(interaction.customId === "modal_feedback")
     {
       await axios({
-          url: "https://discord.com/api/webhooks/1059898884232593528/YdW_Kx2a63gzU_vKTCbFRinGEI_-thRPelL8-TcHd9hk_G1eY_Z4nhiVdNRTBA5bgvGM?wait=true",
+          url: settings.webhook_return + "?wait=true",
           method: "POST",
           headers: {
             'Accept-Encoding': 'deflate, br'
@@ -793,13 +801,13 @@ client.on('messageCreate', async (message) => {
 
 client.on('guildCreate', async (guild) => {
   guild = await guild.fetch();
-  log([], 'Added in a new guild : ' + guild.id + ' - ' + guild.name + ' | Members : ' + guild.approximateMemberCount + ', Online : ' + guild.approximatePresenceCount);
+  log([{tag: 'g', value: guild.id}], 'Added in a new guild : ' + guild.id + ' - ' + guild.name + ' | Members : ' + guild.approximateMemberCount + ', Online : ' + guild.approximatePresenceCount);
 
   await update_stats();
 });
 client.on('guildDelete', async (guild) => {
  if(!guild.available) return false;
-  log([], 'I\'m no longer in this guild : ' + guild.id + ' - ' + guild.name);
+  log([{tag: 'g', value: guild.id}], 'I\'m no longer in this guild : ' + guild.id + ' - ' + guild.name);
 
   await update_stats();
 });
@@ -837,6 +845,32 @@ async function generate_user_settings(user, locale)
   ];
   
   return {embeds: [settings_embed], components: settings_components};
+}
+
+async function generate_troll_config(guild_id, locale)
+{
+  let guild_config = await client_settings.get(guild_id, 1, 'config')
+  if(guild_config === false)
+  {
+    return {content: i18n.get('errors.settings_panel_fail', locale), ephemeral: true};
+  }
+
+  let troll_settings_embed = new Discord.EmbedBuilder()
+  .setColor([0x2f, 0x31, 0x36])
+
+  troll_settings_embed.setTitle("Troll preferences");
+  troll_settings_embed.setDescription("- Troll allowed in this guild : **" + (guild_config.trollDisabled ? "No" : "Yes") + "**\n- Custom troll songs : **Coming soon**");
+  let config_components = [
+    new Discord.ActionRowBuilder().addComponents([
+      new Discord.ButtonBuilder()
+        .setCustomId("disable_troll")
+        .setStyle(guild_config.trollDisabled ? 4 : 3)
+        .setLabel(i18n.get(guild_config.trollDisabled ? "config.troll.enable_troll_btn" : "config.troll.disable_troll_btn", locale))
+    ])
+      
+  ];
+
+  return {content: '', embeds: [troll_settings_embed], components: config_components, ephemeral: true};
 }
 
 
@@ -922,7 +956,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
 
   //--- Stats Webhook ---//
   await axios({
-    url: "https://discord.com/api/webhooks/1060989854760054845/MZqzxw-zckiVjAbpnoRLZcWKyFHFrbnnG6o-eqLDzNDFFuvGggtTVi6CBzAjfbrf6R9Q?wait=true",
+    url: settings.webhook_statistics + "?wait=true",
     method: "POST",
     headers: {
       'Accept-Encoding': 'deflate, br'

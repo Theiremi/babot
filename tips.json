@@ -1,0 +1,22 @@
+[
+	"Configure the player to your needs using `/config player` command !",
+	"The sessions owner have extra control on the player with \"Owner controls\"",
+	"A server admin can disable the ability of the session owner to control the session",
+	"Test the /troll command and annoy your friends (even while using the player) ! ",
+	"You can prevent others to annoy you with /troll by disabling it in /settings",
+	"Disable trolling in your server with `/config troll` !",
+	"Add custom troll sounds in `/config troll` !",
+	"Change the language of the player using `/config language` !",
+	"Consult your BaBot `/dashboard` to get statistics and personalized commands !",
+	"Don't like troll in your server ? Disable it in `/config troll`",
+	"Want custom troll songs ? Add these in `/config troll` !",
+	"RabbitH00d is a very good person",
+	"My name is inspired by Neko_Babot",
+	"Extra functions are available on song in the queue, such as play immediately or remove it",
+	"Get extra advantages with Golden subscription -> `/help contribute`",
+	"I crash literally everytime",
+	"BaBot is now Open Source ! Come check the project at https://github.com/Theiremi/babot",
+	"Having trouble using BaBot ? Get help in our support server -> discord.gg/zssHymr656",
+	"You're lucky, BaBot seems to work",
+	"Hey, I want to add a message here ! -> https://github.com/Theiremi/babot/blob/master/tips.json"
+]
