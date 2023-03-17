@@ -1,26 +1,27 @@
 const fsc = require('fs');
 const fs = fsc.promises;
 const AdmZip = require('adm-zip');
+const root = __dirname;
 
 module.exports = class Settings {
 	constructor()
 	{
-		if(!fsc.existsSync(process.cwd() + '/env_data/users'))
+		if(!fsc.existsSync(root + '/env_data/users'))
 		{
-			fsc.mkdirSync(process.cwd() + '/env_data/users')
+			fsc.mkdirSync(root + '/env_data/users')
 		}
 
-		if(!fsc.existsSync(process.cwd() + '/env_data/guilds'))
+		if(!fsc.existsSync(root + '/env_data/guilds'))
 		{
-			fsc.mkdirSync(process.cwd() + '/env_data/guilds')
+			fsc.mkdirSync(root + '/env_data/guilds')
 		}
 	}
 
 	async get(id, type, file)
 	{
 		let folder = ""
-		if(type === 0) folder = process.cwd() + '/env_data/users/'
-		else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+		if(type === 0) folder = root + '/env_data/users/'
+		else if(type === 1) folder = root + '/env_data/guilds/'
 		else return false;
 
 		if(!fsc.existsSync(folder + id)) await fs.mkdir(folder + id);
@@ -36,8 +37,8 @@ module.exports = class Settings {
 	async set(id, type, file, content)
 	{
 		let folder = ""
-		if(type === 0) folder = process.cwd() + '/env_data/users/'
-		else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+		if(type === 0) folder = root + '/env_data/users/'
+		else if(type === 1) folder = root + '/env_data/guilds/'
 		else return false;
 
 		if(!fsc.existsSync(folder + id)) await fs.mkdir(folder + id);
@@ -48,11 +49,22 @@ module.exports = class Settings {
 		return true;
 	}
 
+	async addTrollSong(id, file, content)
+	{
+		const folder = root + '/env_data/guilds/'
+
+		if(!fsc.existsSync(folder + id)) await fs.mkdir(folder + id);
+		if(!fsc.existsSync(folder + id + '/soundboard/')) await fs.mkdir(folder + id + '/soundboard/');
+
+		await fs.writeFile(folder + id + '/soundboard/' + file, content);
+		return true;
+	}
+
 	async count(type)
 	{
 		let folder = ""
-		if(type === 0) folder = process.cwd() + '/env_data/users/'
-		else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+		if(type === 0) folder = root + '/env_data/users/'
+		else if(type === 1) folder = root + '/env_data/guilds/'
 		else return false;
 
 		return (await fs.readdir(folder)).length;
@@ -61,8 +73,8 @@ module.exports = class Settings {
 	async erase(id, type)
 	{
 		let folder = ""
-		if(type === 0) folder = process.cwd() + '/env_data/users/'
-		else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+		if(type === 0) folder = root + '/env_data/users/'
+		else if(type === 1) folder = root + '/env_data/guilds/'
 		else return false;
 
 		if(!fsc.existsSync(folder + id)) return true;
@@ -75,8 +87,8 @@ module.exports = class Settings {
 	{
 		return new Promise(function(resolve, reject) {
 			let folder = ""
-			if(type === 0) folder = process.cwd() + '/env_data/users/'
-			else if(type === 1) folder = process.cwd() + '/env_data/guilds/'
+			if(type === 0) folder = root + '/env_data/users/'
+			else if(type === 1) folder = root + '/env_data/guilds/'
 			else {
 				reject(false);
 				return;
@@ -158,7 +170,7 @@ module.exports = class Settings {
 	async leaderboardPosition(id)
 	{
 		let leaderboard = [];
-		let users_profiles = await fs.readdir(process.cwd() + '/env_data/users/')
+		let users_profiles = await fs.readdir(root + '/env_data/users/')
 		for(let e of users_profiles)
 		{
 			let xp_user = await this.XPCount(e);
@@ -167,8 +179,9 @@ module.exports = class Settings {
 				leaderboard.push([e, xp_user]);
 			}
 		}
-		leaderboard.sort((a, b) => a[1]-b[1]);
+		leaderboard.sort((a, b) => b[1]-a[1]);
 		leaderboard = leaderboard.map(x => x[0]);
+
 		let position = leaderboard.indexOf(id)
 		if(position !== -1)
 		{
@@ -228,7 +241,7 @@ module.exports = class Settings {
 
 	async isUserGolden(id)
 	{
-		let config = await this.get(user, 0, 'config');
+		let config = await this.get(id, 0, 'config');
 		if(config === false) return false;
 		if(config.golden) return true;
 		return false;

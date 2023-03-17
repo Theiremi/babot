@@ -54,23 +54,23 @@
 		"contribute_description": "Comment puis-je aider BaBot ?",
 		"faq_description": "Trouvez la réponse aux questions les plus fréquentes",
 		"start": {
-			"title": "BaBot : Les bases",
-			"description": "**BaBot est axé sur des fonctions vocales, mais en inclut aussi d'autres qu'il peut être utile de connaître**\nL'ergonomie de BaBot est notre priorité, **n'hésitez pas à tester les différentes commandes** pour comprendre leur fonctionnement",
+			"title": "Débuter avec BaBot",
+			"description": "",
 			"field_1": {
-				"name": "Principales commandes",
-				"value": "- **</player:1052609017802924062>** : Ouvre un lecteur afin d'écouter de la musique avec BaBot\n- **</troll:1054878390278176808>** : Envoie le bot jouer un son dans le salon vocal de quelqu'un sans aucune preuve visible"
+				"name": "Expliquez-moi rapidement",
+				"value": "- **Utilisez </player:1052609017802924062>** pour écouter de la musique\n- **Utilisez </troll:1054878390278176808>** Pour envoyer BaBot jouer un son dans le salon vocal de quelqu'un sans aucune preuve visible"
 			},
 			"field_2": {
-				"name": "Gérer votre profil",
-				"value": "BaBot possède un système de niveau vous donnant accès à des fonctionnalités en fonction de votre activité (Voir `/help level`)\n**Pour gérer votre profil BaBot, utilisez ces commandes :**\n- **</dashboard:1065334605076508772>** : Consultez vos statistiques et vos commandes personnalisées\n- **</settings:1065334689021296671>** : Configurez comment BaBot se comporte avec vous"
+				"name": "J'en veux plus",
+				"value": "Vous pouvez gérer comment BaBot fonctionne avec :\n- **</dashboard:1065334605076508772>** : Consultez vos statistiques et vos commandes personnalisées\n- **</settings:1065334689021296671>** : Configurez comment BaBot se comporte avec vous"
 			},
 			"field_3": {
-				"name": "Obtenir une aide plus précise",
-				"value": "Pour obtenir de l'aide sur des sujets spécifiques, n'hésitez pas à consulter les autres sections de ce centre d'aide"
+				"name": "Je suis admin",
+				"value": "BaBot possède des paramètres pour vous que vous pouvez gérer avec les commandes `/config`"
 			},
 			"field_4": {
-				"name": "J'ai quelques questions",
-				"value": "Vous pouvez consulter la FAQ avec `/help faq` pour obtenir vos réponses\nSi vous ne trouvez pas votre réponse, venez poser votre question dans notre [serveur d'assistance](https://discord.gg/zssHymr656)"
+				"name": "J'ai rien compris :grin:",
+				"value": "Obtenez plus d'aide dans les autres sections de ce centre d'aide, notamment avec `/help faq`\nN'hésitez pas à rejoindre notre [serveur d'assistance](https://discord.gg/zssHymr656)"
 			}
 		},
 		"level": {
@@ -154,6 +154,48 @@
 		"disable_troll_btn": "Désactiver le troll",
 		"not_authorized_user": "❌ À ce que je vois, ce n'est pas votre panneau de configuration, me trompe-je ?"
 	},
+	"config": {
+		"command_description": "Configurer BaBot pour votre serveur",
+		"player": {
+			"description": "Sélectionnez les commandes du lecteur que les membres peuvent utiliser"
+		},
+		"languages": {
+			"description": "Configurez la langue que BaBot doit utiliser dans ce serveur",
+			"locale_description": "Sélectionnez une langue",
+			"change_done": "✅ La langue de préférence de ce serveur a été changée pour {language}",
+			"language_doesnt_exists": "➡️ BaBot n'est pas encore traduit dans cette langue, mais n'importe qui peut participer aux traductions ! Plus d'infos avec `/help contribute`",
+			"locales": {
+				"en-US": "Anglais",
+				"bg": "Bulgare",
+				"zh-CN": "Chinois",
+				"cs": "Tchèque",
+				"da": "Danois",
+				"nl": "Néerlandais",
+				"fi": "Finlandais",
+				"fr": "Français",
+				"de": "Allemand",
+				"el": "Grec",
+				"hi": "Hindi",
+				"hu": "Hongrois",
+				"it": "Italien",
+				"ja": "Japonais",
+				"ko": "Coréen",
+				"lt": "Lituanien",
+				"no": "Norvégien",
+				"pl": "Polonais",
+				"pt-BR": "Portugais",
+				"ro": "Roumain",
+				"ru": "Russe",
+				"es-ES": "Espagnol",
+				"sv-SE": "Suédois",
+				"th": "Thaï",
+				"tr": "Turc",
+				"uk": "Ukrainien",
+				"vi": "Vietnamien",
+				"not_mine": "Il n'y a pas le mien"
+			}
+		}
+	},
 	"feedback": {
 		"command_description": "Envoyer un commentaire aux développeurs.",
 		"modal_placeholder": "N'importe quel commentaire positif ou négatif est le bienvenu !",
@@ -165,6 +207,9 @@
 		"user_banned": "❌ Désolé, vous ne pouvez pas utiliser {name}. Votre compte est banni..",
 		"missing_subcommand": "❌ Veuillez sélectionner une sous-commande.",
 		"unknown_subcommand": "❌ Cette sous-commande n'existe pas.",
-		"settings_panel_fail": "❌ Le panneau de configuration est actuellement en panne :cry:"
+		"settings_panel_fail": "❌ Le panneau de configuration est actuellement en panne :cry:",
+		"settings": "💥 Cette fonctionnalité de configuration est en panne :cry:",
+		"not_admin": "❌ Seuls les membres ayant la permission `Gérer le serveur` peuvent utiliser cette commande",
+		"guild_only": "💥 Cette commande n'est disponible que dans les serveurs"
 	}
 }

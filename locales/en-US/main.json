@@ -49,11 +49,15 @@
 	},
 	"help": {
 		"command_description": "Get help about features of BaBot.",
-		"start_description": "Getting started with BaBot",
-		"level_description": "Infos about how the level system works",
-		"donator_description": "Why should you give some money for BaBot",
-		"contribute_description": "How can I help BaBot ?",
-		"faq_description": "Get the answer to frequently asked questions",
+		"section_description": "Display a specific section of the Help Center",
+		"sections": {
+			"start": "Getting started",
+			"faq": "FAQ",
+			"player": "Player",
+			"troll": "Troll",
+			"golden": "Golden subscription",
+			"contribute": "Contribute to BaBot"
+		},
 		"start": {
 			"title": "Getting started with BaBot",
 			"description": "",
@@ -71,30 +75,42 @@
 			},
 			"field_4": {
 				"name": "I've not understand :grin:",
-				"value": "Get more help in the others section of this help center, especially with `/help faq`\nAlso feel free to join our [Support Server](https://discord.gg/zssHymr656) if your question have definitely no answers"
+				"value": "Get more help in the others section of this help center !\nAlso feel free to join our [Support Server](https://discord.gg/zssHymr656) if your question have definitely no answers"
 			}
 		},
-		"level": {
-			"title": "BaBot and his level system",
-			"description": "BaBot have a level system that allows users to do actions depending on his level\nEach time you use BaBot, you cumulate XP. This XP is used to establish a leaderboard of the most active BaBot users\nTo determinate the level of each user, the XP gained in the last 7 days is taken. This value is the number of points\n*NB : Upvoting BaBot on certain sites (See `/help contribute`) also gives XP*",
+		"player": {
+			"title": "The BaBot music player",
+			"description": "The main function of BaBot is undoubtely his music player, which is simple and intuitive.",
 			"field_1": {
-				"name": "<:level1:1065239400549724281> Level 1 : < 500 points",
-				"value": "It's the default level.\nAll the basic function are available"
+				"name": "Quick start",
+				"value": "- Join a voice channel\n- Open the </player:1052609017802924062>\n- Add you preferred music by clicking on \"Add a song\"\n- Enjoy 😀"
 			},
 			"field_2": {
-				"name": "<:level2:1065239416798453921> Level 2 : > 500 points",
-				"value": "Users that uses BaBot sometimes. They can :\n- Use the 1000% and 10000% volume settings\n- all previous advantages"
+				"name": "Server configuration",
+				"value": "Control and customize the player of your server with `/config player` !"
 			},
 			"field_3": {
-				"name": "<:level3:1065239432321568848> Level 3 : > 2500 points",
-				"value": "Active users of BaBot. They can :\n- Advantages coming soon here\n- all previous advantages"
-			},
-			"field_4": {
-				"name": "<:golden:1065239445625917520> Golden : Made a donation",
-				"value": "A top level granted to donators. Get all the infos about donators using `/help donator`"
+				"name": "Commands :",
+				"value": "- **</player:1052609017802924062>** : Opens the BaBot player\n- `/quickplay {link or search term}` : Start the BaBot player and play directly the music provided\n- `/config player` : Show an interface allowing server admins to tweak the BaBot player"
 			}
 		},
-		"donator": {
+		"troll": {
+			"title": "BaBot troll feature",
+			"description": "BaBot is also a funny bot with his troll command !",
+			"field_1": {
+				"name": "Quick start",
+				"value": "- Find a guy in a voice channel\n- Type </troll:1054878390278176808> command\n- Target the guy\n- Select the song\n- Enjoy 😆"
+			},
+			"field_2": {
+				"name": "Server configuration",
+				"value": "Want to add your personal troll songs in your server, or want to disable trolling ?\nLook at `/config troll` !"
+			},
+			"field_3": {
+				"name": "Commands :",
+				"value": "- `/troll {user} {song} [{volume}]` : Troll an user with the selected song played at the choosen volume"
+			}
+		},
+		"golden": {
 			"title": "<:golden:1065239445625917520> Make a tip for BaBot !",
 			"description": "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
 			"field_1": {
@@ -129,11 +145,11 @@
 			},
 			"field_2": {
 				"name": "Why the BaBot player is gold ?",
-				"value": "A gold player indicates that a Golden user has extended his Golden on the server (see `/help donator`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"
+				"value": "A gold player indicates that a Golden user has extended his Golden on the server (see `/help -> Golden`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"
 			},
 			"field_3": {
 				"name": "How can I help BaBot ?",
-				"value": "There are several ways to help BaBot indicated in the `/help contribute` help page"
+				"value": "There are several ways to help BaBot indicated in the `/help -> Contribute` help page"
 			}
 		}
 	},
@@ -142,7 +158,10 @@
 		"panel_title": "{username}'s dashboard",
 		"panel_description": "Here's your BaBot profile",
 		"leaderboard_label": "Activity leaderboard",
-		"leaderboard_content": "{pos}th",
+		"leaderboard_content": "{pos}th most active user",
+		"is_premium_label": "User type",
+		"is_normal": "Normal user",
+		"is_golden": "<:golden:1065239445625917520> Golden user",
 		"playlists_label": "Saved playlists",
 		"settings_btn": "Settings"
 	},
@@ -162,7 +181,7 @@
 			"description": "Set the language BaBot should use in this guild",
 			"locale_description": "Select a language",
 			"change_done": "✅ The preferred language for this guild has been updated to {language}",
-			"language_doesnt_exists": "➡️ BaBot has not yet been translated to this language, but translations are open to anyone ! More infos at `/help contribute`",
+			"language_doesnt_exists": "➡️ BaBot has not yet been translated to this language, but translations are open to anyone ! More infos at `/help -> Contribute`",
 			"locales": {
 				"en-US": "English",
 				"bg": "Bulgarian",
@@ -197,8 +216,17 @@
 		"troll": {
 			"description": "Control troll related settings of this guild",
 			"add_troll": "Use this option to import a new troll song in this server",
+			"embed_title": "Troll preferences",
+			"embed_description": "**Troll allowed in this guild** : {trollDisabled}\n**Custom troll songs :** \n{trollSongs}\n\n *Add more troll songs by uploading it with the command `/config troll`*",
+			"trollEnabled_text": "Yes",
+			"trollDisabled_text": "No",
 			"enable_troll_btn": "Troll Disabled",
-			"disable_troll_btn": "Troll Enabled"
+			"disable_troll_btn": "Troll Enabled",
+			"empty_troll_slot": "Empty slot",
+			"locked_troll_slot": "<:golden:1065239445625917520> Upgrade to Golden to use this slot",
+			"edit_button": "Song {pos}",
+			"delete_button": "Song {pos}",
+			"song_uploaded": "✅ **{song}** is now part of the custom troll songs of this server !\n<:transparent:1067551646592282694>You can use it with the usual </troll:1054878390278176808> command."
 		}
 	},
 	"feedback": {
@@ -215,6 +243,13 @@
 		"settings_panel_fail": "💥 The settings panel is currently broken.. :cry:",
 		"settings": "💥 This settings function is broken :cry:",
 		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command",
-		"guild_only": "💥 You can only use this command in a guild"
+		"guild_only": "💥 You can only use this command in a guild",
+		"help_not_found": "💥 This help page can't be displayed for the moment",
+		"troll_attachment_fail": "💥 The file attached was not sent correctly (Discord issue)",
+		"troll_file_too_big": "❌ This song is too big, try to compress it or to send a smaller song",
+		"troll_file_unavailable": "💥 The song can't be transferred to our servers",
+		"troll_not_song": "❌ This file doesn't seems to be a song",
+		"troll_limit_normal": "❌ You have reached the maximum number of songs you can upload\n<:golden:1065239445625917520> Check out Golden subscription to increase this limit : `/help -> Golden`",
+		"troll_limit_golden": "❌ You have reached the maximum number of songs you can upload, even with a Golden subscription"
 	}
 }

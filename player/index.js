@@ -1,5 +1,7 @@
+const { EventEmitter } = require('events');
 const fsc = require('fs');
 const fs = fsc.promises;
+const path = require('path');
 const worker_threads = require('worker_threads');
 const Voice = require('@discordjs/voice');
 const Builders = require('@discordjs/builders');
@@ -7,25 +9,26 @@ const child_process = require('child_process');
 const axios = require('axios');
 const prism = require('prism-media');
 //const { PlayerTransform } = require('./ffmpeg_transform.js');
-const Settings = require(process.cwd() + '/settings.js');
-const I18n = require(process.cwd() + '/locales.js');
-const styles = require(__dirname + '/styles.json');
-const tip_list = require(process.cwd() + '/tips.json');
+const Settings = require('#root/settings.js');
+const I18n = require('#root/locales.js');
+const styles = require('./styles.json');
+const tip_list = require('#root/tips.json');
 const settings = new Settings();
 const i18n = new I18n('player');
-const babot_env = require(process.cwd() + '/env_data/env.json');
+const babot_env = require('#root/env_data/env.json');
 
+let search_cache = {list: {}, index: 0};
 
-module.exports = class Player {
+module.exports = class Player extends EventEmitter {
 	#_guilds_play_data = {};
 	#_discord;
 	#_client;
 	#_log_function
-	#_locales;
 	#_shutdown = false;
 
 	constructor(discord, client, log)
 	{
+		super();
 		this.#_discord = discord;
 		this.#_client = client;
 		this.#_log_function = log;
@@ -46,7 +49,7 @@ module.exports = class Player {
 		player_commands[1].setDescriptionLocalizations(i18n.all("chatinputcommands.troll"));
 		player_commands[1].setDMPermission(false);
 		player_commands[1].addUserOption((option) => {
-			option.setName('user');
+			option.setName('target');
 			option.setDescription(i18n.get("chatinputcommands.troll_user"));
 			option.setDescriptionLocalizations(i18n.all("chatinputcommands.troll_user"));
 			option.setRequired(true);
@@ -74,6 +77,14 @@ module.exports = class Player {
 		return player_commands.map(x => x.toJSON());
 	}
 
+	emergencyShutdown()
+	{
+		for(let e of Object.values(this.#_guilds_play_data))
+		{
+			if(e.ffmpeg_process) e.ffmpeg_process.destroy();
+		}
+	}
+
 	playerCount()
 	{
 		return Object.values(this.#_guilds_play_data).filter(x => x !== undefined).length;
@@ -81,10 +92,22 @@ module.exports = class Player {
 
 	async configure(interaction)
 	{
-		await interaction.reply(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale));
+		await interaction.reply(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch(e => console.log('reply error : ' + e));
 	}
 
 	async interactionCreate(interaction)
+	{
+		try{
+			await this.#_interactionCreate(interaction).catch(e => {
+				this.emit('error', e);
+			});
+		}
+		catch(e)
+		{
+			this.emit('error', e);
+		}
+	}
+	async #_interactionCreate(interaction)
 	{
 		//----- Chat Interactions -----//
 		if(interaction.isChatInputCommand())
@@ -93,7 +116,7 @@ module.exports = class Player {
 
 			if(!interaction.inGuild() || interaction.member == undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -103,7 +126,7 @@ module.exports = class Player {
 				if(interaction.member.voice.channelId === null)
 				{
 					this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
-					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
@@ -116,20 +139,20 @@ module.exports = class Player {
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
 					{
 						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
-						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					else if(!interaction.member.voice.channel.speakable ||
 						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
 					{
 						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
-						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					if(!interaction.member.voice.channel.joinable)//Channel is joinable : not full or we have permission to override this
 					{
 						this.#_log_function([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
-						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)});
+						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					let config = await settings.get(interaction.guildId, 1, 'config');
@@ -146,32 +169,32 @@ module.exports = class Player {
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 				{
 					this.#_log_function([{tag: "g", value: interaction.guildId}], 'I\'m already used');
-					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
 					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Unknown player error');
-					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
-				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch((e) => {console.log('Probably useless error 4 : ' + e)});
+				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('reply error : ' + e));
 				let player_message = await interaction.fetchReply().catch(() => false);
 				if(player_message !== false)this.#_guilds_play_data[interaction.guildId].player_interfaces.push(player_message);
 			}
 			else if(interaction.commandName === 'troll')
 			{
 				await interaction.deferReply({ephemeral: true}).catch(e => console.log('deferReply error : ' + e));
-				if(!interaction.options.getMember('user') || !interaction.options.getString('song'))
+				if(!interaction.options.getMember('target') || !interaction.options.getString('song'))
 				{
 					interaction.editReply({ content: i18n.get("errors.user_not_found", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
 					return;
 				}
 
-				let target = interaction.options.getMember('user');
+				let target = interaction.options.getMember('target');
 				if(target.voice.channelId === null)
 				{
 					interaction.editReply({ content: i18n.get("errors.user_not_in_voice_channel", interaction.locale), ephemeral: true }).catch((e) => { console.log('editReply error : ' + e)});
@@ -254,7 +277,7 @@ module.exports = class Player {
 					adapterCreator: (await this.#_client.guilds.fetch(interaction.guildId)).voiceAdapterCreator,
 					guildId: interaction.guildId,
 					channelId: target.voice.channelId,
-					selfDeaf: false,
+					selfDeaf: true,
 					selfMute: false
 				});
 
@@ -291,10 +314,12 @@ module.exports = class Player {
 			{
 				let input_field = interaction.options.getString('song');
 				let song_choices = await this.#getTrollList(interaction.guildId);
+				song_choices.sort(() => 0.5 - Math.random());
+				song_choices = song_choices.slice(0, 25);
 				song_choices = song_choices.filter(x => x.name.toLowerCase().indexOf(input_field.toLowerCase()) !== -1)
+
 				await interaction.respond(song_choices).catch(e => console.log('respond error : ' + e));
 			}
-			else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
 		}
 		//-----//
 
@@ -312,7 +337,7 @@ module.exports = class Player {
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -341,7 +366,7 @@ module.exports = class Player {
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -352,7 +377,7 @@ module.exports = class Player {
 					await interaction.update({content: i18n.get("response_msg.leave", this.#_guilds_play_data[interaction.guildId].locale), embeds: [], components: []}).catch((e) => {console.log('update error : ' + e)});
 					this.#destroyObject(interaction.guildId);
 				}
-				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
+				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 			if(interaction.customId === "btn_stay")
@@ -362,24 +387,24 @@ module.exports = class Player {
 					clearTimeout(this.#_guilds_play_data[interaction.guildId].inactive_timer);
 					this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
 
-					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_until_user", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_until_user", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 
 					await this.#updatePlayerInterface(interaction.guildId);
 				}
-				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
+				else await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 			if(interaction.customId === "btn_stay_forever")
 			{
 				if(this.#_guilds_play_data[interaction.guildId].inactive_timer === false)
 				{
-					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_alone", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(!await settings.isGolden(interaction.guildId, interaction.user.id))
 				{
-					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.golden_level", interaction.locale)});
+					await interaction.reply({ephemeral: true, content: i18n.get("response_msg.golden_level", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
@@ -387,7 +412,7 @@ module.exports = class Player {
 				this.#_guilds_play_data[interaction.guildId].inactive_timer = false;
 				this.#_guilds_play_data[interaction.guildId].force_active = true;
 
-				await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_forever", interaction.locale)});
+				await interaction.reply({ephemeral: true, content: i18n.get("response_msg.stay_forever", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 
 				await this.#updatePlayerInterface(interaction.guildId);
 				return;
@@ -622,10 +647,10 @@ module.exports = class Player {
 			{
 				if(interaction.member.id !== this.#_guilds_play_data[interaction.guildId].owner)
 				{
-					await interaction.reply({allowedMentions: {}, content: i18n.place(i18n.get('errors.owner_only', interaction.locale), {username: (await this.#_client.users.fetch(this.#_guilds_play_data[interaction.guildId].owner).catch(() => undefined))?.toString()}), ephemeral: true});
+					await interaction.reply({allowedMentions: {}, content: i18n.place(i18n.get('errors.owner_only', interaction.locale), {username: (await this.#_client.users.fetch(this.#_guilds_play_data[interaction.guildId].owner).catch(() => undefined))?.toString()}), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
-				await interaction.reply(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale))
+				await interaction.reply(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch(e => console.log('reply error : ' + e));
 			}
 
 			else if(interaction.customId === "initial_duck")
@@ -643,17 +668,17 @@ module.exports = class Player {
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
-				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
+				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -665,7 +690,7 @@ module.exports = class Player {
 				let value = interaction.fields.getTextInputValue('link');
 				if(value == undefined)
 				{
-					await interaction.reply({content: i18n.get("add_song_modal.enter_song", interaction.locale), ephemeral: true});
+					await interaction.reply({content: i18n.get("add_song_modal.enter_song", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
@@ -691,7 +716,7 @@ module.exports = class Player {
 				{
 					if(value.length > 250)
 					{
-						interaction.reply({content: i18n.get("add_song_modal.search_too_long", interaction.locale), ephemeral: true});
+						interaction.reply({content: i18n.get("add_song_modal.search_too_long", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
@@ -704,21 +729,21 @@ module.exports = class Player {
 						yt = [];
 					}
 					else displayed_yt = yt.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
-					let options_yt = yt.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "Youtube Search"}});
+					let options_yt = yt.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.cache_id.toString(), description: "Youtube Search"}});
 
 					let sc = await sc_search(value);
 					let displayed_sc = ""
 					if(sc === false)
 					{
-						displayed_sc = "*The SoundCloud search API is sadly unavailable*\n"
+						displayed_sc = "*The SoundCloud search API is unavailable :cry:*\n"
 						sc = [];
 					}
 					else displayed_sc = sc.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
-					let options_sc = sc.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "SoundCloud Search"}});
+					let options_sc = sc.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.cache_id.toString(), description: "SoundCloud Search"}});
 
 					let radios = await radio_search(value);
 					let displayed_radios = radios.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
-					let options_radios = radios.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.link, description: "Radio Search"}});
+					let options_radios = radios.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.cache_id.toString(), description: "Radio Search"}});
 
 					let search_embed = new this.#_discord.EmbedBuilder()
 						.setColor([0x62, 0xD5, 0xE9])
@@ -748,7 +773,7 @@ module.exports = class Player {
 				}
 			}
 			//---//
-			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
+			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 		}
 		//-----//
 
@@ -760,7 +785,7 @@ module.exports = class Player {
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -783,7 +808,7 @@ module.exports = class Player {
 
 			if(!this.#isObjectValid(interaction.guildId))
 			{
-				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true});
+				interaction.reply({content: i18n.get("errors.no_player", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -797,7 +822,7 @@ module.exports = class Player {
 
 			if(interaction.member.voice.channelId !== this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId)
 			{
-				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true});
+				await interaction.reply({content: i18n.get("errors.not_my_channel", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
 
@@ -820,16 +845,23 @@ module.exports = class Player {
 					await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 					settings.addXP(interaction.user.id, 10);
 				}
-				else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
+				else await interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 			}
 			else if(interaction.customId === "select_add_song")
 			{
+				if(search_cache.list[interaction.values[0]] === undefined)
+				{
+					interaction.editReply({content: i18n.get('errors.search_cache_error')}).catch((e) => { console.log('editReply error : ' + e)});
+					return;
+				}
+				const song_link = search_cache.list[interaction.values[0]];
+				delete search_cache.list[interaction.values[0]];
 				if(!await this.#checkPermission("open_modal_add", interaction)) return;
-				this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + interaction.values[0] + '" selected'); 
+				this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + song_link + '" selected'); 
 				await interaction.message.delete().catch((e) => { console.log('Probably useless error 5 : ' + e)});
 				await interaction.deferReply({ephemeral: true}).catch((e) => {console.log('deferReply error : ' + e)});
 
-				let return_message = await this.#add_in_queue(interaction.guildId, interaction.values[0]).catch((e) =>
+				let return_message = await this.#add_in_queue(interaction.guildId, song_link).catch((e) =>
 				{
 					interaction.editReply({content: '❌ ' + e}).catch((e) => { console.log('editReply error : ' + e)});
 					return false;
@@ -845,7 +877,7 @@ module.exports = class Player {
 			{
 				await interaction.update(this.#generateQueueInterface(interaction.guildId, 0, parseInt(interaction.values[0]))).catch(e => console.log('update error : ' + e));
 			}
-			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true});
+			else interaction.reply({content: i18n.get("errors.interaction", interaction.locale), ephemeral: true}).catch(e => console.log('reply error : ' + e));
 		}
 		//-----//
 	}
@@ -964,18 +996,17 @@ module.exports = class Player {
 				selfDeaf: true,
 				selfMute: false
 			});
+			//-- Workaround for issue #9185 --//
+			// https://github.com/discordjs/discord.js/issues/9185
+			const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+			  const newUdp = Reflect.get(newNetworkState, 'udp');
+			  clearInterval(newUdp?.keepAliveInterval);
+			}
 			this.#_guilds_play_data[guild_id].voice_connection.on('stateChange', (oldState, newState) => {
-		        const oldNetworking = Reflect.get(oldState, 'networking');
-		        const newNetworking = Reflect.get(newState, 'networking');
-		      
-		        const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
-		            const newUdp = Reflect.get(newNetworkState, 'udp');
-		            clearInterval(newUdp?.keepAliveInterval);
-		        }
-		      
-		        oldNetworking?.off('stateChange', networkStateChangeHandler);
-		        newNetworking?.on('stateChange', networkStateChangeHandler);
-		    });
+			  Reflect.get(oldState, 'networking')?.off('stateChange', networkStateChangeHandler);
+			  Reflect.get(newState, 'networking')?.on('stateChange', networkStateChangeHandler);
+			});
+			//--//
 
 			this.#_guilds_play_data[guild_id].voice_connection.addListener(Voice.VoiceConnectionStatus.Disconnected, async function() {
 				try {
@@ -1293,7 +1324,6 @@ module.exports = class Player {
 		if(config_mode === 0) player_embed.setTitle(i18n.get("player_embed.title_configure_global", locale));
 		else player_embed.setTitle(i18n.get("player_embed.title_configure_session", locale));
 		player_embed.setDescription(i18n.get("player_embed.description_configure", locale));
-		player_embed.setFooter({text: "NEW : Change style of your player using the select menu below !"})
 		if(config_mode === 0) player_embed.setThumbnail('https://babot.theireply.fr/config_perms.png');
 		else player_embed.setThumbnail('https://babot.theireply.fr/config_perms_player.png');
 
@@ -1328,14 +1358,14 @@ module.exports = class Player {
 				else
 				{
 					if(this.#_guilds_play_data[interaction.guildId].owner === interaction.member.id) return true;
-					await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_owner", interaction.locale)})
+					await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_owner", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return false;
 				}
 			}
 			else
 			{
 				if(interaction.member.permissions.has(this.#_discord.PermissionsBitField.Flags.ManageGuild)) return true;
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)})
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return false;
 			}
 		}
@@ -1348,7 +1378,7 @@ module.exports = class Player {
 			else
 			{
 				if(interaction.member.permissions.has(this.#_discord.PermissionsBitField.Flags.ManageGuild)) return true;
-				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)})
+				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return false;
 			}
 		}
@@ -1360,7 +1390,7 @@ module.exports = class Player {
 		for(let message of this.#_guilds_play_data[guild_id].player_interfaces)
 		{
 			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
-			if(!success)
+			if(!success && this.#isObjectValid(guild_id))
 			{
 				this.#_log_function([{tag: "g", value: guild_id}], 'Deleted interface message removed from the internal list');
 				let current_pos = this.#_guilds_play_data[guild_id].player_interfaces.indexOf(message);
@@ -1503,10 +1533,10 @@ module.exports = class Player {
 						let matches = link.match(/https:\/\/www\.deezer\.com\/(track|playlist|album)\/(\d+)/);
 						let music_data_query = await axios({url: "https://api.deezer.com/" + matches[1] + "/" + matches[2],
 							method: 'get'
-						});
+						}).catch(() => {return false});
 
-						console.log(music_data_query.data);
-						if(music_data_query.data === undefined) return reject('This music/playlist is unavailable');
+						console.log(music_data_query?.data);
+						if(music_data_query?.data === undefined) return reject('This music/playlist is unavailable');
 
 						if(matches[1] === "track")
 						{
@@ -1537,7 +1567,8 @@ module.exports = class Player {
 							method: 'get',
 							maxRedirects: 0,
 							validateStatus: x => x === 302
-						});
+						}).catch(() => {return false});
+						if(unshorten?.headers?.location === undefined) return reject('This link cannot be processed');
 
 						this.#add_in_queue(guild_id, unshorten.headers.location).then(resolve, reject);
 					}
@@ -1550,8 +1581,8 @@ module.exports = class Player {
 								'Authorization': 'Basic ' + Buffer.from(babot_env.spotify_api_key).toString('base64')
 							},
 							data: "grant_type=client_credentials"
-						});
-						//console.log(spotify_auth_query.data);
+						}).catch(() => {return false});
+						if(spotify_auth_query === false) return reject('The Spotify API seems to doesn\'t work, please report the issue using `/feedback`');
 
 						let matches = link.match(/https:\/\/open\.spotify\.com\/(track|playlist|album)\/([0-9A-Za-z]+)/);
 						let music_data_query = await axios({url: "https://api.spotify.com/v1/" + matches[1] + "s/" + matches[2],
@@ -1559,10 +1590,10 @@ module.exports = class Player {
 							headers: {
 								'Authorization': 'Bearer ' + spotify_auth_query.data.access_token
 							}
-						});
+						}).catch(() => {return false});
 
 						//console.log(music_data_query.data);
-						if(music_data_query.data === undefined) return reject('This music/playlist is unavailable');
+						if(music_data_query?.data === undefined) return reject('This music/playlist is unavailable');
 
 						if(matches[1] === "track")
 						{
@@ -1622,7 +1653,7 @@ module.exports = class Player {
 
 								resolve('Your music has been added to queue');
 							}
-							else return reject('This video is unavailable');
+							else return reject('This music is unavailable');
 						}
 					}
 					else return reject('This platform is not supported right now, but feel free to propose it using </feedback:1060125997359448064> !');
@@ -1716,9 +1747,9 @@ module.exports = class Player {
 					if(!fsc.existsSync(song.play_link.replace("file://", "")))
 					{
 						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song : ' + song.play_link);
-						return false;
+						stream = fsc.createReadStream(path.join(__dirname, 'error_sound.wav'));
 					}
-					stream = fsc.createReadStream(song.play_link.replace("file://", ""));
+					else stream = fsc.createReadStream(song.play_link.replace("file://", ""));
 				}
 				else
 				{
@@ -1732,11 +1763,15 @@ module.exports = class Player {
 						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song');
 					});
 
-					if(play_link_process === undefined) return false;
-					stream = play_link_process.data;
+					if(play_link_process === undefined) stream = fsc.createReadStream(path.join(__dirname, 'error_sound.wav'));
+					else stream = play_link_process.data;
 				}
 
-				if(this.#_guilds_play_data[guild_id].ffmpeg_process) this.#_guilds_play_data[guild_id].ffmpeg_process.destroy();
+				if(this.#_guilds_play_data[guild_id]?.ffmpeg_process)
+				{
+					console.log("Existing ffmpeg process destroyed");
+					this.#_guilds_play_data[guild_id]?.ffmpeg_process.destroy();
+				}
 				this.#_guilds_play_data[guild_id].ffmpeg_process = new prism.FFmpeg({args: [
 					'-analyzeduration', '0',
 					'-loglevel', '0',
@@ -1745,7 +1780,7 @@ module.exports = class Player {
 					'-ac', '2',
 					'-s:a', '240'
 				]});
-				let my_process = this.#_guilds_play_data[guild_id].ffmpeg_process
+				let my_process = this.#_guilds_play_data[guild_id].ffmpeg_process;
 				my_process.once('error', function(){
 					my_process.destroy();
 				});
@@ -1793,13 +1828,18 @@ async function yt_search(term)
 		validateStatus: function (status) {
 			return status >= 200 && status < 500;
 		}
-	});
+	}).catch(() => {return false});
+	if(video_data === false) return false;
 
-	if(video_data.data.error !== undefined) return false;
-	return video_data.data.items.map((x) => {return {name: x.snippet.title, link: "https://www.youtube.com/watch?v=" + x.id.videoId}});
+	if(video_data?.data?.error !== undefined) return false;
+	return video_data.data.items.map((x) => {
+		search_cache.index++;
+		search_cache.list[search_cache.index] = "https://www.youtube.com/watch?v=" + x.id.videoId;
+		return {name: x.snippet.title, link: "https://www.youtube.com/watch?v=" + x.id.videoId, cache_id: search_cache.index}
+	});
 }
 
-async function resolve_yt_video(link, search)
+async function resolve_yt_video(link, search = false)
 {
 	if(search || link.match(/(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/))
 	{
@@ -1811,6 +1851,7 @@ async function resolve_yt_video(link, search)
 		if(video_data == undefined) return false;
 
 		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
+		console.log(video_data.original_url, video_data.requested_downloads[0], video_data.title, video_data.age_limit)
 		if(video_data &&
 			video_data.original_url &&
 			video_data.requested_downloads &&
@@ -1846,8 +1887,10 @@ async function resolve_yt_playlist(playlist_id)
 		validateStatus: function (status) {
 			return status >= 200 && status < 500;
 		}
-	});
-	if(video_data.data.error !== undefined) return false;
+	}).catch(() => {return false});
+	if(video_data === false) return false;
+
+	if(video_data?.data?.error !== undefined) return false;
 	return video_data.data.items.map((x) => "https://www.youtube.com/watch?v=" + x.snippet.resourceId.videoId);
 }
 //-----//
@@ -1870,11 +1913,16 @@ async function sc_search(term)
 		validateStatus: function (status) {
 			return status >= 200 && status < 500;
 		}
-	});
+	}).catch(() => {return false});
+	if(video_data === false) return false;
 
 	if(video_data.data.error !== undefined) return false;
 	if(video_data.data.collection === undefined) return false;
-	return video_data.data.collection.map((x) => {return {name: x.title, link: x.permalink_url}});
+	return video_data.data.collection.map((x) => {
+		search_cache.index++
+		search_cache.list[search_cache.index] = x.permalink_url;
+		return {name: x.title, link: x.permalink_url, cache_id: search_cache.index}
+	});
 }
 
 async function resolve_sc_music(link)
@@ -1932,7 +1980,9 @@ async function resolve_sc_playlist(playlist_id)
 		validateStatus: function (status) {
 			return status >= 200 && status < 500;
 		}
-	});
+	}).catch(() => {return false});
+	if(video_data === false) return false;
+
 	if(video_data.data.error !== undefined) return false;
 	return video_data.data.items.map((x) => "https://www.youtube.com/watch?v=" + x.snippet.resourceId.videoId);
 }
@@ -1946,7 +1996,11 @@ async function radio_search(term)
 		let all_radios = JSON.parse(raw_radio_file);
 		let filtered_radios = all_radios.filter(x => x.name.toLowerCase().indexOf(term.toLowerCase()) !== -1);
 
-		return filtered_radios.map((x) => { return {name: x.name, link: 'radio://' + x.id}});
+		return filtered_radios.map((x) => {
+			search_cache.index++
+			search_cache.list[search_cache.index] = 'radio://' + x.id;
+			return {name: x.name, link: 'radio://' + x.id, cache_id: search_cache.index}
+		});
 	}
 	return [];
 }
@@ -1954,20 +2008,38 @@ async function radio_search(term)
 async function spawnAsync(command, args, options)
 {
 	return new Promise(async (resolve, reject) => {
+		let stdout = "", stderr = "";
 		let worker = new worker_threads.Worker(
-			"let data = require('worker_threads').workerData;\
-			let spawn = require('child_process').spawnSync;\
+			"const worker = require('worker_threads');\
+			const data = worker.workerData;\
+			let spawn = require('child_process').spawn;\
 			let spawn_process = spawn(data.command, data.args, data.options);\
-			require('worker_threads').parentPort.postMessage({stdout: spawn_process.stdout, stderr: spawn_process.stderr});\
-			"
+			spawn_process.stdout.setEncoding('utf-8');\
+			spawn_process.stderr.setEncoding('utf-8');\
+			spawn_process.stdout.on('data', function(data) {\
+				worker.parentPort.postMessage({stdout: data});\
+			});\
+			spawn_process.stderr.on('data', function(data) {\
+				worker.parentPort.postMessage({stderr: data});\
+			});"
 		, {
 			eval: true,
 			workerData: {command, args, options}
 		});
 		worker.on('message', function (msg)
 		{
-			resolve(msg);
+			if(msg.stdout !== undefined)
+			{
+				stdout += msg.stdout;
+			}
+			if(msg.stderr !== undefined)
+			{
+				stderr += msg.stderr;
+			}
 		});
+		worker.on('exit', function() {
+			resolve({stdout, stderr});
+		})
 	});
 }
 

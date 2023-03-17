@@ -1,4 +1,5 @@
 const fs = require('fs');
+const root = __dirname;
 
 module.exports = class {
 	#locales = {};
@@ -6,12 +7,12 @@ module.exports = class {
 	constructor(file) {
 		this.#file = file;
 
-		for(let language of fs.readdirSync(process.cwd() + '/locales/'))
+		for(let language of fs.readdirSync(root + '/locales/'))
 		{
-			if(fs.existsSync(process.cwd() + '/locales/' + language + '/' + this.#file + '.json'))
+			if(fs.existsSync(root + '/locales/' + language + '/' + this.#file + '.json'))
 			{
 				try {
-					this.#locales[language] = require(process.cwd() + '/locales/' + language + '/' + this.#file + '.json');
+					this.#locales[language] = require(root + '/locales/' + language + '/' + this.#file + '.json');
 				}
 				catch(e)
 				{

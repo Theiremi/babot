@@ -37,13 +37,23 @@
 		"queue_play": "Écouter maintenant",
 		"queue_remove": "Retirer",
 		"queue_unselect": "Désélectionner ce son",
-		"queue_hide": "Cacher"
+		"queue_hide": "Cacher",
+		"config_finished": "Piss off",
+		"owner_settings": "Panneau maître de session"
 	},
 	"player_embed": {
 		"title_play": "En train de diffuser \"{song_name}\"",
 		"title_idle": "Aucun son en cours de lecture",
+		"title_configure_global": "Gérer les permissions pour ce *serveur*",
+		"title_configure_session": "Gérer les permissions pour cette *session*",
 		"restart_msg": "⚠️ BaBot va redémarrer <t:{timestamp}:R>",
-		"description_idle": "Ajoutez une musique dans la queue pour commencer votre écoute"
+		"description_idle": "**Ajoutez une musique dans la queue pour commencer votre écoute**.\nTutoriel sur la miniature ➡️",
+		"description_configure": "Configurer les permissions que les utilisateurs ont sur le lecteur\nCliquez sur la miniature pour plus d'aide",
+		"configure_msg": "Vous êtes dans l'éditeur de permissions",
+		"style_placeholder": "Sélectionnez un thème de lecteur"
+	},
+	"credits": {
+		"flaticon": "Crédits à {artist} - Flaticon"
 	},
 	"queue_embed": {
 		"title": "Queue",
@@ -55,8 +65,8 @@
 		"guild_only": "💥 Cette commande n'est disponible que dans les serveurs",
 		"not_in_voice_channel": "❌ Veuillez rejoindre un salon vocal pour utiliser cette commande",
 		"user_not_in_voice_channel": "❌ Cet utilisateur n'est pas dans un salon vocal",
-		"join": "❌ Je ne suis pas autorisé à rejoindre ce salon vocal",
-		"speak": "❌ Je ne suis pas autorisé à parler dans ce salon vocal",
+		"join": "❌ Je ne peux pas rejoindre ce salon vocal, veuillez vérifier mes permissions",
+		"speak": "❌ Je ne suis pas autorisé à parler dans ce salon vocal, veuillez vérifier mes permissions",
 		"full": "❌ Votre salon vocal est plein (j'ai besoin de la permission \"Déplacer les membres\" pour contourner cette limite)",
 		"already_used": "❌ Je suis déjà utilisé dans un autre salon",
 		"unknown_player_error": "💥 Le lecteur n'a pas pu être créé, mais je ne sais pas pourquoi. Vous ne devriez jamais pouvoir tomber sur cette erreur donc gg",
@@ -67,6 +77,10 @@
 		"no_player": "❌ Je ne suis plus dans un salon vocal. Démarrez une nouvelle session avec la commande </player:1052609017802924062>",
 		"not_alone": "💥 Je ne suis plus seul dans mon salon vocal",
 		"not_my_channel": "❌ Vous ne pouvez pas me contrôler si vous n'êtes pas dans mon salon vocal",
-		"interaction": "💥 Cette interaction n'existe pas"
+		"interaction": "💥 Cette interaction n'existe pas",
+		"settings": "💥 Cette fonctionnalité de configuration est en panne :cry:",
+		"disabled_by_owner": "❌ Le maître de session a désactivé cette commande",
+		"disabled_by_admin": "❌ Les administrateurs de ce serveur ont désactivé cette commande",
+		"owner_only": "❌ Seul le maître de session ({username}) peut utiliser cette commande"
 	}
 }
