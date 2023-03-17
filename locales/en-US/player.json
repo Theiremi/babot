@@ -12,7 +12,7 @@
 		"hide": "Player closed. You can open it again using </player:1052609017802924062>",
 		"stay_until_user": "✅ I stay here and I ask you again the next time I'm alone",
 		"stay_forever": "✅ I stay here forever",
-		"golden_level": "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help level`)"
+		"golden_level": "<:golden:1065239445625917520> Sorry, this feature is reserved to Golden level users (See `/help -> Golden`)"
 	},
 	"add_song_modal": {
 		"title": "Add a song",
@@ -38,7 +38,6 @@
 		"queue_remove": "Remove",
 		"queue_unselect": "Unselect this song",
 		"queue_hide": "Hide queue",
-		"config_finished": "I've finished",
 		"owner_settings": "Owner controls"
 	},
 	"player_embed": {
@@ -70,6 +69,7 @@
 		"full": "❌ Your voice channel is full (I need the \"Move members\" permission to override this)",
 		"already_used": "❌ I'm already used in an other channel",
 		"unknown_player_error": "💥 The player couldn't be initialized, but I don't know why. Normally this error is impossible to trigger so gg",
+		"search_cache_error": "💥 I can't find your song in the search cache",
 		"user_not_found": "💥 This user doesn't exist",
 		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling",
 		"troll_disabled_guild": "🤫 The troll command is disabled by the server admins",

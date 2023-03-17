@@ -6,7 +6,7 @@ const schedule = require('node-schedule');
 const settings = require(__dirname + '/env_data/env.json');
 
 let shards_players = {}
-let manager = new Discord.ShardingManager('bot.js', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
+let manager = new Discord.ShardingManager(__dirname + '/bot.mjs', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
 manager.on('shardCreate', async function(shard){
 	console.log('ShardManager / Shard ' + shard.id + ' started');
 	shard.on('message', function(msg){

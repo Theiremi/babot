@@ -1,14 +1,19 @@
 'use strict';
+//----- MJS patches -----//
+import * as url from 'url';
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+//-----//
 
-const si = require('systeminformation');
-const fs = require('fs');
-const axios = require('axios');
-const Discord = require('discord.js');
-const Builders = require('@discordjs/builders');
-const Player = require('./player/index.js');
-const Status = require('./statusbot/index.js');
-const Settings = require(process.cwd() + '/settings.js');
-const I18n = require(__dirname + '/locales.js');
+//----- General dependencies -----//
+import si from 'systeminformation';
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
+import { fileTypeFromBuffer } from 'file-type';
+import Discord from 'discord.js';
+import * as Builders from '@discordjs/builders';
+
 const client = new Discord.Client({
   intents: [Discord.IntentsBitField.Flags.Guilds,
     //Discord.IntentsBitField.Flags.GuildPresences,
@@ -18,56 +23,49 @@ const client = new Discord.Client({
   ],
   presence: {activities: [{name: "Starting... It will take time for BaBot to be fully functional", type: 3}]}
 });
+//-----//
 
-const i18n = new I18n('main');
-const client_settings = new Settings();
+//----- Local dependencies -----//
+import Player from './player/index.js';
+//const Status = await import('./statusbot/index.js');
+const client_settings = new (await import(__dirname + '/settings.js')).default();
+const i18n = new (await import(__dirname + '/locales.js')).default('main');
+import env_variables from './env_data/env.json' assert { type: 'json' };
+
 const player = new Player(Discord, client, log);
-const status = new Status(Discord, client, log);
-const settings = require(__dirname + '/env_data/env.json');
+player.on('error', e => report_error(e.name + ' : ' + e.message + '\nStack trace : ```' + e.stack + '```'));
+
+//const status = new Status(Discord, client, log);
+//-----//
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.4.5 released", 3],
-  ["/help start", 3],
+  ["/changelog : version 1.4.6 released", 3],
+  ["/help", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
-  ["want to help BaBot ? Look how with '/help contribute'", 3],
+  ["want to help BaBot ? Look how in /help -> Contribute", 3],
   ["customize your experience with the player themes ! (only 2 for now, 5 others coming soon)", 3]
 ]
 
 let total_players = 0;
-let uptime = Math.round(Date.now() / 1000);//Used to determine uptime when stats is executed
 client.on('ready', async () => {
   //--- NAMING BOT ---//
-  if(settings.dev) log('Main', 'Warning : BaBot is running in development mode');
-
   log('Main', `Logged in as ${client.user.tag}!`);
-  if(client.user.username != settings.name)
+  if(client.user.username != env_variables.name)
   {
-    await client.user.setUsername(settings.name);
+    await client.user.setUsername(env_variables.name);
     log('Main', 'Changing username...');
     log('Main', `Logged in as ${client.user.tag}!`);
   }
   //---//
 
   //--- CRASH HANDLING ---//
-  if(!settings.dev && fs.existsSync(__dirname + '/env_data/crash.sts'))//If a crash occured and this instance is in production mode
+  if(fs.existsSync(__dirname + '/env_data/crash.sts'))//If a crash occured
   {
-    //Report error with a webhook to a channel in the server
-    await axios({
-      url: settings.webhook_return + "?wait=true",
-      method: "POST",
-      headers: {
-        'Accept-Encoding': 'deflate, br'
-      },
-      data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: await fs.promises.readFile(__dirname + '/env_data/crash.sts', {encoding: 'utf-8'}), color: 0x2f3136}]}
-    }).then(function(){
-      log('Main-error', 'Error sent to the server');
-    }, function(e) {
-      //console.log(e);
-      log('Main-error', 'Error when logging error on the server');
-    });
-
+    const crash_details = await fs.promises.readFile(__dirname + '/env_data/crash.sts', {encoding: 'utf-8'});//Retrieve the error details
     await fs.promises.unlink(__dirname + '/env_data/crash.sts');//Delete informations about the crash to avoid repeating this code on the next launch
-    await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needs to restart. The problem should be fixed very soon", type: 3}]});//Inform the users about the crash
+    await report_error(crash_details);
+
+    await client.user.setPresence({activities: [{name: "/known_issues : BaBot ran into a problem and needed to restart. Please send infos about the crash with /feedback", type: 3}]});//Inform the users about the crash
     setTimeout(function() {
       update_status();
     }, 1000 * 60 * 5);//After 5 minutes, start to display random status as usual
@@ -106,7 +104,7 @@ client.on('ready', async () => {
     client.application.commands.create(e);
   }
 
-  client.application.commands.create(status.options());
+  //client.application.commands.create(status.options());
 
   //Global chat commands
   client.application.commands.create({name: "changelog", description: i18n.get("changelog.command_description"), descriptionLocalizations: i18n.all("changelog.command_description"), type: 1, dmPermission: true});
@@ -141,6 +139,7 @@ client.on('ready', async () => {
     .setDescription(i18n.get("config.command_description"))
     .setDescriptionLocalizations(i18n.all("config.command_description"))
     .setDMPermission(false)
+    .SetDefaultMemberPermissions(0x0000000000000020)
     .addSubcommand(subcommand => 
       subcommand.setName('player')
         .setDescription(i18n.get("config.player.description"))
@@ -151,7 +150,7 @@ client.on('ready', async () => {
         .setDescription(i18n.get("config.troll.description"))
         .setDescriptionLocalizations(i18n.all("config.troll.description"))
         .addAttachmentOption(option => 
-          option.setName('troll_song')
+          option.setName('add_troll_song')
             .setDescription(i18n.get("config.troll.add_troll"))
             .setDescriptionLocalizations(i18n.all("config.troll.add_troll"))
             .setRequired(false)
@@ -181,30 +180,19 @@ client.on('ready', async () => {
     .setDescription(i18n.get("help.command_description"))
     .setDescriptionLocalizations(i18n.all("help.command_description"))
     .setDMPermission(true)
-    .addSubcommand(subcommand => 
-      subcommand.setName('level')
-        .setDescription(i18n.get("help.level_description"))
-        .setDescriptionLocalizations(i18n.all("help.level_description"))
-    )
-    .addSubcommand(subcommand => 
-      subcommand.setName('start')
-        .setDescription(i18n.get("help.start_description"))
-        .setDescriptionLocalizations(i18n.all("help.start_description"))
-    )
-    .addSubcommand(subcommand => 
-      subcommand.setName('donator')
-        .setDescription(i18n.get("help.donator_description"))
-        .setDescriptionLocalizations(i18n.all("help.donator_description"))
-    )
-    .addSubcommand(subcommand => 
-      subcommand.setName('contribute')
-        .setDescription(i18n.get("help.contribute_description"))
-        .setDescriptionLocalizations(i18n.all("help.contribute_description"))
-    )
-    .addSubcommand(subcommand => 
-      subcommand.setName('faq')
-        .setDescription(i18n.get("help.faq_description"))
-        .setDescriptionLocalizations(i18n.all("help.faq_description"))
+    .addStringOption(option => option
+      .setName('section')
+      .setDescription(i18n.get("help.section_description"))
+      .setDescriptionLocalizations(i18n.all("help.section_description"))
+      .setRequired(false)
+      .addChoices(...[
+        {name: i18n.get("help.sections.start"), name_localizations: i18n.all("help.sections.start"), value: "start"},
+        {name: i18n.get("help.sections.faq"), name_localizations: i18n.all("help.sections.faq"), value: "faq"},
+        {name: i18n.get("help.sections.player"), name_localizations: i18n.all("help.sections.player"), value: "player"},
+        {name: i18n.get("help.sections.troll"), name_localizations: i18n.all("help.sections.troll"), value: "troll"},
+        {name: i18n.get("help.sections.golden"), name_localizations: i18n.all("help.sections.golden"), value: "golden"},
+        {name: i18n.get("help.sections.contribute"), name_localizations: i18n.all("help.sections.contribute"), value: "contribute"}
+      ])
     )
   );
   //---//
@@ -221,12 +209,12 @@ client.on('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {//When user interact with the bot
-  if(settings.banned_users.includes(interaction.user.id))
+  if(env_variables.banned_users.includes(interaction.user.id))//Block interaction is user is banned
   {
-    await interaction.reply({content: i18n.place(i18n.get('errors.user_banned', interaction.locale), {name: settings.name}), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+    await interaction.reply({content: i18n.place(i18n.get('errors.user_banned', interaction.locale), {name: env_variables.name}), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
     return;
   }
-  if(interaction.isChatInputCommand())
+  if(interaction.isChatInputCommand())//Interaction coming from a slash command
   {
     if(interaction.commandName === 'changelog')
     {
@@ -277,14 +265,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       await interaction.editReply({content: "", embeds: [
         {
           color: 0x2f3136,
-          title: i18n.place(i18n.get("stats.title", interaction.locale), {name: settings.name}),
+          title: i18n.place(i18n.get("stats.title", interaction.locale), {name: env_variables.name}),
           description: i18n.place(i18n.get("stats.content", interaction.locale), {
-            servers_count: (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
+            servers_count: (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 10000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
             shards_count: client.shard.count,
             shard: client.shard.ids[0] + 1,
             total_players: total_players,
             shard_players: player.playerCount(),
-            uptime: uptime,
+            uptime: Math.round((Date.now() - client.uptime)/1000),
             used_ram: (Math.round((await si.mem()).active/10000000) / 100),
             total_ram: (Math.round((await si.mem()).total/10000000) / 100),
             cpu_usage: (Math.round((await si.currentLoad()).currentLoad * 10) / 10),
@@ -297,6 +285,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         }
       ]});
       client_settings.addXP(interaction.user.id, 25);
+
+      //--- Internal stats ---//
+      for(let i = 0; i < client?.shard?.count; i++)
+      {
+        const shard_running = await asyncTimeout(client.shard.broadcastEval((client) => { return client.isReady() ? "Running" : "Stopped"}, {shard: i}), 2000).catch(() => "No response");
+        log([], "Shard " + (i + "     ").substring(0, 7) + " : " + shard_running);
+      }
+      //---//
       return;
     }
     else if(interaction.commandName === 'feedback')
@@ -420,13 +416,14 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       let user_golden = await client_settings.isUserGolden(interaction.user.id);
 
       let dash_embed = new Discord.EmbedBuilder()
-        .setColor([0x2f, 0x31, 0x36])
-        .setTitle(user_golden ? "<:golden:1065239445625917520>" : "" + i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
-        .setDescription(i18n.get("dashboard.panel_description", interaction.locale))
+        .setColor([0x62, 0xD5, 0xE9])
+        .setThumbnail(interaction.user.avatarURL())
+        .setTitle((user_golden ? "<:golden:1065239445625917520>" : "") + i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
         .setFields([
           {name: "XP", value: (await client_settings.XPCount(interaction.user.id)).toString(10), inline: true},
           {name: i18n.get("dashboard.leaderboard_label", interaction.locale), value: i18n.place(i18n.get("dashboard.leaderboard_content", interaction.locale), {pos: await client_settings.leaderboardPosition(interaction.user.id)}), inline: true},
-          {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming soon", inline: false}
+          {name: i18n.get("dashboard.is_premium_label", interaction.locale), value: user_golden ? i18n.get("dashboard.is_golden", interaction.locale) : i18n.get("dashboard.is_normal", interaction.locale), inline: false},
+          {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming a day or another", inline: false}
         ])
       let dash_components = [
         new Discord.ActionRowBuilder().addComponents([
@@ -450,7 +447,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'config')
     {
-      if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
+      if(!interaction.inGuild() || interaction.member === undefined)//The user is in a guild, and a Guildmember object for this user exists
       {
         await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
         return;
@@ -476,7 +473,71 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       }
       else if(subcommand === 'troll')
       {
-        await interaction.reply(await generate_troll_config(interaction.guildId, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
+        const new_troll_song = interaction?.options?.getAttachment("add_troll_song");
+        if(new_troll_song != null)
+        {
+          const nb_songs = (await fs.promises.readdir(path.join(__dirname, '/env_data/guilds/', interaction.guildId, '/soundboard/')).catch(() => [])).length;
+          console.log(nb_songs);
+          if(nb_songs >= 2)
+          {
+            if(await client_settings.isGolden(interaction.guildId, interaction.user.id))
+            {
+              if(nb_songs >= 5)
+              {
+                await interaction.reply({content: i18n.get("errors.troll_limit_golden", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+                return;
+              }
+            }
+            else
+            {
+              await interaction.reply({content: i18n.get("errors.troll_limit_normal", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+              return;
+            }
+          }
+
+          if(!new_troll_song.name ||
+            !new_troll_song.attachment ||
+            !new_troll_song.size)
+          {
+            await interaction.reply({content: i18n.get("errors.troll_attachment_fail", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+            return;
+          }
+          if(new_troll_song.size > 5242880)
+          {
+            await interaction.reply({content: i18n.get("errors.troll_file_too_big", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+            return;
+          }
+
+          await interaction.deferReply({ephemeral: true}).catch(e => console.log("deferReply error : " + e));
+
+          const file_retrieved = await axios(new_troll_song.url, {
+            responseType: 'arraybuffer'
+          }).catch(() => {return false});
+          if(file_retrieved === false || file_retrieved?.data === undefined)
+          {
+            await interaction.editReply({content: i18n.get("errors.troll_file_unavailable", interaction.locale)}).catch((e) => {console.log('editReply error : ' + e)});
+            return;
+          }
+
+          const test_result = await fileTypeFromBuffer(file_retrieved.data)
+          console.log(test_result);
+          if(!test_result?.mime?.startsWith('audio/'))
+          {
+            await interaction.editReply({content: i18n.get("errors.troll_not_song", interaction.locale)}).catch((e) => {console.log('editReply error : ' + e)});
+            return;
+          }
+          console.log(path.parse(new_troll_song.name).name);
+
+          const song_name = path.parse(new_troll_song.name).name.replace(/[^ a-z0-9éèà&#@\]\[{}()_-]/gi, "_");
+          await client_settings.addTrollSong(interaction.guildId, song_name, file_retrieved.data);
+
+          await interaction.editReply({content: i18n.place(i18n.get("config.troll.song_uploaded", interaction.locale), {song: song_name})}).catch((e) => {console.log('editReply error : ' + e)});
+        }
+        else
+        {
+          await interaction.reply(await generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
+        }
+        return;
       }
       else if(subcommand === 'language')
       {
@@ -507,113 +568,19 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'help')
     {
-      let subcommand = interaction.options.getSubcommand();
-      if(subcommand == undefined)
-      {
-        await interaction.reply({ content: i18n.get('errors.missing_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
-        return;
-      }
-      log([{tag: "u", value: interaction.user.id}], 'Command `help` -> `' + subcommand + '` received');
+      log([{tag: "u", value: interaction.user.id}], 'Command `help` received');
 
-      if(subcommand === 'level')
-      {
-        await interaction.reply({
-          content: '**⚠ This help page deals with a deprecated feature of BaBot**',
-          embeds: [{
-            title: i18n.get("help.level.title", interaction.locale),
-            color: 0x2f3136,
-            description: i18n.get("help.level.description", interaction.locale),
-            fields: [
-              {name: i18n.get("help.level.field_1.name", interaction.locale), value: i18n.get("help.level.field_1.value", interaction.locale)},
-              {name: i18n.get("help.level.field_2.name", interaction.locale), value: i18n.get("help.level.field_2.value", interaction.locale)},
-              {name: i18n.get("help.level.field_3.name", interaction.locale), value: i18n.get("help.level.field_3.value", interaction.locale)},
-              {name: i18n.get("help.level.field_4.name", interaction.locale), value: i18n.get("help.level.field_4.value", interaction.locale)}
-            ]
-          }]
-        }).catch((e) => { console.log('reply error : ' + e)});
-      }
-      else if(subcommand === 'donator')
-      {
-        await interaction.reply({
-          content: '',
-          embeds: [{
-            title: i18n.get("help.donator.title", interaction.locale),
-            color: 0x2f3136,
-            description: i18n.get("help.donator.description", interaction.locale),
-            fields: [
-              {name: i18n.get("help.donator.field_1.name", interaction.locale), value: i18n.get("help.donator.field_1.value", interaction.locale)},
-              {name: i18n.get("help.donator.field_2.name", interaction.locale), value: i18n.get("help.donator.field_2.value", interaction.locale)},
-              {name: i18n.get("help.donator.field_3.name", interaction.locale), value: i18n.get("help.donator.field_3.value", interaction.locale)},
-              {name: i18n.get("help.donator.field_4.name", interaction.locale), value: i18n.get("help.donator.field_4.value", interaction.locale)}
-            ],
-          }],
-          components: [
-            new Discord.ActionRowBuilder().addComponents([
-              new Discord.ButtonBuilder()
-                .setStyle(5)
-                .setEmoji({name: "golden", id: "1065239445625917520"})
-                .setLabel(i18n.get("help.donator.tip_button", interaction.locale))
-                .setURL('https://patreon.com/user?u=85252153')
-            ])
-          ]
-        }).catch((e) => { console.log('reply error : ' + e)});
-      }
-      else if(subcommand === 'start')
-      {
-        await interaction.reply({
-          content: '',
-          embeds: [{
-            title: i18n.get("help.start.title", interaction.locale),
-            color: 0x2f3136,
-            description: i18n.get("help.start.description", interaction.locale),
-            fields: [
-              {name: i18n.get("help.start.field_1.name", interaction.locale), value: i18n.get("help.start.field_1.value", interaction.locale)},
-              {name: i18n.get("help.start.field_2.name", interaction.locale), value: i18n.get("help.start.field_2.value", interaction.locale)},
-              {name: i18n.get("help.start.field_3.name", interaction.locale), value: i18n.get("help.start.field_3.value", interaction.locale)},
-              {name: i18n.get("help.start.field_4.name", interaction.locale), value: i18n.get("help.start.field_4.value", interaction.locale)}
-            ]
-          }]
-        }).catch((e) => { console.log('reply error : ' + e)});
-      }
-       else if(subcommand === 'contribute')
-      {
-        await interaction.reply({
-          content: '',
-          embeds: [{
-            title: i18n.get("help.contribute.title", interaction.locale),
-            color: 0x2f3136,
-            description: i18n.get("help.contribute.description", interaction.locale),
-            footer :{
-              text: i18n.get("help.contribute.footer", interaction.locale)
-            }
-          }]
-        }).catch((e) => { console.log('reply error : ' + e)});
-      }
-      else if(subcommand === 'faq')
-      {
-        await interaction.reply({
-          content: '',
-          embeds: [{
-            title: i18n.get("help.faq.title", interaction.locale),
-            color: 0x2f3136,
-            description: i18n.get("help.faq.description", interaction.locale),
-            fields: [
-              {name: i18n.get("help.faq.field_1.name", interaction.locale), value: i18n.get("help.faq.field_1.value", interaction.locale)},
-              {name: i18n.get("help.faq.field_2.name", interaction.locale), value: i18n.get("help.faq.field_2.value", interaction.locale)},
-              {name: i18n.get("help.faq.field_3.name", interaction.locale), value: i18n.get("help.faq.field_3.value", interaction.locale)}
-            ]
-          }]
-        }).catch((e) => { console.log('reply error : ' + e)});
-      }
-      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
-      return;
+      let section = interaction.options.getString('section') ?? "start";
+
+      await interaction.reply(generate_help(section, interaction.locale)).catch(e => console.log("reply error : " + e));
     }
     //---//
   }
   else if(interaction.isButton())
   {
     if(['privacy_cancel', 'privacy_delete', 'privacy_retrieve', 'settings', 'close_any', 'disable_troll'].includes(interaction.customId) ||
-      interaction.customId.startsWith('btn_disable_troll_'))
+      interaction.customId.startsWith('btn_disable_troll_') ||
+      interaction.customId.startsWith('delete_troll_'))
     {
       log([{tag: "u", value: interaction.user.id}], 'Command `' + interaction.customId + '` received');
       if(interaction.customId === "close_any")
@@ -688,10 +655,10 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
       else if(interaction.customId.startsWith('btn_disable_troll_'))
       {
-        let panel_id = interaction.customId.split('_').splice(-1)[0];
+        const panel_id = interaction.customId.split('_').splice(-1)[0];
         if(panel_id !== interaction.user.id)
         {
-          await interaction.reply({content: i18n.get('errors.settings.not_authorized_user', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply({content: i18n.get('settings.not_authorized_user', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
           return;
         }
         let config = await client_settings.get(interaction.user.id, 0, 'config');
@@ -718,16 +685,52 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
         if(config.trollDisabled) config.trollDisabled = false;
         else config.trollDisabled = true;
         await client_settings.set(interaction.guildId, 1, 'config', config);
-        await interaction.update(await generate_troll_config(interaction.guildId, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+        await interaction.update(await generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+      }
+
+      else if(interaction.customId.startsWith('delete_troll_'))
+      {
+        if(!interaction.inGuild() || interaction.guildId === undefined)
+        {
+          await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)});
+          return;
+        }
+
+        const troll_index = interaction.customId.split('_').splice(-1)[0];
+        const troll_songs = await fs.promises.readdir(path.join(__dirname, '/env_data/guilds/', interaction.guildId, '/soundboard/')).catch(() => [])
+        if(troll_songs[troll_index-1] === undefined)
+        {
+          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          return;
+        }
+
+        if(!fs.existsSync(path.join(__dirname, '/env_data/guilds/', interaction.guildId, '/soundboard/', troll_songs[troll_index-1])))
+        {
+          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          return;
+        }
+        await fs.promises.unlink(path.join(__dirname, '/env_data/guilds/', interaction.guildId, '/soundboard/', troll_songs[troll_index-1])).catch((e) => console.log('Failed to delete troll song ' + troll_songs[troll_index-1] + ' : ' + e));
+
+        await interaction.update(await generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
       }
     }
+  }
+  else if(interaction.isStringSelectMenu())
+  {
+    if(!["help_section"].includes(interaction.customId)) return;//If interaction is not meant to be handled by this module, return
+    if(!interaction?.values[0]) return;
+
+    if(!['start', 'faq', 'player', 'troll', 'contribute', 'golden'].includes(interaction.values[0])) return;
+
+    await interaction.update(generate_help(interaction.values[0], interaction.locale));
+    return;
   }
   else if(interaction.isModalSubmit())
   {
     if(interaction.customId === "modal_feedback")
     {
       await axios({
-          url: settings.webhook_return + "?wait=true",
+          url: env_variables.webhook_return + "?wait=true",
           method: "POST",
           headers: {
             'Accept-Encoding': 'deflate, br'
@@ -747,7 +750,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   }
 
   player.interactionCreate(interaction);
-  status.interactionCreate(interaction);
+  //status.interactionCreate(interaction);
 });
 /*
 client.on('presenceUpdate', async (odlUser, newUser) => {
@@ -818,7 +821,7 @@ client.on('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
 
 //----- ENTRY POINT -----//
 (async () => {
-  client.login(settings.token);
+  client.login(env_variables.token);
   log([], 'Environment variables loaded');
 })();
 //-----//
@@ -832,7 +835,7 @@ async function generate_user_settings(user, locale)
   }
 
   let settings_embed = new Discord.EmbedBuilder()
-    .setColor([0x2f, 0x31, 0x36])
+    .setColor([0x62, 0xD5, 0xE9])
     .setTitle(i18n.place(i18n.get("settings.panel_title", locale), {username: user.username}))
     .setDescription(i18n.get("settings.panel_content", locale));
   let settings_components = [
@@ -844,10 +847,10 @@ async function generate_user_settings(user, locale)
     ])
   ];
   
-  return {embeds: [settings_embed], components: settings_components};
+  return {embeds: [settings_embed], components: settings_components, ephemeral: true};
 }
 
-async function generate_troll_config(guild_id, locale)
+async function generate_troll_config(guild_id, user_id, locale)
 {
   let guild_config = await client_settings.get(guild_id, 1, 'config')
   if(guild_config === false)
@@ -855,30 +858,193 @@ async function generate_troll_config(guild_id, locale)
     return {content: i18n.get('errors.settings_panel_fail', locale), ephemeral: true};
   }
 
-  let troll_settings_embed = new Discord.EmbedBuilder()
-  .setColor([0x2f, 0x31, 0x36])
+  let custom_troll = [];
+  let delete_buttons = [];
+  let edit_buttons = [];
+  let count = 0;
+  for(let e of await fs.promises.readdir(path.join(__dirname, '/env_data/guilds/', guild_id, '/soundboard/')).catch(() => []))
+  {
+    count++;
+    custom_troll.push("**" + count + ".** " + e.split('.')[0]);
+    if(count <= 5)
+    {
+      delete_buttons.push(new Discord.ButtonBuilder()
+        .setStyle(4)
+        .setCustomId("delete_troll_" + count)
+        .setLabel(i18n.place(i18n.get("config.troll.delete_button", locale), {pos: count}))
+        .setEmoji({name: "delete", id: "1082771385253888102"})
+      );
 
-  troll_settings_embed.setTitle("Troll preferences");
-  troll_settings_embed.setDescription("- Troll allowed in this guild : **" + (guild_config.trollDisabled ? "No" : "Yes") + "**\n- Custom troll songs : **Coming soon**");
+      /*edit_buttons.push(new Discord.ButtonBuilder()
+        .setStyle(1)
+        .setCustomId("edit_troll_" + count)
+        .setLabel(i18n.place(i18n.get("config.troll.edit_button", locale), {pos: count}))
+        .setEmoji({name: "edit", id: "1082771386898059304"})
+      );*/
+    }
+  }
+  while(custom_troll.length < 5)
+  {
+    count++;
+    if(count > 2)
+    {
+      if(await client_settings.isGolden(guild_id, user_id))
+      {
+        custom_troll.push("**" + count + ".** " + i18n.get("config.troll.empty_troll_slot"));
+      }
+      else
+      {
+        custom_troll.push("**" + count + ".** " + i18n.get("config.troll.locked_troll_slot"));
+      }
+    }
+    else
+    {
+      custom_troll.push("**" + count + ".** " + i18n.get("config.troll.empty_troll_slot"));
+    }
+  }
+
+  let troll_settings_embed = new Discord.EmbedBuilder()
+  .setColor([0x2b, 0x2d, 0x31])
+
+  troll_settings_embed.setTitle(i18n.get("config.troll.embed_title", locale));
+  troll_settings_embed.setDescription(
+    i18n.place(
+      i18n.get("config.troll.embed_description", locale), {
+        trollDisabled: (guild_config.trollDisabled ? i18n.get("config.troll.trollDisabled_text") : i18n.get("config.troll.trollEnabled_text")),
+        trollSongs: custom_troll.join('\n')
+      }
+    )
+  );
   let config_components = [
     new Discord.ActionRowBuilder().addComponents([
       new Discord.ButtonBuilder()
         .setCustomId("disable_troll")
         .setStyle(guild_config.trollDisabled ? 4 : 3)
         .setLabel(i18n.get(guild_config.trollDisabled ? "config.troll.enable_troll_btn" : "config.troll.disable_troll_btn", locale))
-    ])
-      
+    ]),
   ];
+  if(edit_buttons.length) config_components.push(new Discord.ActionRowBuilder().addComponents(edit_buttons));
+  if(delete_buttons.length) config_components.push(new Discord.ActionRowBuilder().addComponents(delete_buttons));
 
   return {content: '', embeds: [troll_settings_embed], components: config_components, ephemeral: true};
+}
+
+
+function generate_help(section, locale)
+{
+  let returned_embed = {};
+  let returned_components = [];
+  returned_components.push(new Discord.ActionRowBuilder().addComponents([
+    new Discord.StringSelectMenuBuilder()
+      .setCustomId("help_section")
+      .setMinValues(1)
+      .setMaxValues(1)
+      .setPlaceholder("How the hell have you managed to display this sentence ?!")
+      .setOptions(...[
+        {label: i18n.get("help.sections.start", locale), value: "start", default: section === "start", emoji: {name: "🤔"}},
+        {label: i18n.get("help.sections.faq", locale), value: "faq", default: section === "faq", emoji: {name: "❓"}},
+        {label: i18n.get("help.sections.player", locale), value: "player", default: section === "player", emoji: {name: "lineplay_now", id: "1071121142020046920"}},
+        {label: i18n.get("help.sections.troll", locale), value: "troll", default: section === "troll", emoji: {name: "🤪"}},
+        {label: i18n.get("help.sections.golden", locale), value: "golden", default: section === "golden", emoji: {name: "golden", id: "1065239445625917520"}},
+        {label: i18n.get("help.sections.contribute", locale), value: "contribute", default: section === "contribute", emoji: {name: "🫵"}}
+      ])
+  ]));
+  if(section === 'golden')
+  {
+    returned_embed = {
+      title: i18n.get("help.golden.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.golden.description", locale),
+      fields: [
+        {name: i18n.get("help.golden.field_1.name", locale), value: i18n.get("help.golden.field_1.value", locale)},
+        {name: i18n.get("help.golden.field_2.name", locale), value: i18n.get("help.golden.field_2.value", locale)},
+        {name: i18n.get("help.golden.field_3.name", locale), value: i18n.get("help.golden.field_3.value", locale)},
+        {name: i18n.get("help.golden.field_4.name", locale), value: i18n.get("help.golden.field_4.value", locale)}
+      ],
+    };
+    returned_components.push(new Discord.ActionRowBuilder().addComponents([
+      new Discord.ButtonBuilder()
+        .setStyle(5)
+        .setEmoji({name: "golden", id: "1065239445625917520"})
+        .setLabel(i18n.get("help.golden.tip_button", locale))
+        .setURL('https://patreon.com/user?u=85252153')
+    ]));
+  }
+  else if(section === 'start')
+  {
+    returned_embed = {
+      title: i18n.get("help.start.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.start.description", locale),
+      fields: [
+        {name: i18n.get("help.start.field_1.name", locale), value: i18n.get("help.start.field_1.value", locale)},
+        {name: i18n.get("help.start.field_2.name", locale), value: i18n.get("help.start.field_2.value", locale)},
+        {name: i18n.get("help.start.field_3.name", locale), value: i18n.get("help.start.field_3.value", locale)},
+        {name: i18n.get("help.start.field_4.name", locale), value: i18n.get("help.start.field_4.value", locale)}
+      ]
+    }
+  }
+  else if(section === 'player')
+  {
+    returned_embed = {
+      title: i18n.get("help.player.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.player.description", locale),
+      image: {url: "https://babot.theireply.fr/player_demo2.png"},
+      fields: [
+        {name: i18n.get("help.player.field_1.name", locale), value: i18n.get("help.player.field_1.value", locale)},
+        {name: i18n.get("help.player.field_2.name", locale), value: i18n.get("help.player.field_2.value", locale)},
+        {name: i18n.get("help.player.field_3.name", locale), value: i18n.get("help.player.field_3.value", locale)}
+      ]
+    }
+  }
+  else if(section === 'troll')
+  {
+    returned_embed = {
+      title: i18n.get("help.troll.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.troll.description", locale),
+      fields: [
+        {name: i18n.get("help.troll.field_1.name", locale), value: i18n.get("help.troll.field_1.value", locale)},
+        {name: i18n.get("help.troll.field_2.name", locale), value: i18n.get("help.troll.field_2.value", locale)},
+        {name: i18n.get("help.troll.field_3.name", locale), value: i18n.get("help.troll.field_3.value", locale)}
+      ]
+    }
+  }
+  else if(section === 'contribute')
+  {
+    returned_embed = {
+      title: i18n.get("help.contribute.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.contribute.description", locale),
+      footer :{
+        text: i18n.get("help.contribute.footer", locale)
+      }
+    }
+  }
+  else if(section === 'faq')
+  {
+    returned_embed = {
+      title: i18n.get("help.faq.title", locale),
+      color: 0x62D5E9,
+      description: i18n.get("help.faq.description", locale),
+      fields: [
+        {name: i18n.get("help.faq.field_1.name", locale), value: i18n.get("help.faq.field_1.value", locale)},
+        {name: i18n.get("help.faq.field_2.name", locale), value: i18n.get("help.faq.field_2.value", locale)},
+        {name: i18n.get("help.faq.field_3.name", locale), value: i18n.get("help.faq.field_3.value", locale)}
+      ]
+    }
+  }
+  else return {content: i18n.get("errors.help_not_found", locale), embeds: [], components: returned_components};
+  return {content: "", embeds: [returned_embed], components: returned_components};
 }
 
 
 
 async function update_stats()//Executed when guilds count change or bot is restarted
 {
-  if(settings.dev) return;//Only update stats on websites and others in production mode
-  let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
+  if(env_variables.webhook_statistics == undefined) return;//Only update stats on websites and others in production mode
+  let guild_count = (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 1000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
   let users_count = await client_settings.count(0);
   let shards_count = client.shard.count;
 
@@ -956,7 +1122,7 @@ async function update_stats()//Executed when guilds count change or bot is resta
 
   //--- Stats Webhook ---//
   await axios({
-    url: settings.webhook_statistics + "?wait=true",
+    url: env_variables.webhook_statistics + "?wait=true",
     method: "POST",
     headers: {
       'Accept-Encoding': 'deflate, br'
@@ -969,6 +1135,28 @@ async function update_stats()//Executed when guilds count change or bot is resta
     log([], 'Error when logging statistics on the server');
   });
   //---//
+}
+
+async function report_error(error)
+{
+  if(env_variables.webhook_return == "")
+  {
+    console.log(error);
+    return;
+  }
+  await axios({
+    url: env_variables.webhook_return + "?wait=true",
+    method: "POST",
+    headers: {
+      'Accept-Encoding': 'deflate, br'
+    },
+    data: {username: "BaBot crashs", embeds: [{title: "BaBot has crashed", description: error, color: 0x2f3136}]}
+  }).then(function(){
+    log('Main-error', 'Error sent to the server');
+  }, function(e) {
+    //console.log(e);
+    log('Main-error', 'Error when logging error on the server');
+  });
 }
 
 function log(sections, msg)
@@ -989,7 +1177,7 @@ function log(sections, msg)
 
   process.stdout.write(msg_formatted);
 
-  fs.appendFile(process.cwd() + "/env_data/babot.log", msg_formatted,
+  fs.appendFile(__dirname + "/env_data/babot.log", msg_formatted,
     function (err) {
     if (err) throw err;
   });
@@ -1008,23 +1196,30 @@ function update_status()//Change status of the bot every minute
 {
   setInterval(async () => {
     let random_status = Math.floor(Math.random() * (custom_status.length + 1));
-    let guild_count = (await client.shard.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
+    let guild_count = (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 15000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
     let next_status = random_status < 1 ? [guild_count + " servers", 3] : custom_status[random_status - 1];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);
 }
 
+async function asyncTimeout(fun, time)
+{
+  return Promise.race([
+    fun,
+    new Promise(async (resolve, reject) => {setTimeout(reject, time)})
+  ])
+}
+
 //--- Error catching ---//
 //Write the error occured in crash.sts before leaving to allow the program to send it when it will restart
-process.on('uncaughtException', error => {
-  console.error(error);
-  fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
-  process.exit(1);
-});
+//process.on('uncaughtException', onError);
+//process.on('unhandledRejection', onError);
 
-process.on('unhandledRejection', (error) => {
+function onError(error)
+{
   console.error(error);
   fs.writeFileSync(__dirname + '/env_data/crash.sts', error.name + ' : ' + error.message + '\nStack trace : ```' + error.stack + '```');
+
   process.exit(1);
-});
+}
 //---//
