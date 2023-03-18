@@ -28,8 +28,10 @@ const job = schedule.scheduleJob('0 */1 * * *', async function() {
 
 	fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, player_count: player_count}) + '\n');
 
+	console.log("Checking restart file...");
 	if(fs.existsSync(__dirname + '/env_data/restart'))
 	{
+		console.log("It exists");
 		let stop_timestamp = parseInt(await fs.readFileSync(__dirname + '/env_data/restart'));
 		if(stop_timestamp > (Date.now() / 1000))
 		{

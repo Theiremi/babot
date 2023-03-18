@@ -139,7 +139,7 @@ client.on('ready', async () => {
     .setDescription(i18n.get("config.command_description"))
     .setDescriptionLocalizations(i18n.all("config.command_description"))
     .setDMPermission(false)
-    .SetDefaultMemberPermissions(0x0000000000000020)
+    .setDefaultMemberPermissions(0x0000000000000020)
     .addSubcommand(subcommand => 
       subcommand.setName('player')
         .setDescription(i18n.get("config.player.description"))
@@ -717,13 +717,15 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
   }
   else if(interaction.isStringSelectMenu())
   {
-    if(!["help_section"].includes(interaction.customId)) return;//If interaction is not meant to be handled by this module, return
-    if(!interaction?.values[0]) return;
+    if(interaction.customId === "help_section")
+    {
+      if(!interaction?.values[0]) return;
 
-    if(!['start', 'faq', 'player', 'troll', 'contribute', 'golden'].includes(interaction.values[0])) return;
+      if(!['start', 'faq', 'player', 'troll', 'contribute', 'golden'].includes(interaction.values[0])) return;
 
-    await interaction.update(generate_help(interaction.values[0], interaction.locale));
-    return;
+      await interaction.update(generate_help(interaction.values[0], interaction.locale));
+      return;
+    }
   }
   else if(interaction.isModalSubmit())
   {
