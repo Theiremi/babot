@@ -22,6 +22,12 @@
 		"search_too_long": "❌ Your search request cannot exceed 250 characters",
 		"search_placeholder": "Choose your desired song"
 	},
+	"wait_vote_embed": {
+		"title": "Your command will launch <t:{timestamp}:R>",
+		"description": "**Don't want to wait ?**\n- Vote for BaBot [on Top.gg](https://top.gg/bot/1052586565395828778/vote) (no delay during 3 days)\n- Subscribe to Golden (see `/help -> Golden`)",
+		"footer": "If this appears even after voting, please report the issue with /feedback",
+		"btn_vote": "Vote"
+	},
 	"troll_success": "✅ Song played\n<:transparent:1067551646592282694> NB : Toggle trolling in </settings:1065334689021296671> or in `/config troll`",
 	"buttons": {
 		"cancel": "Cancel",

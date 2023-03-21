@@ -26,16 +26,13 @@ const client = new Discord.Client({
 //-----//
 
 //----- Local dependencies -----//
-import Player from './player/index.js';
-//const Status = await import('./statusbot/index.js');
-const client_settings = new (await import(__dirname + '/settings.js')).default();
-const i18n = new (await import(__dirname + '/locales.js')).default('main');
+import Player from './modules/player/index.js';
+const client_settings = new (await import('./classes/settings.js')).default();
+const i18n = new (await import('./classes/locales.js')).default('main');
 import env_variables from './env_data/env.json' assert { type: 'json' };
 
 const player = new Player(Discord, client, log);
 player.on('error', e => report_error(e.name + ' : ' + e.message + '\nStack trace : ```' + e.stack + '```'));
-
-//const status = new Status(Discord, client, log);
 //-----//
 
 let custom_status = [//List of all status randomly displayed by the bot
@@ -108,7 +105,7 @@ client.on('ready', async () => {
 
   //Global chat commands
   client.application.commands.create({name: "changelog", description: i18n.get("changelog.command_description"), descriptionLocalizations: i18n.all("changelog.command_description"), type: 1, dmPermission: true});
-  client.application.commands.create({name: "known_issues", description: i18n.get("known_issues.command_description"), descriptionLocalizations: i18n.all("known_issues.command_description"), type: 1, dmPermission: true});
+  //client.application.commands.create({name: "known_issues", description: i18n.get("known_issues.command_description"), descriptionLocalizations: i18n.all("known_issues.command_description"), type: 1, dmPermission: true});
   client.application.commands.create({name: "feedback", description: i18n.get("feedback.command_description"), descriptionLocalizations: i18n.all("feedback.command_description"), type: 1, dmPermission: true});
   client.application.commands.create({name: "stats", description: i18n.get("stats.command_description"), descriptionLocalizations: i18n.all("stats.command_description"), type: 1, dmPermission: true});
   client.application.commands.create(new Builders.SlashCommandBuilder()
@@ -414,15 +411,23 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
       log([{tag: "u", value: interaction.user.id}], 'Command `dashboard` received');
       let user_golden = await client_settings.isUserGolden(interaction.user.id);
+      const user_profile = await client_settings.profile(interaction.user.id);
+
+      const user_config = await client_settings.get(interaction.user.id, 0, 'config');
+      if(user_config === false)
+      {
+        await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+        return;
+      }
 
       let dash_embed = new Discord.EmbedBuilder()
         .setColor([0x62, 0xD5, 0xE9])
         .setThumbnail(interaction.user.avatarURL())
         .setTitle((user_golden ? "<:golden:1065239445625917520>" : "") + i18n.place(i18n.get("dashboard.panel_title", interaction.locale), {username: interaction.user.username}))
         .setFields([
-          {name: "XP", value: (await client_settings.XPCount(interaction.user.id)).toString(10), inline: true},
-          {name: i18n.get("dashboard.leaderboard_label", interaction.locale), value: i18n.place(i18n.get("dashboard.leaderboard_content", interaction.locale), {pos: await client_settings.leaderboardPosition(interaction.user.id)}), inline: true},
-          {name: i18n.get("dashboard.is_premium_label", interaction.locale), value: user_golden ? i18n.get("dashboard.is_golden", interaction.locale) : i18n.get("dashboard.is_normal", interaction.locale), inline: false},
+          {name: i18n.get("dashboard.is_premium_label", interaction.locale), value: user_golden ? i18n.get("dashboard.is_golden", interaction.locale) : i18n.get("dashboard.is_normal", interaction.locale), inline: true},
+          {name: "Profile", value: i18n.get("dashboard.user_profile_" + user_profile, interaction.locale), inline: true},
+          {name: "Can be trolled ?", value: user_config.limited_troll ? "No" : "Yes", inline: false},
           {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming a day or another", inline: false}
         ])
       let dash_components = [
