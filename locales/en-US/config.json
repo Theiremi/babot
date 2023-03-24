@@ -1,0 +1,65 @@
+{
+	"command_description": "Configure BaBot on your server",
+	"player": {
+		"description": "Select which commands of the player members can use"
+	},
+	"languages": {
+		"description": "Set the language BaBot should use in this guild",
+		"locale_description": "Select a language",
+		"change_done": "✅ The preferred language for this guild has been updated to {language}",
+		"language_doesnt_exists": "➡️ BaBot has not yet been translated to this language, but translations are open to anyone ! More infos at `/help -> Contribute`",
+		"locales": {
+			"en-US": "English",
+			"bg": "Bulgarian",
+			"zh-CN": "Chinese",
+			"cs": "Czech",
+			"da": "Danish",
+			"nl": "Dutch",
+			"fi": "Finnish",
+			"fr": "French",
+			"de": "German",
+			"el": "Greek",
+			"hi": "Hindi",
+			"hu": "Hungarian",
+			"it": "Italian",
+			"ja": "Japanese",
+			"ko": "Korean",
+			"lt": "Lithuanian",
+			"no": "Norwegian",
+			"pl": "Polish",
+			"pt-BR": "Portuguese",
+			"ro": "Romanian",
+			"ru": "Russian",
+			"es-ES": "Spanish",
+			"sv-SE": "Swedish",
+			"th": "Thai",
+			"tr": "Turkish",
+			"uk": "Ukrainian",
+			"vi": "Vietnamese",
+			"not_mine": "I don't see mine"
+		}
+	},
+	"troll": {
+		"description": "Control troll related settings of this guild",
+		"add_troll": "Use this option to import a new troll song in this server",
+		"embed_title": "Troll preferences",
+		"embed_description": "**Troll allowed in this guild** : {trollDisabled}\n**Custom troll songs :** \n{trollSongs}\n\n*Add more troll songs by uploading it with the command `/config troll`*",
+		"trollEnabled_text": "Yes",
+		"trollDisabled_text": "No",
+		"enable_troll_btn": "Troll Disabled",
+		"disable_troll_btn": "Troll Enabled",
+		"empty_troll_slot": "Empty slot",
+		"locked_troll_slot": "<:golden:1065239445625917520> Upgrade to Golden to use this slot",
+		"edit_button": "Song {pos}",
+		"delete_button": "Song {pos}",
+		"song_uploaded": "✅ **{song}** is now part of the custom troll songs of this server !\n<:transparent:1067551646592282694>You can use it with the usual </troll:1054878390278176808> command."
+	},
+	"errors": {
+		"troll_attachment_fail": "💥 The file attached was not sent correctly (Discord issue)",
+		"troll_file_too_big": "❌ This song is too big, try to compress it or to send a smaller song",
+		"troll_file_unavailable": "💥 The song can't be transferred to our servers",
+		"troll_not_song": "❌ This file doesn't seems to be a song",
+		"troll_limit_normal": "❌ You have reached the maximum number of songs you can upload\n<:golden:1065239445625917520> Check out Golden subscription to increase this limit : `/help -> Golden`",
+		"troll_limit_golden": "❌ You have reached the maximum number of songs you can upload, even with a Golden subscription"
+	}
+}

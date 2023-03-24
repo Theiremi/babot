@@ -20,6 +20,17 @@ module.exports = class {
 					console.log('Could not load ' + language + ' locale : ' + e)
 				}
 			}
+
+			if(fs.existsSync(root + '/locales/' + language + '/common.json'))
+			{
+				try {
+					this.#locales[language] = Object.assign(this.#locales[language] ? this.#locales[language] : {}, require(root + '/locales/' + language + '/common.json'));
+				}
+				catch(e)
+				{
+					console.log('Could not load ' + language + ' common locale : ' + e)
+				}
+			}
 		}
 	}
 

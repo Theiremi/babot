@@ -1,14 +1,18 @@
 'use strict';
 
-const Discord = require('discord.js');
-const fs = require('fs');
-const schedule = require('node-schedule');
-const settings = require(__dirname + '/env_data/env.json');
+import Discord from 'discord.js';
+import fs from 'fs';
+import schedule from 'node-schedule';
+import settings from '#root/env_data/env.json' assert {type: "json"};
+import logger from '#classes/logger.mjs';
 
-let shards_players = {}
-let manager = new Discord.ShardingManager(__dirname + '/bot.mjs', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
+let shards_players = {};
+let manager = new Discord.ShardingManager('bot.mjs', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
 manager.on('shardCreate', async function(shard){
-	console.log('ShardManager / Shard ' + shard.id + ' started');
+	logger.info('ShardManager / Shard ' + shard.id + ' started');
+	shard.on('death', () => {logger.error('ShardManager / Shard ' + shard.id + ' died')});
+	shard.on('disconnect', () => {logger.error('ShardManager / Shard ' + shard.id + ' disconnected and won\'t restart')});
+	shard.on('reconnecting', () => {logger.warn('ShardManager / Shard ' + shard.id + ' reconnecting')});
 	shard.on('message', function(msg){
 		if(msg.action === "player_count")
 		{
@@ -26,13 +30,13 @@ const job = schedule.scheduleJob('0 */1 * * *', async function() {
 	let player_count = Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0);
 	let guild_count = (await manager.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
 
-	fs.promises.appendFile(__dirname + "/env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, player_count: player_count}) + '\n');
+	fs.promises.appendFile("./env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, player_count: player_count}) + '\n');
 
 	console.log("Checking restart file...");
-	if(fs.existsSync(__dirname + '/env_data/restart'))
+	if(fs.existsSync('./env_data/restart'))
 	{
 		console.log("It exists");
-		let stop_timestamp = parseInt(await fs.readFileSync(__dirname + '/env_data/restart'));
+		let stop_timestamp = parseInt(await fs.readFileSync('./env_data/restart'));
 		if(stop_timestamp > (Date.now() / 1000))
 		{
 			let time_left = stop_timestamp*1000 - Date.now();
@@ -40,7 +44,7 @@ const job = schedule.scheduleJob('0 */1 * * *', async function() {
 			manager.broadcast({action: "scheduled_restart", timestamp: stop_timestamp});
 			console.log('ShardManager / restart scheduled to ' + stop_timestamp + ' (' + (time_left/1000) + ' seconds)');
 
-			fs.unlinkSync(__dirname + '/env_data/restart');
+			fs.unlinkSync('./env_data/restart');
 		}
 	}
 });

@@ -1,38 +1,42 @@
-const { EventEmitter } = require('events');
-const fsc = require('fs');
+//----- MJS patches -----//
+import * as url from 'url';
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+//-----//
+
+import { EventEmitter } from 'events';
+import fsc from 'fs';
 const fs = fsc.promises;
-const path = require('path');
-const worker_threads = require('worker_threads');
-const Discord = require('discord.js');
-const Voice = require('@discordjs/voice');
-const Builders = require('@discordjs/builders');
-const child_process = require('child_process');
-const axios = require('axios');
-const prism = require('prism-media');
-//const { PlayerTransform } = require('./ffmpeg_transform.js');
-const Settings = require('#classes/settings.js');
-const I18n = require('#classes/locales.js');
-const styles = require('./styles.json');
-const tip_list = require('./tips.json');
+import path from 'path';
+import worker_threads from 'worker_threads';
+import Discord from 'discord.js';
+import * as Voice from '@discordjs/voice';
+import * as Builders from '@discordjs/builders';
+import child_process from 'child_process';
+import axios from 'axios';
+import prism from 'prism-media';
+//const { PlayerTransform } from './ffmpeg_transform.js');
+import Settings from '#classes/settings.js';
+import I18n from '#classes/locales.js';
+import styles from './styles.json' assert {type: "json"};
+import tip_list from './tips.json' assert {type: "json"};
 const settings = new Settings();
 const i18n = new I18n('player');
-const babot_env = require('#root/env_data/env.json');
+import babot_env from '#root/env_data/env.json' assert {type: "json"};
+import logger from '#classes/logger.mjs';
+
 
 let search_cache = {list: {}, index: 0};
 
-module.exports = class Player extends EventEmitter {
+export default class Player extends EventEmitter {
 	#_guilds_play_data = {};
-	#_discord;
 	#_client;
-	#_log_function
 	#_shutdown = false;
 
-	constructor(discord, client, log)
+	constructor(client)
 	{
 		super();
-		this.#_discord = discord;
 		this.#_client = client;
-		this.#_log_function = log;
 	}
 
 	async options()//Works
@@ -128,45 +132,45 @@ module.exports = class Player extends EventEmitter {
 				return;
 			}
 
-			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.commandName + '` received');
+			logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.commandName + '` received');
 			if(interaction.commandName === 'player')//Ask for a player to be displayed
 			{
 				if(interaction.member.voice.channelId === null)
 				{
-					this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
+					logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'No existing player, creating a new one');
+					logger.info([{tag: "g", value: interaction.guildId}], 'No existing player, creating a new one');
 					let channel_permissions = interaction.member.voice.channel.permissionsFor(interaction.guild.members.me, true);
 					if(!interaction.member.voice.channel.viewable ||
-						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.ViewChannel) ||
-						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
+						!channel_permissions.has(Discord.PermissionsBitField.Flags.ViewChannel) ||
+						!channel_permissions.has(Discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
 					{
-						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
+						logger.info([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					else if(!interaction.member.voice.channel.speakable ||
-						!channel_permissions.has(this.#_discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
+						!channel_permissions.has(Discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
 					{
-						this.#_log_function([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
+						logger.info([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					if(!interaction.member.voice.channel.joinable)//Channel is joinable : not full or we have permission to override this
 					{
-						this.#_log_function([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
+						logger.info([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					let config = await settings.get(interaction.guildId, 1, 'config');
 					if(config === false)
 					{
-						this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
+						logger.info([{tag: "g", value: interaction.guildId}], 'Settings error');
 						await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 						return;
 					}
@@ -176,19 +180,19 @@ module.exports = class Player extends EventEmitter {
 
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 				{
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'I\'m already used');
+					logger.info([{tag: "g", value: interaction.guildId}], 'I\'m already used');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Unknown player error');
+					logger.info([{tag: "g", value: interaction.guildId}], 'Unknown player error');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
-				if(await settings.isGuildGolden(interaction.guildId)) this.#_log_function([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
+				if(await settings.isGuildGolden(interaction.guildId)) logger.info([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
 				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('reply error : ' + e));
 				let player_message = await interaction.fetchReply().catch(() => false);
 				if(player_message !== false)this.#_guilds_play_data[interaction.guildId].player_interfaces.push(player_message);
@@ -234,7 +238,7 @@ module.exports = class Player extends EventEmitter {
 					return;
 				}
 
-				this.#_log_function([{tag: "g", value: interaction.guildId}], 'User ' + target.user.tag + ' targeted by troll ' + interaction.options.getString('song') + ' with volume ' + interaction.options.getNumber('volume'));
+				logger.info([{tag: "g", value: interaction.guildId}], 'User ' + target.user.tag + ' targeted by troll ' + interaction.options.getString('song') + ' with volume ' + interaction.options.getNumber('volume'));
 
 				let previous_connection = false;
 				if(this.#isObjectValid(interaction.guildId))
@@ -343,7 +347,7 @@ module.exports = class Player extends EventEmitter {
 				!interaction.customId.startsWith('global_config_') &&
 				!interaction.customId.startsWith('session_config_')) return false;
 
-			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
+			logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
@@ -359,7 +363,7 @@ module.exports = class Player extends EventEmitter {
 				let config = await settings.get(interaction.guildId, 1, 'config');
 		        if(config === false)
 		        {
-		        	this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
+		        	logger.info([{tag: "g", value: interaction.guildId}], 'Settings error');
 		        	await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 		        	return;
 		        }
@@ -367,7 +371,7 @@ module.exports = class Player extends EventEmitter {
 		        if(!config.permissions) config.permissions = {};
 		        if(config.permissions[target_btn]) config.permissions[target_btn] = false;
 		        else config.permissions[target_btn] = true;
-		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the server to ' + (config.permissions[target_btn] ? "disabled" : "enabled"));
+		        logger.info([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the server to ' + (config.permissions[target_btn] ? "disabled" : "enabled"));
 		        await settings.set(interaction.guildId, 1, 'config', config);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
@@ -443,7 +447,7 @@ module.exports = class Player extends EventEmitter {
 
 		        if(this.#_guilds_play_data[interaction.guildId].permissions[target_btn]) this.#_guilds_play_data[interaction.guildId].permissions[target_btn] = false;
 		        else this.#_guilds_play_data[interaction.guildId].permissions[target_btn] = true;
-		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the player to ' + (this.#_guilds_play_data[interaction.guildId].permissions[target_btn] ? "disabled" : "enabled"));
+		        logger.info([{tag: "g", value: interaction.guildId}], 'Set ' + target_btn + ' in the player to ' + (this.#_guilds_play_data[interaction.guildId].permissions[target_btn] ? "disabled" : "enabled"));
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
 			}
@@ -453,7 +457,7 @@ module.exports = class Player extends EventEmitter {
 				if(!await this.#checkPermission("restart", interaction)) return;
 				if(this.#get_song(interaction.guildId) !== undefined)
 				{
-					await this.#play_song(interaction.guildId);
+					this.#play_song(interaction.guildId);
 				}
 				await interaction.update(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('update error : ' + e));
 				settings.addXP(interaction.user.id, 10);
@@ -493,8 +497,8 @@ module.exports = class Player extends EventEmitter {
 				if(!await this.#checkPermission("volume", interaction)) return;
 				let player_interface = await this.#generatePlayerInterface(interaction.guildId);
 				let used_style = this.#_guilds_play_data[interaction.guildId].style;
-				player_interface.components.push(new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.StringSelectMenuBuilder()
+				player_interface.components.push(new Discord.ActionRowBuilder().addComponents([
+					new Discord.StringSelectMenuBuilder()
 						.setCustomId("select_volume")
 						.setPlaceholder('Choose your volume level')
 						.addOptions([
@@ -548,9 +552,9 @@ module.exports = class Player extends EventEmitter {
 			else if(interaction.customId === "open_modal_add")//Works
 			{
 				if(!await this.#checkPermission("open_modal_add", interaction)) return;
-				interaction.showModal(new this.#_discord.ModalBuilder().addComponents([
-					new this.#_discord.ActionRowBuilder().addComponents([
-						new this.#_discord.TextInputBuilder()
+				interaction.showModal(new Discord.ModalBuilder().addComponents([
+					new Discord.ActionRowBuilder().addComponents([
+						new Discord.TextInputBuilder()
 							.setCustomId("link")
 							.setPlaceholder(i18n.get("add_song_modal.placeholder", interaction.locale))
 							.setStyle(1)
@@ -692,7 +696,7 @@ module.exports = class Player extends EventEmitter {
 				return;
 			}
 
-			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
+			logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 			//--- Add song to queue ---//
 			if(interaction.customId === "modal_add")//Works
 			{
@@ -707,7 +711,7 @@ module.exports = class Player extends EventEmitter {
 				if(value.startsWith('https://') || value.startsWith('radio://'))//It's a link
 				{
 					await interaction.deferReply({ephemeral: true}).catch((e) => {console.log('deferReply error : ' + e)});
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + value + '" given');
+					logger.info([{tag: "g", value: interaction.guildId}], 'Link "' + value + '" given');
 					let current_song_before = this.#get_song(interaction.guildId);
 
 					let return_message = await this.#add_in_queue(interaction.guildId, value).catch((e) =>
@@ -730,7 +734,7 @@ module.exports = class Player extends EventEmitter {
 						return;
 					}
 					await interaction.deferReply().catch(e => console.log('deferReply error : ' + e));
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Search term "' + value + '" given');
+					logger.info([{tag: "g", value: interaction.guildId}], 'Search term "' + value + '" given');
 					let yt = await yt_search(value);
 					let displayed_yt = "";
 					if(yt === false)
@@ -755,7 +759,7 @@ module.exports = class Player extends EventEmitter {
 					let displayed_radios = radios.map((x, i) => (i+1) + ". [" + x.name + "](" + x.link + ")\n").join('');
 					let options_radios = radios.map((x, i) => { return {label: (i+1) + ". " + x.name.substring(0, 50), value: x.cache_id.toString(), description: "Radio Search"}});
 
-					let search_embed = new this.#_discord.EmbedBuilder()
+					let search_embed = new Discord.EmbedBuilder()
 						.setColor([0x62, 0xD5, 0xE9])
 						.setTitle('Search results for "' + value + '"')
 						.setDescription("**Youtube**\n" + (displayed_yt !== "" ? displayed_yt : 'No song found\n') +
@@ -766,15 +770,15 @@ module.exports = class Player extends EventEmitter {
 					let search_select_list = [];
 					if(options_yt.concat(options_sc).concat(options_radios).length > 0)
 					{
-						search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
-							new this.#_discord.StringSelectMenuBuilder()
+						search_select_list.push(new Discord.ActionRowBuilder().addComponents([
+							new Discord.StringSelectMenuBuilder()
 								.setCustomId("select_add_song")
 								.setPlaceholder(i18n.get("add_song_modal.search_placeholder", this.#_guilds_play_data[interaction.guildId].locale))
 								.addOptions(options_yt.concat(options_sc).concat(options_radios))
 						]));
 					}
-					search_select_list.push(new this.#_discord.ActionRowBuilder().addComponents([
-						new this.#_discord.ButtonBuilder()
+					search_select_list.push(new Discord.ActionRowBuilder().addComponents([
+						new Discord.ButtonBuilder()
 							.setCustomId("close_any")
 							.setLabel(i18n.get("buttons.cancel", this.#_guilds_play_data[interaction.guildId].locale))
 							.setStyle(4)
@@ -792,7 +796,7 @@ module.exports = class Player extends EventEmitter {
 		else if(interaction.isStringSelectMenu())
 		{
 			if(!['select_volume', 'select_add_song', 'select_queue_song', 'global_player_style', 'session_player_style'].includes(interaction.customId)) return false;
-			this.#_log_function([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
+			logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `' + interaction.customId + '` received');
 
 			if(!interaction.inGuild() && interaction.member != undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
@@ -805,13 +809,13 @@ module.exports = class Player extends EventEmitter {
 				let config = await settings.get(interaction.guildId, 1, 'config');
 		        if(config === false)
 		        {
-		        	this.#_log_function([{tag: "g", value: interaction.guildId}], 'Settings error');
+		        	logger.info([{tag: "g", value: interaction.guildId}], 'Settings error');
 		        	await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 		        	return;
 		        }
 
 		        config.style = interaction.values[0];
-		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set style of the server to ' + config.style);
+		        logger.info([{tag: "g", value: interaction.guildId}], 'Set style of the server to ' + config.style);
 		        await settings.set(interaction.guildId, 1, 'config', config);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 0, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
@@ -826,7 +830,7 @@ module.exports = class Player extends EventEmitter {
 			if(interaction.customId === "session_player_style")
 			{
 		        this.#_guilds_play_data[interaction.guildId].style = interaction.values[0];
-		        this.#_log_function([{tag: "g", value: interaction.guildId}], 'Set style of the player to ' + this.#_guilds_play_data[interaction.guildId].style);
+		        logger.info([{tag: "g", value: interaction.guildId}], 'Set style of the player to ' + this.#_guilds_play_data[interaction.guildId].style);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
 		        return;
 			}
@@ -842,7 +846,7 @@ module.exports = class Player extends EventEmitter {
 				if(!await this.#checkPermission("volume", interaction)) return;
 				if(['20', '40', '60', '80', '100', '150', '200', '250', '500', '1000', '10000'].includes(interaction.values[0]))
 				{
-					this.#_log_function([{tag: "g", value: interaction.guildId}], 'Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
+					logger.info([{tag: "g", value: interaction.guildId}], 'Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
 					this.#_guilds_play_data[interaction.guildId].volume = parseInt(interaction.values[0]) / 100;
 					if(this.#get_song(interaction.guildId) !== undefined &&
 						this.#_guilds_play_data[interaction.guildId].volumeTransformer)
@@ -868,7 +872,7 @@ module.exports = class Player extends EventEmitter {
 				const song_link = search_cache.list[interaction.values[0]];
 				delete search_cache.list[interaction.values[0]];
 				if(!await this.#checkPermission("open_modal_add", interaction)) return;
-				this.#_log_function([{tag: "g", value: interaction.guildId}], 'Link "' + song_link + '" selected'); 
+				logger.info([{tag: "g", value: interaction.guildId}], 'Link "' + song_link + '" selected'); 
 				await interaction.message.delete().catch((e) => { console.log('Probably useless error 5 : ' + e)});
 				await interaction.deferReply({ephemeral: true}).catch((e) => {console.log('deferReply error : ' + e)});
 
@@ -907,7 +911,7 @@ module.exports = class Player extends EventEmitter {
 				{
 					if(this.#_guilds_play_data[voiceState.guild.id].inactive_timer !== false)
 					{
-						this.#_log_function([{tag: "g", value: voiceState.guild.id}], 'I\'m back with some people finally');
+						logger.info([{tag: "g", value: voiceState.guild.id}], 'I\'m back with some people finally');
 						clearTimeout(this.#_guilds_play_data[voiceState.guild.id].inactive_timer);
 						this.#_guilds_play_data[voiceState.guild.id].inactive_timer = false;
 
@@ -918,7 +922,7 @@ module.exports = class Player extends EventEmitter {
 			}
 			if(this.#_guilds_play_data[voiceState.guild.id].force_active !== true && this.#_guilds_play_data[voiceState.guild.id].inactive_timer === false)
 			{
-				this.#_log_function([{tag: "g", value: voiceState.guild.id}], 'Starting inactivity counter');
+				logger.info([{tag: "g", value: voiceState.guild.id}], 'Starting inactivity counter');
 				this.#_guilds_play_data[voiceState.guild.id].inactive_timer = setTimeout(function(ctx, guild_id) {
 					if(ctx.#isObjectValid(guild_id))
 					{
@@ -961,7 +965,7 @@ module.exports = class Player extends EventEmitter {
 			this.#_guilds_play_data[guild_id] !== undefined &&
 			this.#_guilds_play_data[guild_id].player !== undefined))
 		{
-			this.#_log_function([{tag: "g", value: guild_id}], 'New player object created in channel ' + channel_id);
+			logger.info([{tag: "g", value: guild_id}], 'New player object created in channel ' + channel_id);
 
 			if(!only_connection)
 			{
@@ -1076,7 +1080,7 @@ module.exports = class Player extends EventEmitter {
 			console.log(e);
 		}
 		
-		this.#_log_function([{tag: "g", value: guild_id}], 'Session destroyed');
+		logger.info([{tag: "g", value: guild_id}], 'Session destroyed');
 		delete this.#_guilds_play_data[guild_id];
 	}
 
@@ -1091,22 +1095,22 @@ module.exports = class Player extends EventEmitter {
 			if(this.#_guilds_play_data[guild_id]?.inactive_timer !== false)
 			{
 				player_interface_components.push(
-					new this.#_discord.ActionRowBuilder().addComponents([
-						new this.#_discord.ButtonBuilder()
+					new Discord.ActionRowBuilder().addComponents([
+						new Discord.ButtonBuilder()
 							.setCustomId("undefined")
 							.setEmoji({name: "❗"})
 							.setLabel(i18n.get("buttons.label_inactive", used_locale))
 							.setStyle(2)
 							.setDisabled(true),
-						new this.#_discord.ButtonBuilder()
+						new Discord.ButtonBuilder()
 							.setCustomId("btn_inactive_leave")
 							.setLabel(i18n.get("buttons.inactive_leave", used_locale))
 							.setStyle(3),
-						new this.#_discord.ButtonBuilder()
+						new Discord.ButtonBuilder()
 							.setCustomId("btn_stay")
 							.setLabel(i18n.get("buttons.stay", used_locale))
 							.setStyle(4),
-						new this.#_discord.ButtonBuilder()
+						new Discord.ButtonBuilder()
 							.setCustomId("btn_stay_forever")
 							.setEmoji({name: "golden", id: "1065239445625917520"})
 							.setLabel(i18n.get("buttons.stay_forever", used_locale))
@@ -1114,68 +1118,68 @@ module.exports = class Player extends EventEmitter {
 				]));
 			}
 			player_interface_components.push(
-				new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.ButtonBuilder()
+				new Discord.ActionRowBuilder().addComponents([
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_restart")
 						.setEmoji(this.#emojiStyle("restart", used_style))
 						.setStyle(2)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_last")
 						.setEmoji(this.#emojiStyle("last", used_style))
 						.setStyle(1),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.is_playing ? "btn_pause" : "btn_play")
 						.setEmoji(this.#_guilds_play_data[guild_id]?.is_playing ? this.#emojiStyle("pause", used_style) : this.#emojiStyle("play", used_style))
 						.setStyle(1)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_next")
 						.setEmoji(this.#emojiStyle("next", used_style))
 						.setStyle(1),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_volume")
 						.setEmoji(this.#emojiStyle("volume", used_style))
 						.setStyle(2),
 				]),
-				new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.ButtonBuilder()
+				new Discord.ActionRowBuilder().addComponents([
+					new Discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.loop ? "unloop" : "loop")
 						.setEmoji(this.#emojiStyle("loop", used_style))
 						.setStyle(this.#_guilds_play_data[guild_id]?.loop ? 3 : 2)
 						.setDisabled(this.#get_song(guild_id) ? false : true),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId(this.#_guilds_play_data[guild_id]?.shuffle ? "unshuffle" : "shuffle")
 						.setEmoji(this.#emojiStyle("shuffle", used_style))
 						.setStyle(this.#_guilds_play_data[guild_id]?.shuffle ? 3 : 2),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("queue")
 						.setLabel(i18n.get("buttons.queue", used_locale))
 						.setEmoji(this.#emojiStyle("queue", used_style))
 						.setStyle(2),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("open_modal_add")
 						.setLabel(i18n.get("buttons.add_song", used_locale))
 						.setEmoji(this.#emojiStyle("add_song", used_style))
 						.setStyle(3),
 				]),
-				new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.ButtonBuilder()
+				new Discord.ActionRowBuilder().addComponents([
+					new Discord.ButtonBuilder()
 						.setCustomId("hide")
 						.setLabel(i18n.get("buttons.hide", used_locale))
 						.setEmoji(this.#emojiStyle("hide", used_style))
 						.setStyle(2),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("stop")
 						.setLabel(i18n.get("buttons.stop", used_locale))
 						.setEmoji(this.#emojiStyle("stop", used_style))
 						.setStyle(4),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("leave")
 						.setLabel(i18n.get("buttons.leave", used_locale))
 						.setEmoji(this.#emojiStyle("leave", used_style))
 						.setStyle(4),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("owner_settings")
 						.setLabel(i18n.get("buttons.owner_settings", used_locale))
 						.setEmoji(this.#emojiStyle("owner_settings", used_style))
@@ -1183,7 +1187,7 @@ module.exports = class Player extends EventEmitter {
 				])
 			);
 
-			let player_embed = new this.#_discord.EmbedBuilder()
+			let player_embed = new Discord.EmbedBuilder()
 				.setColor((await settings.isGuildGolden(guild_id)) ? [0xFF, 0xD7, 0x00] : [0x62, 0xD5, 0xE9])
 				.setFooter({text: "Tip : " + tip_list[Math.floor(Math.random() * tip_list.length)]});
 
@@ -1231,85 +1235,85 @@ module.exports = class Player extends EventEmitter {
 		}
 
 		player_interface_components.push(
-			new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.ButtonBuilder()
+			new Discord.ActionRowBuilder().addComponents([
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_restart")
 					.setEmoji(this.#emojiStyle("restart", used_style))
 					.setStyle(color("restart") ? 4 : 3)
 					.setDisabled(disabled("restart")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_last")
 					.setEmoji(this.#emojiStyle("last", used_style))
 					.setStyle(color("last") ? 4 : 3)
 					.setDisabled(disabled("last")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_play")
 					.setEmoji(this.#emojiStyle("play", used_style))
 					.setStyle(color("play") ? 4 : 3)
 					.setDisabled(disabled("play")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_next")
 					.setEmoji(this.#emojiStyle("next", used_style))
 					.setStyle(color("next") ? 4 : 3)
 					.setDisabled(disabled("next")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_volume")
 					.setEmoji(this.#emojiStyle("volume", used_style))
 					.setStyle(color("volume") ? 4 : 3)
 					.setDisabled(disabled("volume")),
 			]),
-			new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.ButtonBuilder()
+			new Discord.ActionRowBuilder().addComponents([
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_loop")
 					.setEmoji(this.#emojiStyle("loop", used_style))
 					.setStyle(color("loop") ? 4 : 3)
 					.setDisabled(disabled("loop")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_shuffle")
 					.setEmoji(this.#emojiStyle("shuffle", used_style))
 					.setStyle(color("shuffle") ? 4 : 3)
 					.setDisabled(disabled("shuffle")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId("undefined")
 					.setLabel(i18n.get("buttons.queue", locale))
 					.setEmoji(this.#emojiStyle("queue", used_style))
 					.setStyle(2)
 					.setDisabled(true),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_open_modal_add")
 					.setLabel(i18n.get("buttons.add_song", locale))
 					.setEmoji(this.#emojiStyle("add_song", used_style))
 					.setStyle(color("open_modal_add") ? 4 : 3)
 					.setDisabled(disabled("open_modal_add")),
 			]),
-			new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.ButtonBuilder()
+			new Discord.ActionRowBuilder().addComponents([
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_hide")
 					.setLabel(i18n.get("buttons.hide", locale))
 					.setEmoji(this.#emojiStyle("hide", used_style))
 					.setStyle(color("hide") ? 4 : 3)
 					.setDisabled(disabled("hide")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_stop")
 					.setLabel(i18n.get("buttons.stop", locale))
 					.setEmoji(this.#emojiStyle("stop", used_style))
 					.setStyle(color("stop") ? 4 : 3)
 					.setDisabled(disabled("stop")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_leave")
 					.setLabel(i18n.get("buttons.leave", locale))
 					.setEmoji(this.#emojiStyle("leave", used_style))
 					.setStyle(color("leave") ? 4 : 3)
 					.setDisabled(disabled("leave")),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId(cmd_prfx + "config_owner_settings")
 					.setLabel(i18n.get("buttons.owner_settings", locale))
 					.setEmoji(this.#emojiStyle("owner_settings", used_style))
 					.setStyle(color("owner_settings") ? 4 : 3)
 					.setDisabled(Boolean(config_mode) || disabled("owner_settings")),
 			]),
-			new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.StringSelectMenuBuilder()
+			new Discord.ActionRowBuilder().addComponents([
+				new Discord.StringSelectMenuBuilder()
 					.setCustomId(cmd_prfx + "player_style")
 					.setMinValues(1)
 					.setMaxValues(1)
@@ -1319,8 +1323,8 @@ module.exports = class Player extends EventEmitter {
 						{label: "Discord", emoji: this.#emojiStyle("play", "discord"), value: "discord", default: used_style === "discord"}
 					)
 			]),
-			new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.ButtonBuilder()
+			new Discord.ActionRowBuilder().addComponents([
+				new Discord.ButtonBuilder()
 					.setCustomId("undefined2")
 					.setLabel(i18n.get("player_embed.configure_msg", locale))
 					.setEmoji({name: "⚠"})
@@ -1329,7 +1333,7 @@ module.exports = class Player extends EventEmitter {
 			])
 		);
 
-		let player_embed = new this.#_discord.EmbedBuilder()
+		let player_embed = new Discord.EmbedBuilder()
 			.setColor([0xed, 0x42, 0x45])
 
 		if(config_mode === 0) player_embed.setTitle(i18n.get("player_embed.title_configure_global", locale));
@@ -1375,7 +1379,7 @@ module.exports = class Player extends EventEmitter {
 			}
 			else
 			{
-				if(interaction.member.permissions.has(this.#_discord.PermissionsBitField.Flags.ManageGuild)) return true;
+				if(interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild)) return true;
 				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return false;
 			}
@@ -1388,7 +1392,7 @@ module.exports = class Player extends EventEmitter {
 			}
 			else
 			{
-				if(interaction.member.permissions.has(this.#_discord.PermissionsBitField.Flags.ManageGuild)) return true;
+				if(interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild)) return true;
 				await interaction.reply({ephemeral: true, content: i18n.get("errors.disabled_by_admin", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return false;
 			}
@@ -1403,7 +1407,7 @@ module.exports = class Player extends EventEmitter {
 			let success = await message.edit(custom_message === undefined ? await this.#generatePlayerInterface(guild_id) : custom_message).catch((e) => { return false; });
 			if(!success && this.#isObjectValid(guild_id))
 			{
-				this.#_log_function([{tag: "g", value: guild_id}], 'Deleted interface message removed from the internal list');
+				logger.info([{tag: "g", value: guild_id}], 'Deleted interface message removed from the internal list');
 				let current_pos = this.#_guilds_play_data[guild_id].player_interfaces.indexOf(message);
 				if(current_pos !== -1) this.#_guilds_play_data[guild_id].player_interfaces.splice(current_pos, 1);
 			}
@@ -1425,7 +1429,7 @@ module.exports = class Player extends EventEmitter {
 			if(queue === "") queue = i18n.get("queue_embed.no_song", this.#_guilds_play_data[guild_id].locale)
 
 			let used_style = this.#_guilds_play_data[guild_id].style;
-			let queue_embed = new this.#_discord.EmbedBuilder()
+			let queue_embed = new Discord.EmbedBuilder()
 				.setColor([0x62, 0xD5, 0xE9])
 				.setTitle(i18n.get("queue_embed.title", this.#_guilds_play_data[guild_id].locale))
 				.setDescription(queue);
@@ -1433,20 +1437,20 @@ module.exports = class Player extends EventEmitter {
 			let components_queue = [];
 			if(selected_song >= 0 && selected_song >= 20 * page && selected_song < 20 * (page+1))
 			{
-				components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.ButtonBuilder()
+				components_queue.push(new Discord.ActionRowBuilder().addComponents([
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_queue_play_" + selected_song)
 						.setStyle(3)
 						.setEmoji(this.#emojiStyle("play_now", used_style))
 						.setLabel(i18n.get("buttons.queue_play", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_queue_remove_" + selected_song)
 						.setStyle(4)
 						.setEmoji(this.#emojiStyle("remove", used_style))
 						.setLabel(i18n.get("buttons.queue_remove", this.#_guilds_play_data[guild_id].locale))
 						.setDisabled(false),
-					new this.#_discord.ButtonBuilder()
+					new Discord.ButtonBuilder()
 						.setCustomId("btn_queue_page_reset_" + page)
 						.setStyle(2)
 						.setLabel(i18n.get("buttons.queue_unselect", this.#_guilds_play_data[guild_id].locale))
@@ -1455,8 +1459,8 @@ module.exports = class Player extends EventEmitter {
 			}
 			else
 			{
-				components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
-					new this.#_discord.StringSelectMenuBuilder()
+				components_queue.push(new Discord.ActionRowBuilder().addComponents([
+					new Discord.StringSelectMenuBuilder()
 						.setCustomId("select_queue_song")
 						.setOptions(queue_portion.length > 0 ? queue_portion.map((x, i) => { return {label: (20 * page + i+1) + ". " + x.name.substring(0, 50), value: (20 * page + i) + "", description: undefined}}) : [{label: "undefined", value: "undefined"}])
 						.setMaxValues(1)
@@ -1466,23 +1470,23 @@ module.exports = class Player extends EventEmitter {
 				]));
 			}
 
-			components_queue.push(new this.#_discord.ActionRowBuilder().addComponents([
-				new this.#_discord.ButtonBuilder()
+			components_queue.push(new Discord.ActionRowBuilder().addComponents([
+				new Discord.ButtonBuilder()
 					.setCustomId("btn_queue_page_prev_" + (page > 0 ? page - 1 : 0))
 					.setStyle(1)
 					.setEmoji({name: "⬅️"})
 					.setDisabled(page > 0 ? false : true),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId("undefined")
 					.setStyle(2)
 					.setDisabled(true)
 					.setLabel(i18n.place(i18n.get("queue_embed.page", this.#_guilds_play_data[guild_id].locale), {current: page+1, total: Math.ceil(this.#_guilds_play_data[guild_id].queue.length / 20)})),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId("btn_queue_page_next_" + (page < page_quantity - 1 ? page + 1 : page_quantity - 1))
 					.setStyle(1)
 					.setEmoji({name: "➡️"})
 					.setDisabled(page < page_quantity - 1 ? false : true),
-				new this.#_discord.ButtonBuilder()
+				new Discord.ButtonBuilder()
 					.setCustomId("close_any")
 					.setStyle(4)
 					.setLabel(i18n.get("buttons.queue_hide", this.#_guilds_play_data[guild_id].locale))
@@ -1532,7 +1536,7 @@ module.exports = class Player extends EventEmitter {
 					{
 						if(link.match(/[\?|&]list=([^#\&\?]+)/) && !force_search)//Is a playlist
 						{
-							this.#_log_function([{tag: "g", value: guild_id}], 'Processing youtube playlist ' + link);
+							logger.info([{tag: "g", value: guild_id}], 'Processing youtube playlist ' + link);
 							let playlist_items = await resolve_yt_playlist(link.match(/[\?|&]list=([^#\&\?]+)/)[1]);
 							if(playlist_items === false) return reject('This playlist is unavailable');
 							if(playlist_items === []) return reject('This playlist is empty');
@@ -1549,7 +1553,7 @@ module.exports = class Player extends EventEmitter {
 							let return_resolve = await resolve_yt_video(link, force_search);
 							if(return_resolve !== false)
 							{
-								this.#_log_function([{tag: "g", value: guild_id}], 'Video ' + link + ' from youtube added to queue');
+								logger.info([{tag: "g", value: guild_id}], 'Video ' + link + ' from youtube added to queue');
 								let current_song_before = this.#get_song(guild_id);
 
 								if(!this.#isObjectValid(guild_id)) return;
@@ -1577,7 +1581,7 @@ module.exports = class Player extends EventEmitter {
 
 						if(matches[1] === "track")
 						{
-							this.#_log_function([{tag: "g", value: guild_id}], 'Music ' + link + ' from deezer added to queue');
+							logger.info([{tag: "g", value: guild_id}], 'Music ' + link + ' from deezer added to queue');
 							this.#add_in_queue(guild_id, music_data_query.data.title + " " + music_data_query.data.artist.name + " music", true).then(function(){
 								resolve('Your music has been added to queue');
 							}, function(){
@@ -1588,7 +1592,7 @@ module.exports = class Player extends EventEmitter {
 						}
 						else if(matches[1] === "playlist" || matches[1] === "album")
 						{
-							this.#_log_function([{tag: "g", value: guild_id}], 'Processing deezer playlist ' + link);
+							logger.info([{tag: "g", value: guild_id}], 'Processing deezer playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
 							for(let e of music_data_query.data.tracks.data)
 							{
@@ -1634,7 +1638,7 @@ module.exports = class Player extends EventEmitter {
 
 						if(matches[1] === "track")
 						{
-							this.#_log_function([{tag: "g", value: guild_id}], 'Music ' + link + ' from spotify added to queue');
+							logger.info([{tag: "g", value: guild_id}], 'Music ' + link + ' from spotify added to queue');
 							this.#add_in_queue(guild_id, music_data_query.data.name + " " + music_data_query.data.artists[0].name + " music", true).then(function(){
 								resolve('Your music has been added to queue');
 							}, function(){
@@ -1645,7 +1649,7 @@ module.exports = class Player extends EventEmitter {
 						}
 						else if(matches[1] === "playlist" || matches[1] === "album")
 						{
-							this.#_log_function([{tag: "g", value: guild_id}], 'Processing spotify playlist ' + link);
+							logger.info([{tag: "g", value: guild_id}], 'Processing spotify playlist ' + link);
 							resolve('Your playlist is being processed. You music will start very soon !')
 							for(let e of music_data_query.data.tracks.items)
 							{
@@ -1677,7 +1681,7 @@ module.exports = class Player extends EventEmitter {
 							let return_resolve = await resolve_sc_music(link);
 							if(return_resolve !== false)
 							{
-								this.#_log_function([{tag: "g", value: guild_id}], 'Video ' + link + ' from soundcloud added to queue');
+								logger.info([{tag: "g", value: guild_id}], 'Video ' + link + ' from soundcloud added to queue');
 								let current_song_before = this.#get_song(guild_id);
 
 								if(!this.#isObjectValid(guild_id)) return;
@@ -1777,14 +1781,14 @@ module.exports = class Player extends EventEmitter {
 			if(this.#get_song(guild_id) !== undefined)
 			{
 				let song = this.#get_song(guild_id);
-				this.#_log_function([{tag: "g", value: guild_id}], 'Playing ' + song.link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
+				logger.info([{tag: "g", value: guild_id}], 'Playing ' + song.link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
 				let stream;
 				if(song.play_link.startsWith("file:///"))
 				{
 					if(!fsc.existsSync(song.play_link.replace("file://", "")))
 					{
-						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song : ' + song.play_link);
+						logger.info([{tag: "g", value: guild_id}], 'Error fetching song : ' + song.play_link);
 						stream = fsc.createReadStream(path.join(__dirname, 'error_sound.wav'));
 					}
 					else stream = fsc.createReadStream(song.play_link.replace("file://", ""));
@@ -1798,7 +1802,7 @@ module.exports = class Player extends EventEmitter {
 						headers: Object.assign(this.#get_song(guild_id).play_headers, {"Accept-Encoding": "deflate, br"})
 					}).catch((e) => {
 						console.log(e);
-						this.#_log_function([{tag: "g", value: guild_id}], 'Error fetching song');
+						logger.info([{tag: "g", value: guild_id}], 'Error fetching song');
 					});
 
 					if(play_link_process === undefined) stream = fsc.createReadStream(path.join(__dirname, 'error_sound.wav'));
@@ -1903,8 +1907,11 @@ async function resolve_yt_video(link, search = false)
 		let video_data = JSON.parse(video_data_process.stdout);
 		if(video_data == undefined) return false;
 
-		if(video_data.entries !== undefined && video_data._type === "playlist") video_data = video_data.entries[0];
-		//console.log(video_data.original_url, video_data.requested_downloads[0], video_data.title, video_data.age_limit)
+		if(video_data.entries !== undefined && video_data._type === "playlist")
+		{
+			video_data = video_data.entries[0];
+			if(video_data == undefined) return false;
+		}
 		if(video_data &&
 			video_data.original_url &&
 			video_data.requested_downloads &&
