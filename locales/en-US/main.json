@@ -115,7 +115,7 @@
 			"description": "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
 			"field_1": {
 				"name": "What can I do if a make a tip ?",
-				"value": "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- Customize your player theme\n- Add up to 10 custom troll songs per server"
+				"value": "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- Customize your player theme\n- Add up to 5 custom troll songs per server"
 			},
 			"field_2": {
 				"name": "Do the advantages varies depending of my tip ?",
@@ -155,11 +155,12 @@
 	},
 	"dashboard": {
 		"command_description": "Show your personal BaBot control panel.",
-		"panel_title": "{username}'s dashboard",
+		"panel_title": "{username} - BaBot",
 		"panel_description": "Here's your BaBot profile",
+		"user_profile_0": "I don't know",
 		"leaderboard_label": "Activity leaderboard",
 		"leaderboard_content": "{pos}th most active user",
-		"is_premium_label": "User type",
+		"is_premium_label": "Rank",
 		"is_normal": "Normal user",
 		"is_golden": "<:golden:1065239445625917520> Golden user",
 		"playlists_label": "Saved playlists",
@@ -172,84 +173,15 @@
 		"disable_troll_btn": "Disable troll",
 		"not_authorized_user": "❌ As I can see, this is not your settings panel, right ?"
 	},
-	"config": {
-		"command_description": "Configure BaBot on your server",
-		"player": {
-			"description": "Select which commands of the player members can use"
-		},
-		"languages": {
-			"description": "Set the language BaBot should use in this guild",
-			"locale_description": "Select a language",
-			"change_done": "✅ The preferred language for this guild has been updated to {language}",
-			"language_doesnt_exists": "➡️ BaBot has not yet been translated to this language, but translations are open to anyone ! More infos at `/help -> Contribute`",
-			"locales": {
-				"en-US": "English",
-				"bg": "Bulgarian",
-				"zh-CN": "Chinese",
-				"cs": "Czech",
-				"da": "Danish",
-				"nl": "Dutch",
-				"fi": "Finnish",
-				"fr": "French",
-				"de": "German",
-				"el": "Greek",
-				"hi": "Hindi",
-				"hu": "Hungarian",
-				"it": "Italian",
-				"ja": "Japanese",
-				"ko": "Korean",
-				"lt": "Lithuanian",
-				"no": "Norwegian",
-				"pl": "Polish",
-				"pt-BR": "Portuguese",
-				"ro": "Romanian",
-				"ru": "Russian",
-				"es-ES": "Spanish",
-				"sv-SE": "Swedish",
-				"th": "Thai",
-				"tr": "Turkish",
-				"uk": "Ukrainian",
-				"vi": "Vietnamese",
-				"not_mine": "I don't see mine"
-			}
-		},
-		"troll": {
-			"description": "Control troll related settings of this guild",
-			"add_troll": "Use this option to import a new troll song in this server",
-			"embed_title": "Troll preferences",
-			"embed_description": "**Troll allowed in this guild** : {trollDisabled}\n**Custom troll songs :** \n{trollSongs}\n\n *Add more troll songs by uploading it with the command `/config troll`*",
-			"trollEnabled_text": "Yes",
-			"trollDisabled_text": "No",
-			"enable_troll_btn": "Troll Disabled",
-			"disable_troll_btn": "Troll Enabled",
-			"empty_troll_slot": "Empty slot",
-			"locked_troll_slot": "<:golden:1065239445625917520> Upgrade to Golden to use this slot",
-			"edit_button": "Song {pos}",
-			"delete_button": "Song {pos}",
-			"song_uploaded": "✅ **{song}** is now part of the custom troll songs of this server !\n<:transparent:1067551646592282694>You can use it with the usual </troll:1054878390278176808> command."
-		}
-	},
 	"feedback": {
 		"command_description": "Send a feedback to the developers.",
 		"modal_placeholder": "Any positive or negative feedback are welcome !",
 		"modal_textinput_label": "Your feedback",
 		"modal_title": "Send a feedback",
-		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !\n<:transparent:1067551646592282694>NB : If you have reported a bug, check progress on it with `/know_issues`"
+		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !\n"
 	},
 	"errors": {
 		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned..",
-		"missing_subcommand": "❌ Please select a subcommand.",
-		"unknown_subcommand": "💥 This subcommand doesn't exists.",
-		"settings_panel_fail": "💥 The settings panel is currently broken.. :cry:",
-		"settings": "💥 This settings function is broken :cry:",
-		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command",
-		"guild_only": "💥 You can only use this command in a guild",
-		"help_not_found": "💥 This help page can't be displayed for the moment",
-		"troll_attachment_fail": "💥 The file attached was not sent correctly (Discord issue)",
-		"troll_file_too_big": "❌ This song is too big, try to compress it or to send a smaller song",
-		"troll_file_unavailable": "💥 The song can't be transferred to our servers",
-		"troll_not_song": "❌ This file doesn't seems to be a song",
-		"troll_limit_normal": "❌ You have reached the maximum number of songs you can upload\n<:golden:1065239445625917520> Check out Golden subscription to increase this limit : `/help -> Golden`",
-		"troll_limit_golden": "❌ You have reached the maximum number of songs you can upload, even with a Golden subscription"
+		"help_not_found": "💥 This help page can't be displayed for the moment"
 	}
 }

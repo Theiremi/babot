@@ -26,6 +26,7 @@
     "systeminformation": "^5.16.9"
   },
   "imports": {
-    "#root/*": "./*"
+    "#root/*": "./*",
+    "#classes/*": "./classes/*"
   }
 }

@@ -204,13 +204,21 @@
 		]
 	},
 	{
-		"version": "1.4.6 (actual)",
+		"version": "1.5.0",
 		"commits": [
 			"Huge work on fixing all the bugs BaBot encounters",
 			"Improved help center",
 			"Updated translations",
 			"Added TTS error messages",
 			"Improved `/troll config` command"
+		]
+	},
+	{
+		"version": "1.5.1 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Rewrite internal code to improve further maintenability"
+			"Added a delay to use specific commands for non-voting users"
 		]
 	}
 ]
