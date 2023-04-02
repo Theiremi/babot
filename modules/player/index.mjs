@@ -24,6 +24,8 @@ const settings = new Settings();
 const i18n = new I18n('player');
 import babot_env from '#root/env_data/env.json' assert {type: "json"};
 import logger from '#classes/logger.mjs';
+const Filter = (await importIfExists('../../../filters/index.js', 'pcm-effects')).default;
+import { Readable } from 'stream';
 
 
 let search_cache = {list: {}, index: 0};
@@ -128,6 +130,7 @@ export default class Player extends EventEmitter {
 
 			if(!interaction.inGuild() || interaction.member == undefined)//The user is in a guild, and a Guildmember object for this user exists
 			{
+				logger.warn('Command `' + interaction.commandName + '` received outside of a guild');
 				await interaction.reply({ephemeral: true, content: i18n.get("errors.guild_only", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 				return;
 			}
@@ -137,7 +140,7 @@ export default class Player extends EventEmitter {
 			{
 				if(interaction.member.voice.channelId === null)
 				{
-					logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
+					logger.notice([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'This user isn\'t in a voice channel');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.not_in_voice_channel", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
@@ -150,27 +153,27 @@ export default class Player extends EventEmitter {
 						!channel_permissions.has(Discord.PermissionsBitField.Flags.ViewChannel) ||
 						!channel_permissions.has(Discord.PermissionsBitField.Flags.Connect))//Connection to this channel is theorically allowed
 					{
-						logger.info([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
+						logger.notice([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to connect to the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.join", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					else if(!interaction.member.voice.channel.speakable ||
 						!channel_permissions.has(Discord.PermissionsBitField.Flags.Speak))//Speaking is allowed
 					{
-						logger.info([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
+						logger.notice([{tag: "g", value: interaction.guildId}], 'I don\'t have permission to speak in the voice channel');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.speak", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					if(!interaction.member.voice.channel.joinable)//Channel is joinable : not full or we have permission to override this
 					{
-						logger.info([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
+						logger.notice([{tag: "g", value: interaction.guildId}], 'The voice channel is full');
 						await interaction.reply({ephemeral: true, content: i18n.get("errors.full", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 						return;
 					}
 					let config = await settings.get(interaction.guildId, 1, 'config');
 					if(config === false)
 					{
-						logger.info([{tag: "g", value: interaction.guildId}], 'Settings error');
+						logger.warn([{tag: "g", value: interaction.guildId}], 'Settings error');
 						await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
 						return;
 					}
@@ -180,22 +183,22 @@ export default class Player extends EventEmitter {
 
 				if(this.#_guilds_play_data[interaction.guildId].voice_connection.joinConfig.channelId !== interaction.member.voice.channelId)
 				{
-					logger.info([{tag: "g", value: interaction.guildId}], 'I\'m already used');
+					logger.notice([{tag: "g", value: interaction.guildId}], 'I\'m already used');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.already_used", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
 				if(!this.#isObjectValid(interaction.guildId))
 				{
-					logger.info([{tag: "g", value: interaction.guildId}], 'Unknown player error');
+					logger.warn([{tag: "g", value: interaction.guildId}], 'Unknown player error');
 					await interaction.reply({ephemeral: true, content: i18n.get("errors.unknown_player_error", interaction.locale)}).catch(e => console.log('reply error : ' + e));
 					return;
 				}
 
-				if(await settings.isGuildGolden(interaction.guildId)) logger.info([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
+				if(await settings.isGuildGolden(interaction.guildId)) logger.notice([{tag: "g", value: interaction.guildId}], 'Wow, a golden player spawned !');
 				await interaction.reply(await this.#generatePlayerInterface(interaction.guildId)).catch(e => console.log('reply error : ' + e));
 				let player_message = await interaction.fetchReply().catch(() => false);
-				if(player_message !== false)this.#_guilds_play_data[interaction.guildId].player_interfaces.push(player_message);
+				if(player_message !== false)this.#_guilds_play_data[interaction.guildId]?.player_interfaces?.push(player_message);
 			}
 			else if(interaction.commandName === 'troll')
 			{
@@ -849,9 +852,9 @@ export default class Player extends EventEmitter {
 					logger.info([{tag: "g", value: interaction.guildId}], 'Change volume from ' + (this.#_guilds_play_data[interaction.guildId].volume * 100) + '% to ' + interaction.values[0] + '%');
 					this.#_guilds_play_data[interaction.guildId].volume = parseInt(interaction.values[0]) / 100;
 					if(this.#get_song(interaction.guildId) !== undefined &&
-						this.#_guilds_play_data[interaction.guildId].volumeTransformer)
+						this.#_guilds_play_data[interaction.guildId].filters)
 					{
-						this.#_guilds_play_data[interaction.guildId].volumeTransformer.setVolume(this.#_guilds_play_data[interaction.guildId].volume);
+						this.#_guilds_play_data[interaction.guildId].filters.setVolume(this.#_guilds_play_data[interaction.guildId].volume);
 						/*this.#_guilds_play_data[interaction.guildId].transformer.changeSettings({volume: this.#_guilds_play_data[interaction.guildId].volume});
 						let resource = Voice.createAudioResource(this.#_guilds_play_data[interaction.guildId].transformer.pipe(new prism.opus.OggDemuxer()), {inputType: "opus"});
 						this.#_guilds_play_data[interaction.guildId].player.play(resource);*/
@@ -976,7 +979,7 @@ export default class Player extends EventEmitter {
 					voice_connection: undefined,
 					player: undefined,
 					player_subscription: undefined,
-					volumeTransformer: undefined,
+					filters: undefined,
 					ffmpeg_process: undefined,
 					permissions: [],
 					queue: [
@@ -1502,6 +1505,7 @@ export default class Player extends EventEmitter {
 	{
 		if(!(await settings.haveVoted(interaction.user.id)) && !(await settings.isGolden(interaction.guildId, interaction.user.id)))
 		{
+			logger.info("User facing a vote delay", [{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}]);
 			await interaction.editReply({
 				content: "", embeds: [
 					new Discord.EmbedBuilder()
@@ -1783,6 +1787,11 @@ export default class Player extends EventEmitter {
 				let song = this.#get_song(guild_id);
 				logger.info([{tag: "g", value: guild_id}], 'Playing ' + song.link + ' at volume ' + this.#_guilds_play_data[guild_id].volume);
 
+				await this.#cleanPlayResources(guild_id);
+				this.#_guilds_play_data[guild_id].player_abort = new AbortController()
+
+				//----- AUDIO STREAM CHAIN -----//
+				//--- STEP 1 : Get the audio ---//
 				let stream;
 				if(song.play_link.startsWith("file:///"))
 				{
@@ -1796,6 +1805,7 @@ export default class Player extends EventEmitter {
 				else
 				{
 					let play_link_process = await axios({
+						signal: this.#_guilds_play_data[guild_id].player_abort.signal,
 						url: this.#get_song(guild_id).play_link,
 						method: 'get',
 						responseType: 'stream',
@@ -1808,37 +1818,56 @@ export default class Player extends EventEmitter {
 					if(play_link_process === undefined) stream = fsc.createReadStream(path.join(__dirname, 'error_sound.wav'));
 					else stream = play_link_process.data;
 				}
+				//---//
 
-				this.#cleanPlayResources(guild_id)
-				this.#_guilds_play_data[guild_id].ffmpeg_process = new prism.FFmpeg({args: [
+				//--- STEP 2 : Transform the audio
+				this.#_guilds_play_data[guild_id].ffmpeg_process = child_process.spawn('ffmpeg', [
+					'-i', '-',
 					'-analyzeduration', '0',
 					'-loglevel', '0',
 					'-f', 's16le',
 					'-ar', '48000',
 					'-ac', '2',
-					'-s:a', '240'
-				]});
-				const this_class = this;
-				this.#_guilds_play_data[guild_id].ffmpeg_process.once('error', function(){
-					this_class.#cleanPlayResources(guild_id);
+					'pipe:1'
+				], {
+					signal: this.#_guilds_play_data[guild_id].player_abort.signal,
+					killSignal: "SIGKILL",
+					shell: false,
+					windowsHide: true
 				});
-				this.#_guilds_play_data[guild_id].volumeTransformer = new prism.VolumeTransformer({type: 's16le', volume: this.#_guilds_play_data[guild_id].volume});
-				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
+				this.#_guilds_play_data[guild_id].ffmpeg_process.on('error', (e) => {
+					if(e.name === "AbortError")
+					{
+						logger.notice('FFmpeg process aborted', [{tag: "g", value: guild_id}])
+					}
+					else
+					{
+						logger.warn('FFmpeg error : ' + e.name + ' : ' + e.message + '\n' + e.stack, [{tag: "g", value: guild_id}])
+					}
+				});
 
-				let resource = Voice.createAudioResource(stream.pipe(this.#_guilds_play_data[guild_id].ffmpeg_process).pipe(this.#_guilds_play_data[guild_id].volumeTransformer).pipe(encoder), {inputType: "opus"});
-				/*resource.playStream.on('data', function(data)
-				{
-					//console.log(data.length);
-				})*/
-				
-				/*this.#_guilds_play_data[guild_id].transformer = new PlayerTransform({
-					volume: this.#_guilds_play_data[guild_id].volume
-				});
-				let resource = Voice.createAudioResource(play_link_process.data.pipe(this.#_guilds_play_data[guild_id].transformer).pipe(new prism.opus.OggDemuxer()), {inputType: "opus"});*/
-				
+				stream.pipe(this.#_guilds_play_data[guild_id].ffmpeg_process.stdin);
+				//---//
+
+				//----- STEP 3 : Apply filters -----//
+				this.#_guilds_play_data[guild_id].filters = new Filter('s16le');
+				this.#_guilds_play_data[guild_id].filters.setVolume(this.#_guilds_play_data[guild_id].volume);
+				this.#_guilds_play_data[guild_id].ffmpeg_process.stdout.pipe(this.#_guilds_play_data[guild_id].filters);
+				//---//
+
+				//--- STEP 4 : Encoding in opus ---//
+				let encoder = new prism.opus.Encoder({channels: 2, rate: 48000, frameSize: 960});
+				encoder.setBitrate(192000);
+				this.#_guilds_play_data[guild_id].filters.pipe(encoder);
+				//---//
+
+				//--- STEP 5 : Sending the audio ---//
+				let resource = Voice.createAudioResource(encoder, {inputType: "opus"});
 				this.#_guilds_play_data[guild_id].player.play(resource);
 
 				this.#_guilds_play_data[guild_id].is_playing = true;
+				//---//
+				//-----//
 			}
 			resolve();
 		});
@@ -1848,9 +1877,9 @@ export default class Player extends EventEmitter {
 	{
 		if(this.#isObjectValid(guild_id))
 		{
-			if(this.#_guilds_play_data[guild_id]?.ffmpeg_process !== undefined)
+			if(this.#_guilds_play_data[guild_id]?.player_abort !== undefined)
 			{
-				this.#_guilds_play_data[guild_id]?.ffmpeg_process?.destroy();
+				this.#_guilds_play_data[guild_id]?.player_abort.abort();
 			}
 
 			if(this.#_guilds_play_data[guild_id]?.resource !== undefined)
@@ -2117,4 +2146,15 @@ function sleep(ms) {
   return new Promise((resolve) => {
 	setTimeout(resolve, ms);
   });
+}
+
+async function importIfExists(...modules) {
+  for (let m of modules) {
+    try {
+      return await import(m);
+    } catch (error) {
+      // pass and try next file
+    }
+  }
+  throw('None of the provided modules exist.')
 }

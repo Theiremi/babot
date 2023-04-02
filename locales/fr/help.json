@@ -1,0 +1,106 @@
+{
+	"command_description": "Obtenir de l'aide à propos des fonctions de BaBot.",
+	"section_description": "Afficher une section spécifique du centre d'aide",
+	"sections": {
+		"start": "Premiers pas",
+		"faq": "FAQ",
+		"player": "Lecteur",
+		"troll": "Troll",
+		"golden": "Abonnement Golden",
+		"contribute": "Contribuer à BaBot"
+	},
+	"start": {
+		"title": "Débuter avec BaBot",
+		"description": "",
+		"field_1": {
+			"name": "Expliquez-moi rapidement",
+			"value": "- **Utilisez </player:1052609017802924062>** pour écouter de la musique\n- **Utilisez </troll:1054878390278176808>** Pour envoyer BaBot jouer un son dans le salon vocal de quelqu'un sans aucune preuve visible"
+		},
+		"field_2": {
+			"name": "J'en veux plus",
+			"value": "Vous pouvez gérer comment BaBot fonctionne avec :\n- **</dashboard:1065334605076508772>** : Consultez vos statistiques et vos commandes personnalisées\n- **</settings:1065334689021296671>** : Configurez comment BaBot se comporte avec vous"
+		},
+		"field_3": {
+			"name": "Je suis admin",
+			"value": "BaBot possède des paramètres pour vous que vous pouvez gérer avec les commandes `/config`"
+		},
+		"field_4": {
+			"name": "J'ai rien compris :grin:",
+			"value": "Obtenez plus d'aide dans les autres sections de ce centre d'aide !\nN'hésitez pas à rejoindre notre [serveur d'assistance](https://discord.gg/zssHymr656) si vous ne trouvez aucune réponse à vos questions"
+		}
+	},
+	"player": {
+		"title": "Le lecteur de musique de BaBot",
+		"description": "La principale fonction de BaBot est sans doute son lecteur de musique, simple et intuitif.",
+		"field_1": {
+			"name": "Utilisation rapide",
+			"value": "- Rejoignez un salon vocal\n- Lancez le lecteur : </player:1052609017802924062>\n- Ajoutez votre musique préférée en cliquant sur \"Ajouter un son\"\n- Profitez 😀"
+		},
+		"field_2": {
+			"name": "Configurer pour le serveur",
+			"value": "Contrôlez et customisez le lecteur sur votre serveur avec `/config player` !"
+		},
+		"field_3": {
+			"name": "Commandes :",
+			"value": "- **</player:1052609017802924062>** : Lance le lecteur de BaBot\n- `/quickplay {lien ou recherche}` : Lance le lecteur et joue directement la musique donnée\n- `/config player` : Affiche l'interface permettant aux administrateurs de bidouiller le lecteur"
+		}
+	},
+	"troll": {
+		"title": "La fonction Troll de BaBot",
+		"description": "BaBot est aussi un bot amusant avec sa commande troll !",
+		"field_1": {
+			"name": "Utilisation rapide",
+			"value": "- Trouvez une personne étant dans un salon vocal\n- Tapez la commande </troll:1054878390278176808>\n- Ciblez la personne\n- Sélectionnez un son\n- Profitez 😆"
+		},
+		"field_2": {
+			"name": "Configurer pour le serveur",
+			"value": "Vous voulez ajouter vos propres sons, ou désactiver le troll sur votre serveur ?\nUtilisez `/config troll` !"
+		},
+		"field_3": {
+			"name": "Commandes :",
+			"value": "- `/troll {user} {song} [{volume}]` : Trolle un utilisateur avec le son sélectionné joué au volume choisi"
+		}
+	},
+	"golden": {
+		"title": "<:golden:1065239445625917520> Faites un don à BaBot !",
+		"description": "Comme toutes les fonctions de base de BaBot sont gratuites, les dons sont essentiels pour l'aider à survivre !",
+		"field_1": {
+			"name": "À quoi ai-je accès si je fais un don ?",
+			"value": "Vous obtiendrez ces avantages :\n- Utiliser BaBot 24/7 sans confirmer qu'il doit rester dans son salon à chaque fois que quelqu'un quitte\n- Customiser votre lecteur\n- Ajouter jusqu'à 5 trolls personnalisé par serveur"
+		},
+		"field_2": {
+			"name": "Mes avantages dépendent-ils de mon don ?",
+			"value": "N'importe quel don donne accès au niveau <:golden:1065239445625917520>Golden.\nCependant, en fonction du montant, vous pouvez obtenir la possibilité d'en faire profiter tous les membres d'un serveur :\n- **5 $** : Permet aux membres d'un de vos serveur d'utiliser Golden\n- **15 $** : Permet aux membres de 5 de vos serveurs d'utiliser Golden\nNB : Les serveurs possédant un lecteur couleur or sont des serveurs dans lesquels un membre a activé Golden"
+		},
+		"field_3": {
+			"name": "Que se passe-t-il si je ne fais pas de don ?",
+			"value": "Aucun problème !\nVous pouvez continuer à utiliser BaBot comme à votre habitude, et toutes les fonctions gratuites *devrait* le rester encore longtemps (du moins je l'espère)"
+		},
+		"field_4": {
+			"name": "Où puis-je faire un don ?",
+			"value": "Ma page patreon sert à ça : [Page patreon](https://patreon.com/user?u=85252153)\nD'ailleurs merci ! Grâce à vous, BaBot aura un futur !"
+		},
+		"tip_button": "S'abonner à Golden !"
+	},
+	"contribute": {
+		"title": "Comment aider BaBot",
+		"description": "**Voici les différents moyens d'aider BaBot :**\n- Faites un retour (</feedback:1060125997359448064>) à propos de BaBot\n- Voter pour BaBot sur n'importe quelle plateforme (top.gg, discordbotlist.com, discords.com ou botlist.me)\n- [Contribuer au développement](https://github.com/Theiremi/babot)\n- [Traduire BaBot dans votre langue](https://crowdin.com/project/babot)\n- [Faire un don](https://patreon.com/user?u=85252153)",
+		"footer": "Un grand merci à tous ceux qui aideront BaBot, c'est grâce à vous qu'il pourra survivre et grandir"
+	},
+	"faq": {
+		"title": "FAQ de BaBot",
+		"description": "**Vous avez des questions ? Vous êtes au bon endroit !**",
+		"field_1": {
+			"name": "BaBot a planté",
+			"value": "Cela se produit parfois. Cependant, BaBot *devrait* redémarrer automatiquement en quelques minutes. Si cela se produit, veuillez nous excusez pour la gêne occasionnée"
+		},
+		"field_2": {
+			"name": "Pourquoi le lecteur est de couleur or ?",
+			"value": "Un lecteur couleur or indique qu'un membre a appliqué ses avantages Golden à ce serveur (voir `/help -> Golden`)\n*Les premiers 250 serveurs à avoir ajoutés BaBot ont les avantages Golden activés à vie (d'ailleurs si vous êtes concernés merci d'avoir lancé BaBot !)*"
+		},
+		"field_3": {
+			"name": "Comment puis-je aider BaBot ?",
+			"value": "Il y a de multiples façons d'aider BaBot indiquées dans la page d'aide `/help -> Contribute`"
+		}
+	}
+}

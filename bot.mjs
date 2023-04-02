@@ -39,7 +39,7 @@ player.on('error', e => report_error(e.name + ' : ' + e.message + '\nStack trace
 //-----//
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["/changelog : version 1.4.6 released", 3],
+  ["version 1.6.0 : /changelog", 3],
   ["/help", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how in /help -> Contribute", 3],
@@ -52,7 +52,7 @@ process.on('warning', (name, message, stack) => {logger.warn(name + " : " + mess
 //client.on('debug', logger.debug);
 client.on('warn', logger.warn);
 client.on('error', (e) => {
-  logger.error(e);
+  logger.error(e.name + ' : ' + e.message + '\n' + e.stack);
   report_error(e.name + ' : ' + e.message + '\n`' +
     e.fileName + ':' + e.lineNumber + ':' + e.columnNumber +
     '`\nStack trace : ```' + e.stack + '```')
@@ -217,17 +217,19 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
 
     else if(interaction.commandName === 'stats')
     {
+      const ping = Date.now() - interaction.createdTimestamp;
       logger.info([{tag: "u", value: interaction.user.id}], 'Command `stats` received');
       await interaction.deferReply();
 
       await interaction.editReply({content: "", embeds: [
         {
-          color: 0x2f3136,
+          color: 0x2b2d31,
           title: i18n.place(i18n.get("stats.title", interaction.locale), {name: env_variables.name}),
           description: i18n.place(i18n.get("stats.content", interaction.locale), {
             servers_count: (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 10000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
             shards_count: client.shard.count,
             shard: client.shard.ids[0] + 1,
+            ping,
             total_players: total_players,
             shard_players: player.playerCount(),
             uptime: Math.round((Date.now() - client.uptime)/1000),

@@ -1,0 +1,12 @@
+{
+	"yes": "Ja",
+	"no": "Nein",
+	"errors": {
+		"guild_only": "💥 Du kannst diesen Befehl nur in einem Server verwenden.",
+		"missing_subcommand": "💥 Bitte wähle einen Unterbefehl aus.",
+		"not_admin": "❌ Sorry, nur Member, die die `Manage Guild` Berechtigung besitzen, können diesen Befehl verwenden",
+		"unknown_subcommand": "❌ Dieser Unterbefehl existiert nicht.",
+		"settings_panel_fail": "❌ Die Systemeinstellungen sind derzeit nicht funktionsfähig.. :cry:",
+		"settings": "💥 Diese Einstellungsfunktion ist kaputt :cry:"
+	}
+}

@@ -1,0 +1,65 @@
+{
+	"command_description": "Konfiguriere BaBot auf deinem Server.",
+	"player": {
+		"description": "Wähle aus, welche Befehle der player User verwenden können."
+	},
+	"languages": {
+		"description": "Stelle die Sprache ein, die BaBot in diesen Server verwenden soll.",
+		"locale_description": "Wähle eine Sprache aus.",
+		"change_done": "✅ Die bevorzugte Sprache für diesen Server wurde auf {language} aktualisiert.",
+		"language_doesnt_exists": "➡️ BaBot wurde noch nicht in diese Sprache übersetzt, aber Übersetzungen stehen für allen offen! Mehr Infos unter `/help contribute`",
+		"locales": {
+			"en-US": "Englisch",
+			"bg": "Bulgarisch",
+			"zh-CN": "Chinesisch",
+			"cs": "Tschechisch",
+			"da": "Dänisch",
+			"nl": "Niederländisch",
+			"fi": "Finnisch",
+			"fr": "Französisch",
+			"de": "Deutsch",
+			"el": "Griechisch",
+			"hi": "Hinduistisch",
+			"hu": "Ungarisch",
+			"it": "Italienisch",
+			"ja": "Japanisch",
+			"ko": "Koreanisch",
+			"lt": "Litauisch",
+			"no": "Norwegisch",
+			"pl": "Polnisch",
+			"pt-BR": "Portugiesisch",
+			"ro": "Rumänisch",
+			"ru": "Russisch",
+			"es-ES": "Spanisch",
+			"sv-SE": "Schwedisch",
+			"th": "Thailändischen",
+			"tr": "Türkisch",
+			"uk": "Ukrainisch",
+			"vi": "Vietnamesisch",
+			"not_mine": "Ich sehe meine nicht"
+		}
+	},
+	"troll": {
+		"description": "Kontrolliere die Einstellungen der Trolle diesem Server",
+		"add_troll": "Verwende diese Option, um einen neuen Trolltitel auf diesem Server zu importieren",
+		"embed_title": "Troll-Einstellungen",
+		"embed_description": "**Troll erlaubt in diesem Server** : {trollDisabled}\n**Benutzerdefinierte Troll-Songs :**\n{trollSongs}\n\n*Füge weitere Troll-Songs hinzu, indem du sie mit dem Befehl `/config troll`* hochlädst.*",
+		"trollEnabled_text": "Ja",
+		"trollDisabled_text": "Nein",
+		"enable_troll_btn": "Trolle deaktiviert",
+		"disable_troll_btn": "Trolle aktiviert",
+		"empty_troll_slot": "Leerer Slot",
+		"locked_troll_slot": "<:golden:1065239445625917520> Upgrade auf Gold, um diesen Slot zu verwenden",
+		"edit_button": "Song {pos}",
+		"delete_button": "Song {pos}",
+		"song_uploaded": "✅ **{song}** ist jetzt Teil der benutzerdefinierten Troll-Songs dieses Servers!\n<:transparent:1067551646592282694>Du kannst es mit dem üblichen </troll:1054878390278176808> Befehl verwenden."
+	},
+	"errors": {
+		"troll_attachment_fail": "💥 Die angehängte Datei wurde nicht korrekt gesendet (Discord Problem)",
+		"troll_file_too_big": "❌ Dieses Lied ist zu groß, versuche es zu komprimieren oder um einen kleineren Song zu senden",
+		"troll_file_unavailable": "💥 Der Song kann nicht auf unsere Server übertragen werden",
+		"troll_not_song": "❌ Diese Datei scheint kein Song zu sein",
+		"troll_limit_normal": "❌ Du hast die maximale Anzahl an Songs erreicht, die du hochladen kannst:\n<:golden:1065239445625917520> Schau dir Gold Abonnement an um dieses Limit zu erhöhen: `/help -> Golden`",
+		"troll_limit_golden": "❌ Du hast die maximale Anzahl an Songs erreicht, die du hochladen kannst, auch mit einem Golden Abonnement"
+	}
+}

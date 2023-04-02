@@ -26,7 +26,7 @@ setInterval(async function(){
 	await sleep(2_000);
 	await manager.broadcast({action: "total_player_count", count: Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0)});
 }, 60000)
-const job = schedule.scheduleJob('0 */1 * * *', async function() {
+const job = schedule.scheduleJob('*/30 * * * *', async function() {
 	let player_count = Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0);
 	let guild_count = (await manager.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
 

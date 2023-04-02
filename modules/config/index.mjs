@@ -293,7 +293,7 @@ class Config {
 	  troll_settings_embed.setDescription(
 	    i18n.place(
 	      i18n.get("troll.embed_description", locale), {
-	        trollDisabled: (guild_config.trollDisabled ? i18n.get("troll.trollDisabled_text") : i18n.get("troll.trollEnabled_text")),
+	        trollDisabled: (guild_config.trollDisabled ? i18n.get("no") : i18n.get("yes")),
 	        trollSongs: custom_troll.join('\n')
 	      }
 	    )

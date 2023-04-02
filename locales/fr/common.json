@@ -1,0 +1,12 @@
+{
+	"yes": "Oui",
+	"no": "Non",
+	"errors": {
+		"guild_only": "💥 Cette commande n'est disponible que dans les serveurs.",
+		"missing_subcommand": "💥 Veuillez sélectionner une sous-commande.",
+		"not_admin": "❌ Seuls les membres ayant la permission `Gérer le serveur` peuvent utiliser cette commande",
+		"unknown_subcommand": "❌ Cette sous-commande n'existe pas.",
+		"settings_panel_fail": "❌ Le panneau de configuration est actuellement en panne :cry:",
+		"settings": "💥 Cette fonctionnalité de configuration est en panne :cry:"
+	}
+}

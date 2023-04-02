@@ -67,7 +67,6 @@
 		"page": "Page {current} of {total}"
 	},
 	"errors": {
-		"guild_only": "💥 You can only use this command in a guild",
 		"not_in_voice_channel": "❌ Please join a voice channel to use this command",
 		"user_not_in_voice_channel": "❌ This user isn't in a voice channel",
 		"join": "❌ I can't join your voice channel, please check my permissions",

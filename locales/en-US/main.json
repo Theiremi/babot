@@ -11,7 +11,7 @@
 	"stats": {
 		"command_description": "See general statistics about BaBot.",
 		"title": "Hey, My name is {name} !",
-		"content": "I'm on **{servers_count}** servers\nThere are a total of **{shards_count}** shards running\nYou're on the shard **{shard}**\nI'm playing **{total_players}** times and **{shard_players}** times in your shard\nI'm up since <t:{uptime}:R>\nMy server RAM usage : **{used_ram}/{total_ram}GB**\nCPU load : **{cpu_usage}%**\nInternal temperature : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
+		"content": "I'm on **{servers_count}** servers\nThere are a total of **{shards_count}** shards running\nYou're on the shard **{shard}**\nI have a ping of **{ping}ms**\nI'm playing **{total_players}** times and **{shard_players}** times in your shard\nI'm up since <t:{uptime}:R>\nMy server RAM usage : **{used_ram}/{total_ram}GB**\nCPU load : **{cpu_usage}%**\nInternal temperature : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
 		"footer_text": "Servers can be overloaded sometimes. Check the servers status if you experience lags and feel free to report anormal values with /feedback."
 	},
 	"privacy": {
@@ -47,119 +47,10 @@
 		}
 
 	},
-	"help": {
-		"command_description": "Get help about features of BaBot.",
-		"section_description": "Display a specific section of the Help Center",
-		"sections": {
-			"start": "Getting started",
-			"faq": "FAQ",
-			"player": "Player",
-			"troll": "Troll",
-			"golden": "Golden subscription",
-			"contribute": "Contribute to BaBot"
-		},
-		"start": {
-			"title": "Getting started with BaBot",
-			"description": "",
-			"field_1": {
-				"name": "Explain me fast",
-				"value": "- **Use </player:1052609017802924062>** to start listening music\n- **Use </troll:1054878390278176808>** to send BaBot play a funny song in the voice channel of an user without evidences"
-			},
-			"field_2": {
-				"name": "I want more details",
-				"value": "You can manage how BaBot should works with :\n- **</dashboard:1065334605076508772>** : Consult your statistics and access your personal commands\n- **</settings:1065334689021296671>** : Configure how BaBot works with you"
-			},
-			"field_3": {
-				"name": "I'm a server admin",
-				"value": "BaBot have some settings you can tweak grouped in the `/config` hub"
-			},
-			"field_4": {
-				"name": "I've not understand :grin:",
-				"value": "Get more help in the others section of this help center !\nAlso feel free to join our [Support Server](https://discord.gg/zssHymr656) if your question have definitely no answers"
-			}
-		},
-		"player": {
-			"title": "The BaBot music player",
-			"description": "The main function of BaBot is undoubtely his music player, which is simple and intuitive.",
-			"field_1": {
-				"name": "Quick start",
-				"value": "- Join a voice channel\n- Open the </player:1052609017802924062>\n- Add you preferred music by clicking on \"Add a song\"\n- Enjoy 😀"
-			},
-			"field_2": {
-				"name": "Server configuration",
-				"value": "Control and customize the player of your server with `/config player` !"
-			},
-			"field_3": {
-				"name": "Commands :",
-				"value": "- **</player:1052609017802924062>** : Opens the BaBot player\n- `/quickplay {link or search term}` : Start the BaBot player and play directly the music provided\n- `/config player` : Show an interface allowing server admins to tweak the BaBot player"
-			}
-		},
-		"troll": {
-			"title": "BaBot troll feature",
-			"description": "BaBot is also a funny bot with his troll command !",
-			"field_1": {
-				"name": "Quick start",
-				"value": "- Find a guy in a voice channel\n- Type </troll:1054878390278176808> command\n- Target the guy\n- Select the song\n- Enjoy 😆"
-			},
-			"field_2": {
-				"name": "Server configuration",
-				"value": "Want to add your personal troll songs in your server, or want to disable trolling ?\nLook at `/config troll` !"
-			},
-			"field_3": {
-				"name": "Commands :",
-				"value": "- `/troll {user} {song} [{volume}]` : Troll an user with the selected song played at the choosen volume"
-			}
-		},
-		"golden": {
-			"title": "<:golden:1065239445625917520> Make a tip for BaBot !",
-			"description": "All the basic features of BaBot are free, so to allow him to survive, a tip is really appreciated !",
-			"field_1": {
-				"name": "What can I do if a make a tip ?",
-				"value": "You will gain these advantages :\n- Use BaBot in 24/7 without confirming that it should stay in the voice channel\n- Customize your player theme\n- Add up to 5 custom troll songs per server"
-			},
-			"field_2": {
-				"name": "Do the advantages varies depending of my tip ?",
-				"value": "Every tip give access to <:golden:1065239445625917520>Golden.\nHowever, depending of your tip, you can obtain the ability to make Golden available to all users of a server :\n- **5$** : Allow all users of 1 chosen server to use Golden perks\n- **15$** : Allow all users of 5 chosen servers to use Golden perks\nNB : When the player is displayed in gold, that means an user has applied Golden on the current server"
-			},
-			"field_3": {
-				"name": "What happens if I don't make a tip ?",
-				"value": "There's no problem !\nYou can continue to use BaBot as usual, and all the free functions *should* stay free for a long time (at least I hope)"
-			},
-			"field_4": {
-				"name": "Where can I make a tip ?",
-				"value": "My patreon page is here for that : [Patreon page](https://patreon.com/user?u=85252153)\nBtw thank you ! Thanks to you, BaBot will have a future !"
-			},
-			"tip_button": "Make a tip !"
-		},
-		"contribute": {
-			"title": "How to help BaBot",
-			"description": "**Here are the different ways to help BaBot :**\n- Make a </feedback:1060125997359448064> about BaBot\n- Upvote BaBot on any site (top.gg, discordbotlist.com, discords.com or botlist.me)\n- [Contribute to the development](https://github.com/Theiremi/babot)\n- [Translate BaBot to your language](https://crowdin.com/project/babot)\n- [Make a tip](https://patreon.com/user?u=85252153)",
-			"footer": "A big thanks to anyone who want to help BaBot, as it allows BaBot to survive and grow"
-		},
-		"faq": {
-			"title": "BaBot FAQ",
-			"description": "**You have some questions ? You're in the right place !**",
-			"field_1": {
-				"name": "BaBot has crashed",
-				"value": "That's happening sometimes, but BaBot *should* automatically restart in a fews minutes. Btw sorry for the inconvenience"
-			},
-			"field_2": {
-				"name": "Why the BaBot player is gold ?",
-				"value": "A gold player indicates that a Golden user has extended his Golden on the server (see `/help -> Golden`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"
-			},
-			"field_3": {
-				"name": "How can I help BaBot ?",
-				"value": "There are several ways to help BaBot indicated in the `/help -> Contribute` help page"
-			}
-		}
-	},
 	"dashboard": {
 		"command_description": "Show your personal BaBot control panel.",
 		"panel_title": "{username} - BaBot",
-		"panel_description": "Here's your BaBot profile",
 		"user_profile_0": "I don't know",
-		"leaderboard_label": "Activity leaderboard",
-		"leaderboard_content": "{pos}th most active user",
 		"is_premium_label": "Rank",
 		"is_normal": "Normal user",
 		"is_golden": "<:golden:1065239445625917520> Golden user",
@@ -178,7 +69,7 @@
 		"modal_placeholder": "Any positive or negative feedback are welcome !",
 		"modal_textinput_label": "Your feedback",
 		"modal_title": "Send a feedback",
-		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !\n"
+		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !"
 	},
 	"errors": {
 		"user_banned": "❌ Sorry, you can't use {name}. Your account has been banned..",

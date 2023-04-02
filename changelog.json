@@ -175,7 +175,7 @@
 		"version": "1.4.3",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
-			"Included ability to choose your preferred player style (beta)"
+			"Included ability to choose your preferred player style (beta)",
 			"Found and fixed the memory leak",
 			"Fixed smalls issues in the permission system",
 			"Integrated newer translations of Ukrainian and German",
@@ -195,11 +195,11 @@
 		"version": "1.4.5",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
-			"Implemented a workaround for the sound stopping every minute"
+			"Implemented a workaround for the sound stopping every minute",
 			"Added a more complete control on troll command for server admins",
 			"Clarified difference between player and permissions editor",
 			"Removed points and level system",
-			"Added tips in the players"
+			"Added tips in the players",
 			"**Added SoundCloud support**"
 		]
 	},
@@ -214,11 +214,20 @@
 		]
 	},
 	{
-		"version": "1.5.1 (actual)",
+		"version": "1.5.1",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
-			"Rewrite internal code to improve further maintenability"
+			"Rewrite internal code to improve further maintenability",
 			"Added a delay to use specific commands for non-voting users"
+		]
+	},
+	{
+		"version": "1.5.2 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Randon minor issues not crashing BaBot fixed",
+			"Implemented a [custom layer of sound processing](https://github.com/Theiremi/pcm-effects) allowing **effects** in the future",
+			"Updated translations"
 		]
 	}
 ]

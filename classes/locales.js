@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const root = path.join(__dirname, "..");
+const merge = require('deepmerge');
 
 module.exports = class {
 	#locales = {};
@@ -24,7 +25,7 @@ module.exports = class {
 			if(fs.existsSync(root + '/locales/' + language + '/common.json'))
 			{
 				try {
-					this.#locales[language] = Object.assign(this.#locales[language] ? this.#locales[language] : {}, require(root + '/locales/' + language + '/common.json'));
+					this.#locales[language] = merge(this.#locales[language] ? this.#locales[language] : {}, require(root + '/locales/' + language + '/common.json'));
 				}
 				catch(e)
 				{
