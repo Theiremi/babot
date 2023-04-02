@@ -12,7 +12,7 @@
 		"hide": "Le lecteur a été fermé. Vous pouvez l'ouvrir à nouveau avec la commande </player:1052609017802924062>",
 		"stay_until_user": "✅ Je reste dans mon salon vocal et je vous redemande la prochaine fois que je retrouve seul",
 		"stay_forever": "✅ Je reste dans mon salon vocal indéfiniment",
-		"golden_level": "<:golden:1065239445625917520> Désolé, cette fonctionnalité est réservée aux utilisateurs Golden (Plus d'infos avec `/help level`)"
+		"golden_level": "<:golden:1065239445625917520> Désolé, cette fonctionnalité est réservée aux utilisateurs Golden (Plus d'infos avec `/help -> Golden`)"
 	},
 	"add_song_modal": {
 		"title": "Ajouter un son",
@@ -22,7 +22,13 @@
 		"search_too_long": "❌ Votre recherche ne doit pas dépasser 250 caractères",
 		"search_placeholder": "Choisissez votre son"
 	},
-	"troll_success": "✅ Troll effectué !\n<:transparent:1067551646592282694> NB : Vos amis vous trollent trop souvent ? Vous pouvez empêcher cela dans </settings:1065334689021296671>",
+	"wait_vote_embed": {
+		"title": "Votre commande se lancera <t:{timestamp}:R>",
+		"description": "**Pas envie d'attendre ?**\n- Voter pour BaBot sur [Top.gg](https://top.gg/bot/1052586565395828778/vote) (valable 3 jours)\n- Abonnez-vous à Golden (plus d'infos avec `/help -> Golden`)",
+		"footer": "Si ce message continue de s'afficher après le vote, veuillez signaler l'erreur avec /feedback",
+		"btn_vote": "Voter"
+	},
+	"troll_success": "✅ Troll effectué !\n<:transparent:1067551646592282694> NB : Désactiver le troll avec </settings:1065334689021296671> ou avec `/config troll`",
 	"buttons": {
 		"cancel": "Annuler",
 		"label_inactive": "Je suis seul. Puis-je partir ?",
@@ -38,7 +44,6 @@
 		"queue_remove": "Retirer",
 		"queue_unselect": "Désélectionner ce son",
 		"queue_hide": "Cacher",
-		"config_finished": "Piss off",
 		"owner_settings": "Panneau maître de session"
 	},
 	"player_embed": {
@@ -62,7 +67,6 @@
 		"page": "Page {current} de {total}"
 	},
 	"errors": {
-		"guild_only": "💥 Cette commande n'est disponible que dans les serveurs",
 		"not_in_voice_channel": "❌ Veuillez rejoindre un salon vocal pour utiliser cette commande",
 		"user_not_in_voice_channel": "❌ Cet utilisateur n'est pas dans un salon vocal",
 		"join": "❌ Je ne peux pas rejoindre ce salon vocal, veuillez vérifier mes permissions",
@@ -70,9 +74,11 @@
 		"full": "❌ Votre salon vocal est plein (j'ai besoin de la permission \"Déplacer les membres\" pour contourner cette limite)",
 		"already_used": "❌ Je suis déjà utilisé dans un autre salon",
 		"unknown_player_error": "💥 Le lecteur n'a pas pu être créé, mais je ne sais pas pourquoi. Vous ne devriez jamais pouvoir tomber sur cette erreur donc gg",
+		"search_cache_error": "💥 Impossible de trouver ce son dans le cache de recherche",
 		"user_not_found": "💥 Cet utilisateur n'existe pas",
 		"dont_disturb": "🤫 Cet utilisateur a demandé à ne pas être trollé",
-		"song_not_found": "💥 Je ne peux pas accéder à ce son",
+		"troll_disabled_guild": "🤫 La commande troll a été désactivée par les administrateurs du serveur",
+		"song_not_found": "❌ Ce son n'existe pas. Veuillez sélectionner un son dans la liste affichée",
 		"player_already_used": "❌ Je suis en train de jouer de la musique dans un autre salon. Pour ne pas déranger mes auditeurs, je préfère ne pas bouger",
 		"no_player": "❌ Je ne suis plus dans un salon vocal. Démarrez une nouvelle session avec la commande </player:1052609017802924062>",
 		"not_alone": "💥 Je ne suis plus seul dans mon salon vocal",

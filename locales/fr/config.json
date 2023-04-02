@@ -1,0 +1,65 @@
+{
+	"command_description": "Configurer BaBot pour votre serveur",
+	"player": {
+		"description": "Sélectionnez les commandes du lecteur que les membres peuvent utiliser"
+	},
+	"languages": {
+		"description": "Configurez la langue que BaBot doit utiliser dans ce serveur",
+		"locale_description": "Sélectionnez une langue",
+		"change_done": "✅ La langue de préférence de ce serveur a été changée pour {language}",
+		"language_doesnt_exists": "➡️ BaBot n'est pas encore traduit dans cette langue, mais n'importe qui peut participer aux traductions ! Plus d'infos avec `/help -> Contribute`",
+		"locales": {
+			"en-US": "Anglais",
+			"bg": "Bulgare",
+			"zh-CN": "Chinois",
+			"cs": "Tchèque",
+			"da": "Danois",
+			"nl": "Néerlandais",
+			"fi": "Finlandais",
+			"fr": "Français",
+			"de": "Allemand",
+			"el": "Grec",
+			"hi": "Hindi",
+			"hu": "Hongrois",
+			"it": "Italien",
+			"ja": "Japonais",
+			"ko": "Coréen",
+			"lt": "Lituanien",
+			"no": "Norvégien",
+			"pl": "Polonais",
+			"pt-BR": "Portugais",
+			"ro": "Roumain",
+			"ru": "Russe",
+			"es-ES": "Espagnol",
+			"sv-SE": "Suédois",
+			"th": "Thaï",
+			"tr": "Turc",
+			"uk": "Ukrainien",
+			"vi": "Vietnamien",
+			"not_mine": "Il n'y a pas le mien"
+		}
+	},
+	"troll": {
+		"description": "Modifier les paramètre du troll dans ce serveur",
+		"add_troll": "Utilisez cette option pour ajouter un troll dans ce serveur",
+		"embed_title": "Configuration du troll",
+		"embed_description": "**Troll autorisé dans ce serveur** : {trollDisabled}\n**Trolls du serveur :**\n{trollSongs}\n\n*Ajouter d'autres sons avec la commande `/config troll`*",
+		"trollEnabled_text": "Oui",
+		"trollDisabled_text": "Non",
+		"enable_troll_btn": "Troll Désactivé",
+		"disable_troll_btn": "Troll Activé",
+		"empty_troll_slot": "Emplacement vide",
+		"locked_troll_slot": "<:golden:1065239445625917520> Abonnez-vous à Golden pour utiliser cet emplacement",
+		"edit_button": "Son {pos}",
+		"delete_button": "Son {pos}",
+		"song_uploaded": "✅ **{song}** fait maintenant partie des trolls de ce serveur !\n<:transparent:1067551646592282694> Vous pouvez l'utiliser avec la commande </troll:1054878390278176808> habituelle."
+	},
+	"errors": {
+		"troll_attachment_fail": "💥 Le fichier n'a pas été correctement envoyé (problème chez Discord)",
+		"troll_file_too_big": "❌ Ce son est trop grand, essayez de le compresser ou d'envoyer un son plus court",
+		"troll_file_unavailable": "💥 Le son n'a pas pu être transféré vers nos serveurs",
+		"troll_not_song": "❌ Ce fichier ne semble pas être un son",
+		"troll_limit_normal": "❌ Vous avez atteint la limite de trolls que vous pouvez ajouter\n<:golden:1065239445625917520> L'abonnement Golden vous permet d'augmenter cette limite : `/help -> Golden`",
+		"troll_limit_golden": "❌ Vous avez atteint la limite de trolls que vous pouvez ajouter, même avec un abonnement Golden"
+	}
+}

@@ -96,7 +96,7 @@
 		},
 		"field_2": {
 			"name": "Why the BaBot player is gold ?",
-			"value": "A gold player indicates that a Golden user has extended his Golden on the server (see `/help -> Golden`)\n *However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"
+			"value": "A gold player indicates that a Golden user has extended his Golden on the server (see `/help -> Golden`)\n*However, the first 250 servers that have added BaBot also have the Golden enabled for life (btw if you're concerned thank you for having launched BaBot !)*"
 		},
 		"field_3": {
 			"name": "How can I help BaBot ?",

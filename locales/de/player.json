@@ -22,6 +22,12 @@
 		"search_too_long": "❌ Deine Suchabfrage darf 250 Zeichen nicht überschreiten",
 		"search_placeholder": "Wähle deinen gewünschten Song"
 	},
+	"wait_vote_embed": {
+		"title": "Dein Befehl wird <t:{timestamp}:R> starten",
+		"description": "**Möchtest du nicht warten?**\n- Vote für BaBot [auf Top.gg](https://top. g/bot/1052586565395828778/vote) (ohne Verzögerung in 3 Tagen)\n- Gold abonnieren (siehe `/help -> Golden`)",
+		"footer": "Wenn dies auch nach dem Voting auftaucht, melde bitte das Problem mit /feedback",
+		"btn_vote": "Vote"
+	},
 	"troll_success": "✅ Song gespielt\n<:transparent:1067551646592282694> NB : Genervt von Freunden, die dich zu viel trollen lol? Du kannst Trollen im </settings:1065334689021296671> Panel deaktivieren",
 	"buttons": {
 		"cancel": "Abbrechen",
@@ -38,7 +44,6 @@
 		"queue_remove": "Entfernen",
 		"queue_unselect": "Dieses Lied abwählen",
 		"queue_hide": "Warteliste ausblenden",
-		"config_finished": "Ich habe fertig",
 		"owner_settings": "Eigentümer Steuerung"
 	},
 	"player_embed": {
@@ -48,7 +53,12 @@
 		"title_configure_session": "Berechtigungen für diesen *Spieler* verwalten",
 		"restart_msg": "⚠️ BaBot startet in <t:{timestamp}:R> neu..",
 		"description_idle": "Musik in die Warteliste hinzufügen um zu hören",
-		"description_configure": "Konfigurieren Sie die Berechtigungen, die User auf dem Spieler haben.\nKlicken Sie auf das Thumbnail für Hilfe."
+		"description_configure": "Konfigurieren Sie die Berechtigungen, die User auf dem Spieler haben.\nKlicken Sie auf das Thumbnail für Hilfe.",
+		"configure_msg": "Du bist im Berechtigungs-Editor",
+		"style_placeholder": "Wähle einen benutzerdefinierten Stil für den Spieler"
+	},
+	"credits": {
+		"flaticon": "Credits an {artist} - Flaticon"
 	},
 	"queue_embed": {
 		"title": "Warteliste",
@@ -57,7 +67,6 @@
 		"page": "Seite {current} von {total}"
 	},
 	"errors": {
-		"guild_only": "💥 Du kannst diesen Befehl nur in einem Server verwenden",
 		"not_in_voice_channel": "❌ Bitte betreten Sie einen Sprachkanal, um diesen Befehl zu verwenden",
 		"user_not_in_voice_channel": "❌ Dieser Benutzer ist nicht in einem Sprachkanal",
 		"join": "❌ Ich bin nicht berechtigt, deinen Sprachkanal beizutreten",
@@ -65,9 +74,11 @@
 		"full": "❌ Dein Sprachkanal ist voll (ich brauche die Berechtigung \"Mitglieder verschieben\" um dies zu überschreiben)",
 		"already_used": "❌ Ich werde bereits in einem anderen Kanal verwendet",
 		"unknown_player_error": "💥 Der Spieler konnte nicht initialisiert werden, aber ich weiß nicht warum. Normalerweise ist dieser Fehler unmöglich auszulösen, also gg",
+		"search_cache_error": "💥 Ich kann deinen Song nicht im Such-Cache finden",
 		"user_not_found": "💥 Dieser Benutzer existiert nicht",
 		"dont_disturb": "🤫 Dieser Member hat darum gebeten, nicht durch Trolling gestört zu werden",
-		"song_not_found": "💥 Ich kann nicht auf dieses Lied zugreifen",
+		"troll_disabled_guild": "🤫 Der Trollbefehl ist von den Serveradministratoren deaktiviert",
+		"song_not_found": "❌ Dieser Song existiert nicht. Bitte wählen Sie einen Titel in der angezeigten Liste",
 		"player_already_used": "❌ Ich spiele gerade Musik. Um zu vermeiden, dass meine Zuhörer gestört werden, weigere ich mich zu bewegen",
 		"no_player": "❌ Ich bin nicht mehr in einem Sprachkanal. Starte eine neue Wiedergabesitzung mit dem Befehl </player:1052609017802924062>",
 		"not_alone": "💥 Ich bin nicht mehr allein im Sprachkanal",

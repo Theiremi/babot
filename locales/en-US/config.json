@@ -43,7 +43,7 @@
 		"description": "Control troll related settings of this guild",
 		"add_troll": "Use this option to import a new troll song in this server",
 		"embed_title": "Troll preferences",
-		"embed_description": "**Troll allowed in this guild** : {trollDisabled}\n**Custom troll songs :** \n{trollSongs}\n\n*Add more troll songs by uploading it with the command `/config troll`*",
+		"embed_description": "**Troll allowed in this guild** : {trollDisabled}\n**Custom troll songs :**\n{trollSongs}\n\n*Add more troll songs by uploading it with the command `/config troll`*",
 		"trollEnabled_text": "Yes",
 		"trollDisabled_text": "No",
 		"enable_troll_btn": "Troll Disabled",
