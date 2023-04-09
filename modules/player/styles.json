@@ -1,10 +1,13 @@
 {
 	"discord": {
 		"restart": {"name": "↩️"},
-		"last": {"name": "⏮️"},
+		"previous": {"name": "⏮️"},
+		"backward": {"name": "⏪"},
 		"pause": {"name": "⏸️"},
 		"play": {"name": "▶️"},
+		"forward": {"name": "⏩"},
 		"next": {"name": "⏭️"},
+
 		"volume": {"name": "🔉"},
 
 		"loop": {"name": "🔁"},
@@ -13,7 +16,7 @@
 		"add_song": {},
 
 		"hide": {},
-		"stop": {},
+		"stop": {"name": "⏹️"},
 		"leave": {},
 		"owner_controls": {},
 
@@ -21,13 +24,44 @@
 		"volume_medium": {"name": "🔉"},
 		"volume_high": {"name": "🔊"}
 	},
+	"flash": {
+		"restart":		{"name": ":restart:", "id": "1094247849035841616"},
+		"previous":		{"name": ":previous:", "id": "1094261019636932649"},
+		"backward":		{"name": ":backward:",    "id": "1093528803243987006"},
+		"pause":		{"name": ":pause:",   "id": "1094261023852220527"},
+		"play":			{"name": ":play:",    "id": "1094261021796991006"},
+		"forward":		{"name": ":forward:",    "id": "1093528805622165584"},
+		"next":			{"name": ":next:",    "id": "1094261024997261495"},
+
+		"volume": 		{"name": ":volume:",  "id": "1093532151271673866"},
+
+		"loop":     {"name": ":loop:", "id": "1093532143424118804"},
+		"shuffle":  {"name": ":shuffle:", "id": "1093532148843155578"},
+		"queue":    {"name": ":queue:", "id": "1093532147584864326"},
+		"add_song": {"name": ":add_song:", "id": "1093532139426943027"},
+
+		"hide":           {"name": ":hide", "id": "1093532141100478605"},
+		"stop":           {"name": ":stop:", "id": "1094261017179082758"},
+		"leave":          {},
+		"owner_settings": {"name": ":owner_settings:", "id": "1093532144887922748"},
+
+		"play_now": {"name": ":play:", "id": "1093528812790235197"},
+		"remove":   {},
+
+		"volume_low":    {"name": ":volume:", "id": "1093532152873897984"},
+		"volume_medium": {"name": ":volume:", "id": "1093532151271673866"},
+		"volume_high":   {"name": ":volume_high:", "id": "1093532154572582912"}
+	},
 	"line": {
-		"restart": {"name": ":linerestart:", "id": "1070760359167799366"},
-		"last":    {"name": ":lineprev:",    "id": "1070760491657470073"},
-		"pause":   {"name": ":linepause:",   "id": "1070760577061892217"},
-		"play":    {"name": ":lineplay:",    "id": "1070760560897052672"},
-		"next":    {"name": ":linenext:",    "id": "1070760594518585425"},
-		"volume":  {"name": ":linevolume:",  "id": "1070760727415107665"},
+		"restart":		{"name": ":linerestart:",	"id": "1070760359167799366"},
+		"previous":		{"name": ":lineprev:",		"id": "1070760491657470073"},
+		"backward":		{"name": ":lineprev:",		"id": "1070760491657470073"},
+		"pause":		{"name": ":linepause:",		"id": "1070760577061892217"},
+		"play":			{"name": ":lineplay:",		"id": "1070760560897052672"},
+		"forward":		{"name": ":linenext:",		"id": "1070760594518585425"},
+		"next":			{"name": ":linenext:",			"id": "1070760594518585425"},
+
+		"volume": 		{"name": ":linevolume:",  "id": "1070760727415107665"},
 
 		"loop":     {"name": ":lineloop:", "id": "1070763811667181651"},
 		"shuffle":  {"name": ":lineshuffle:", "id": "1070763822136184853"},
@@ -45,5 +79,33 @@
 		"volume_low":    {"name": ":linevolume_low:", "id": "1071121186550993126"},
 		"volume_medium": {"name": ":linevolume_medium:", "id": "1071121189872869507"},
 		"volume_high":   {"name": ":linevolume_high:", "id": "1071121185116536843"}
+	},
+	"grey": {
+		"restart":		{"name": ":restart:", "id": "1094249058153017354"},
+		"previous":		{"name": ":previous:", "id": "1093285562636570714"},
+		"backward":		{"name": ":backwards:",    "id": "1093285551303565433"},
+		"pause":		{"name": ":pause:",   "id": "1093285558622621849"},
+		"play":			{"name": ":play:",    "id": "1093285560619110432"},
+		"forward":		{"name": ":forward:",    "id": "1093285552226312244"},
+		"next":			{"name": ":next:",    "id": "1093285555774689291"},
+
+		"volume": 		{"name": ":volume_high:",  "id": "1093286409865003098"},
+
+		"loop":     {"name": ":loop:", "id": "1093285553627213966"},
+		"shuffle":  {"name": ":shuffle:", "id": "1093286408585756753"},
+		"queue":    {"name": ":queue:", "id": "1093285564989583411"},
+		"add_song": {"name": ":add_song:", "id": "1093285549172863026"},
+
+		"hide":           {},
+		"stop":           {"name": ":stop:", "id": "1093285566822494229"},
+		"leave":          {},
+		"owner_settings": {"name": ":owner_settings:", "id": "1093285557452406784"},
+
+		"play_now": {"name": ":play:", "id": "1093285560619110432"},
+		"remove":   {},
+
+		"volume_low":    {"name": ":volume_low:", "id": "1093286412402556959"},
+		"volume_medium": {"name": ":volume_high:", "id": "1093286409865003098"},
+		"volume_high":   {"name": ":volume_high:", "id": "1093286409865003098"}
 	}
 }

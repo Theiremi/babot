@@ -5,6 +5,8 @@ import fs from 'fs';
 import schedule from 'node-schedule';
 import settings from '#root/env_data/env.json' assert {type: "json"};
 import logger from '#classes/logger.mjs';
+import stats from '#classes/statistics.mjs';
+import miscs from '#classes/miscs.js';
 
 let shards_players = {};
 let manager = new Discord.ShardingManager('bot.mjs', {token: settings.token, mode: 'worker', totalShards: settings.shards, execArgv: ['--inspect']});
@@ -23,13 +25,18 @@ manager.on('shardCreate', async function(shard){
 manager.spawn({timeout: 120_000, delay: 2_000}).catch((e) => console.log(e));
 setInterval(async function(){
 	await manager.broadcast({action: "player_count"});
-	await sleep(2_000);
+	await miscs.sleep(2_000);
 	await manager.broadcast({action: "total_player_count", count: Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0)});
-}, 60000)
-const job = schedule.scheduleJob('*/30 * * * *', async function() {
-	let player_count = Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0);
-	let guild_count = (await manager.fetchClientValues('guilds.cache.size').catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
+}, 60000);
 
+//----- Periodic actions ------//
+const job = schedule.scheduleJob('*/30 * * * *', async function() {
+	const player_count = Object.values(shards_players).reduce((acc, guildCount) => acc + guildCount, 0);
+	const guild_count = (await miscs.asyncTimeout(manager.fetchClientValues('guilds.cache.size'), 15000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
+	const users_count = (await fs.promises.readdir("./env_data/users").catch(() => [])).length;
+	const shards_count = manager.totalShards;
+
+	await stats.updateListing(guild_count, shards_count, users_count, player_count);
 	fs.promises.appendFile("./env_data/stats.log", JSON.stringify({timestamp: Math.round(Date.now() / 1000), server_count: guild_count, player_count: player_count}) + '\n');
 
 	console.log("Checking restart file...");
@@ -48,9 +55,4 @@ const job = schedule.scheduleJob('*/30 * * * *', async function() {
 		}
 	}
 });
-
-function sleep(ms) {
-  return new Promise((resolve) => {
-	setTimeout(resolve, ms);
-  });
-}
+//-----//
