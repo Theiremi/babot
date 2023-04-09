@@ -62,16 +62,6 @@ module.exports = class Settings {
 		return true;
 	}
 
-	async count(type)
-	{
-		let folder = ""
-		if(type === 0) folder = root + '/env_data/users/'
-		else if(type === 1) folder = root + '/env_data/guilds/'
-		else return false;
-
-		return (await fs.readdir(folder)).length;
-	}
-
 	async erase(id, type)
 	{
 		let folder = ""

@@ -229,5 +229,15 @@
 			"Implemented a [custom layer of sound processing](https://github.com/Theiremi/pcm-effects) allowing **effects** in the future",
 			"Updated translations"
 		]
+	},
+	{
+		"version": "1.6.0 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Updated translations",
+			"Added two new styles",
+			"Added /quickplay command"
+			"Refined player interface"
+		]
 	}
 ]

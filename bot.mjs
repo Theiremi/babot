@@ -25,6 +25,7 @@ const client = new Discord.Client({
 
 //----- Local dependencies -----//
 import logger from './classes/logger.mjs';
+import miscs from '#classes/miscs.js';
 import Player from './modules/player/index.mjs';
 import Help from './modules/help/index.mjs';
 import Config from './modules/config/index.mjs';
@@ -39,7 +40,7 @@ player.on('error', e => report_error(e.name + ' : ' + e.message + '\nStack trace
 //-----//
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["version 1.6.0 : /changelog", 3],
+  ["version 1.5.2 : /changelog", 3],
   ["/help", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how in /help -> Contribute", 3],
@@ -181,7 +182,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       if(fs.existsSync(__dirname + '/changelog.json'))
       {
         let file_content = await fs.promises.readFile(__dirname + '/changelog.json', {encoding: 'utf-8'});
-        if(isJsonString(file_content))
+        if(miscs.isJsonString(file_content))
         {
           file_content = JSON.parse(file_content);
 
@@ -226,7 +227,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
           color: 0x2b2d31,
           title: i18n.place(i18n.get("stats.title", interaction.locale), {name: env_variables.name}),
           description: i18n.place(i18n.get("stats.content", interaction.locale), {
-            servers_count: (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 10000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
+            servers_count: (await miscs.asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 10000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0),
             shards_count: client.shard.count,
             shard: client.shard.ids[0] + 1,
             ping,
@@ -249,7 +250,7 @@ client.on('interactionCreate', async (interaction) => {//When user interact with
       //--- Internal stats ---//
       for(let i = 0; i < client?.shard?.count; i++)
       {
-        const shard_running = await asyncTimeout(client.shard.broadcastEval((client) => { return client.isReady() ? "Running" : "Stopped"}, {shard: i}), 2000).catch(() => "No response");
+        const shard_running = await miscs.asyncTimeout(client.shard.broadcastEval((client) => { return client.isReady() ? "Running" : "Stopped"}, {shard: i}), 2000).catch(() => "No response");
         logger.info([], "Shard " + (i + "     ").substring(0, 7) + " : " + shard_running);
       }
       //---//
@@ -595,95 +596,17 @@ async function generate_user_settings(user, locale)
 async function update_stats()//Executed when guilds count change or bot is restarted
 {
   if(env_variables.webhook_statistics == undefined) return;//Only update stats on websites and others in production mode
-  let guild_count = (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 1000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
-  let users_count = await client_settings.count(0);
-  let shards_count = client.shard.count;
-
-  //--- WEBSITES UPDATE ---//
-  await axios({
-    url: "https://top.gg/api/bots/1052586565395828778/stats",
-    method: "POST",
-    headers: {
-      "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJib3QiOnRydWUsImlhdCI6MTY3NDg0MzEzMX0.KzozhjgAXyzCeFFQ6ULxmSffXhyr8IXPYIkjQO5EbqI"
-    },
-    data: "server_count=" + guild_count + "&shard_count=" + shards_count
-  }).then(function(){
-    logger.info([], 'Data actualized on top.gg');
-  }, function(e) {
-    //console.log(e);
-    logger.info([], 'Error when actualizing data on top.gg');
-  });
-
-  await axios({
-    url: "https://discords.com/bots/api/bot/1052586565395828778",
-    method: "POST",
-    headers: {
-      "Authorization": "9604351c653db893e258136cefaef5e239879e57653d019b0af9feb2910a37d3bd59eb4d89a77dd6002df11e2c38fd6c0074a257d9ecd74602a17c7ac3d8dd2a"
-    },
-    data: "server_count=" + guild_count
-  }).then(function(){
-    logger.info([], 'Data actualized on discords.com');
-  }, function(e) {
-    //console.log(e);
-    logger.info([], 'Error when actualizing data on discords.com');
-  });
-
-  await axios({
-    url: "https://discordbotlist.com/api/v1/bots/1052586565395828778/stats",
-    method: "POST",
-    headers: {
-      Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0IjoxLCJpZCI6IjEwNTI1ODY1NjUzOTU4Mjg3NzgiLCJpYXQiOjE2NzQ3NTg0Nzl9.0VS2pg8rcm1_Vgj_D5ayOKiXooRGT77xaocejvykU0g"
-    },
-    data: "users=" + users_count + "&guilds=" + guild_count
-  }).then(function(){
-    logger.info([], 'Data actualized on discordbotlist.com');
-  }, function(e) {
-    //console.logger.info(e);
-    logger.info([], 'Error when actualizing data on discordbotlist.com');
-  });
-
-  await axios({
-    url: "https://api.botlist.me/api/v1/bots/1052586565395828778/stats",
-    method: "POST",
-    headers: {
-      Authorization: "7AjY6Ql2Ra6Yu62TwhSW3pNtRfMEVL"
-    },
-    data: "server_count=" + guild_count + "&shard_count=" + shards_count
-  }).then(function(){
-    logger.info([], 'Data actualized on botlist.me');
-  }, function(e) {
-    //console.log(e);
-    logger.info([], 'Error when actualizing data on botlist.me');
-  });
-
-  await axios({
-    url: "https://discord.bots.gg/api/v1/bots/1052586565395828778/stats",
-    method: "POST",
-    headers: {
-      Authorization: "eyJhbGciOiJIUzI1NiJ9.eyJhcGkiOnRydWUsImlkIjoiNDkyNzM0NDk2MjgyNTA5MzEyIiwiaWF0IjoxNjczNzc0MDQxfQ.O4EsKOE1ivZPaS7EeN0kDbe_PZU61giXyyk7s3tLsHE"
-    },
-    data: {guildCount: guild_count, shardCount: shards_count}
-  }).then(function(){
-    logger.info([], 'Data actualized on discord.bots.gg');
-  }, function(e) {
-    //console.log(e);
-    logger.info([], 'Error when actualizing data on discord.bots.gg');
-  });
-  //---//
+  let guild_count = (await miscs.asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 1000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
 
   //--- Stats Webhook ---//
   await axios({
     url: env_variables.webhook_statistics + "?wait=true",
     method: "POST",
-    headers: {
-      'Accept-Encoding': 'deflate, br'
-    },
     data: {username: "BaBot statistics", embeds: [{title: "BaBot statistics update", description: "I'm now in **" + guild_count + "** servers", color: 0x2f3136}]}
   }).then(function(){
-    logger.info([], 'Statistics sent to the server');
+    logger.info('New server count sent on the statistics webhook');
   }, function(e) {
-    //console.log(e);
-    logger.info([], 'Error when logging statistics on the server');
+    logger.warn('Failed to send server count on the statistics webhook');
   });
   //---//
 }
@@ -711,31 +634,14 @@ async function report_error(error)
   });
 }
 
-function isJsonString(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
 function update_status()//Change status of the bot every minute
 {
   setInterval(async () => {
     let random_status = Math.floor(Math.random() * (custom_status.length + 1));
-    let guild_count = (await asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 15000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
+    let guild_count = (await miscs.asyncTimeout(client.shard.fetchClientValues('guilds.cache.size'), 15000).catch(() => {return []})).reduce((acc, guildCount) => acc + guildCount, 0);
     let next_status = random_status < 1 ? [guild_count + " servers", 3] : custom_status[random_status - 1];
     await client.user.setPresence({activities: [{name: next_status[0], type: next_status[1]}]});
   }, 1000 * 60);
-}
-
-async function asyncTimeout(fun, time)
-{
-  return Promise.race([
-    fun,
-    new Promise(async (resolve, reject) => {setTimeout(reject, time)})
-  ])
 }
 
 //--- Error catching ---//

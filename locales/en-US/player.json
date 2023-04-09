@@ -1,6 +1,8 @@
 {
 	"chatinputcommands": {
 		"player": "Player interface",
+		"quickplay": "Opens the player and play a song in your voice channel",
+		"quickplay_link": "Enter a song to play (link or search term)",
 		"troll": "Play with discretion a song in the voice channel of an user",
 		"troll_user": "The user targeted",
 		"troll_song": "Select a song",
@@ -44,7 +46,8 @@
 		"queue_remove": "Remove",
 		"queue_unselect": "Unselect this song",
 		"queue_hide": "Hide queue",
-		"owner_settings": "Owner controls"
+		"owner_settings": "Owner controls",
+		"advanced_interface": "Advanced player"
 	},
 	"player_embed": {
 		"title_play": "Playing \"{song_name}\"",
@@ -73,7 +76,7 @@
 		"speak": "❌ I'm not allowed to speak in your voice channel, please check my permissions",
 		"full": "❌ Your voice channel is full (I need the \"Move members\" permission to override this)",
 		"already_used": "❌ I'm already used in an other channel",
-		"unknown_player_error": "💥 The player couldn't be initialized, but I don't know why. Normally this error is impossible to trigger so gg",
+		"unknown_player_error": "💥 The player couldn't be initialized, but I don't know why. Normally this error is impossible to trigger",
 		"search_cache_error": "💥 I can't find your song in the search cache",
 		"user_not_found": "💥 This user doesn't exist",
 		"dont_disturb": "🤫 This member has asked to not be disturbed by trolling",
