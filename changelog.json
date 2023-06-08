@@ -222,7 +222,7 @@
 		]
 	},
 	{
-		"version": "1.5.2 (actual)",
+		"version": "1.5.2",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Randon minor issues not crashing BaBot fixed",
@@ -231,13 +231,32 @@
 		]
 	},
 	{
-		"version": "1.6.0 (actual)",
+		"version": "1.6.0",
 		"commits": [
 			"Some bugs crashing BaBot fixed as usual",
 			"Updated translations",
 			"Added two new styles",
-			"Added /quickplay command"
+			"Added /quickplay command",
 			"Refined player interface"
+		]
+	},
+	{
+		"version": "1.6.1",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Updated translations",
+			"Fixed sharding indexing",
+			"Changed behavior of the next button in shuffle mode (now play a random song)",
+			"Changed again the player interface"
+		]
+	},
+	{
+		"version": "1.7.0 (actual)",
+		"commits": [
+			"Some bugs crashing BaBot fixed as usual",
+			"Updated translations",
+			"Added a DB for BaBot (finally :partying_face:)",
+			"Temporarily disabling vote delay to finish the db migration"
 		]
 	}
 ]

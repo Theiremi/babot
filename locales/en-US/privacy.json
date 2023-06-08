@@ -1,0 +1,30 @@
+{
+	"command_description": "All legal actions that you can take on data stored by us.",
+	"embed_footer": "For any questions concerning your data, contact our team at contact@theireply.fr",
+	"policy": {
+		"description": "Show how to access the Privacy Policy of BaBot.",
+		"embed_title": "Privacy policy",
+		"embed_content": "You can consult the BaBot privacy policy [on this page](https://babot.theireply.fr/privacy_policy.html)"
+	},
+	"retrieve": {
+		"description": "Export all data we have about you",
+		"embed_title": "Export all your data",
+		"embed_content": "An archive containing your data will be sent to you through your DMs immediately\n**Are you sure you want to continue ?**",
+		"success": "Your data should have been send to you in DM",
+		"fail": "An error ocurred when generating the archive.. There is probably no data to retrieve..",
+		"dm_message": "🗃️ Your data are available in the archive down below.\n❕This archive doesn't contains any executable files"
+	},
+	"delete": {
+		"description": "Delete all the data we have about you",
+		"embed_title": "Delete all your BaBot data",
+		"embed_content": "**⚠️ All your data will be immediately deleted ⚠️**\nThis includes :\n- Your saved playlists\n- Your recent activities on BaBot\n- Your XP\n- Your advantages if you've made a donation\n**This action is irreversible. Are you sure you want to continue ?**",
+		"btn_yes": "Yes, delete my data",
+		"btn_no": "No, don't delete my data",
+		"success": "All your data have succesfully been deleted !",
+		"fail": "It seems that an issue ocurred when deleting your data, please report it with `/feedback`"
+	},
+	"cancel": {
+		"embed_title": "Request canceled",
+		"embed_content": "Your request has been canceled. You can now safely close this popup !"
+	}
+}

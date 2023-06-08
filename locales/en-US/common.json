@@ -8,6 +8,7 @@
 		"not_admin": "❌ Sorry, only the members who have the `Manage guild` permission can use this command",
 		"unknown_subcommand": "💥 This subcommand doesn't exists.",
 		"settings_panel_fail": "💥 The settings panel is currently broken.. :cry:",
-		"settings": "💥 This settings function is broken :cry:"
+		"settings": "💥 This settings function is broken :cry:",
+		"interaction": "💥 This interaction doesn't exists"
 	}
 }

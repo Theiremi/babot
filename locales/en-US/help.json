@@ -102,5 +102,8 @@
 			"name": "How can I help BaBot ?",
 			"value": "There are several ways to help BaBot indicated in the `/help -> Contribute` help page"
 		}
+	},
+	"errors": {
+		"help_not_found": "💥 This help page can't be displayed for the moment"
 	}
 }

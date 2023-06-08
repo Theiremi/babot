@@ -59,7 +59,7 @@ module.exports = class {
 		return Object.keys(this.#locales);
 	}
 
-	get(term, locale = undefined)
+	get(term, locale = undefined, replace = {})
 	{
 		if(this.#locales[locale] === undefined)
 		{
@@ -81,7 +81,7 @@ module.exports = class {
 			else return locale === 'en-US' ? 'Text going here not found (pls report it with `/feedback`)' : this.get(term, 'en-US');
 		}
 
-		return typeof iterated_value == "string" ? iterated_value : "Text going here corrupted (pls report it with `/feedback`)";
+		return typeof iterated_value == "string" ? this.place(iterated_value, replace) : "Text going here corrupted (pls report it with `/feedback`)";
 	}
 
 	all(term)

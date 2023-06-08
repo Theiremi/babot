@@ -1,0 +1,24 @@
+{
+	"changelog": {
+		"command_description": "Display the update history of BaBot.",
+		"corrupted": "Changelog data is corrupted..",
+		"not_found": "Changelog data could not be found.."
+	},
+	"known_issues": {
+		"command_description": "List of all issues in BaBot waiting to be fixsed.",
+		"content": "This command has been removed, you should now reach the [Support Server](https://discord.gg/zssHymr656) to get the latest updates about BaBot issues."
+	},
+	"stats": {
+		"command_description": "See general statistics about BaBot.",
+		"title": "Hey, My name is {name} !",
+		"content": "I'm on **{servers_count}** servers\nThere are a total of **{shards_count}** shards running\nYou're on the shard **{shard}**\nI have a ping of **{ping}ms**\nI'm playing **{total_players}** times and **{shard_players}** times in your shard\nI'm up since <t:{uptime}:R>\nMy server RAM usage : **{used_ram}/{total_ram}GB**\nCPU load : **{cpu_usage}%**\nInternal temperature : **{avg_temp}**°C (avg) **{max_temp}**°C (max)",
+		"footer_text": "Servers can be overloaded sometimes. Check the servers status if you experience lags and feel free to report anormal values with /feedback."
+	},
+	"feedback": {
+		"command_description": "Send a feedback to the developers.",
+		"modal_placeholder": "Any positive or negative feedback are welcome !",
+		"modal_textinput_label": "Your feedback",
+		"modal_title": "Send a feedback",
+		"submitted": "✅ Thank you for your feedback !\n<:transparent:1067551646592282694> Any return from users helps me to improve BaBot !"
+	}
+}

@@ -1,0 +1,19 @@
+{target}:{id}:{key}
+
+Example :
+- user:12345678:config
+- guild:87654321:soundboard
+
+Reference :
+- user:{id}:config
+	- trollDisabled
+	- golden
+	- last_vote
+- guild:{id}:config
+	- trollDisabled
+	- golden : {user_id} or true
+	- locale : {discord locale code}
+- guild:{id}:soundboard
+	- {filename} : {file_content}
+- guild:{id}:permissions
+	- {permission_name} : {permission_value}

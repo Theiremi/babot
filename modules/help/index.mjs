@@ -40,15 +40,15 @@ class Help {
 		if(interaction.isChatInputCommand())
 		{
 			if(!['help'].includes(interaction.commandName)) return;
-			logger.info([{tag: "u", value: interaction.user.id}], 'Command `help` received');
+			logger.info('Command `help` received', [{tag: "u", value: interaction.user.id}]);
 
 			let section = interaction.options.getString('section') ?? "start";
-			await interaction.reply(this.#generate_help(section, interaction.locale)).catch(e => logger.error([], e));
+			await interaction.reply(this.#generate_help(section, interaction.locale)).catch(logger.error);
 		}
 		else if(interaction.isStringSelectMenu())
 		{
 			if(!["help_section"].includes(interaction.customId)) return;
-			logger.info([{tag: "u", value: interaction.user.id}], 'SelectMenu `help_section` received');
+			logger.info('SelectMenu `help_section` received', [{tag: "u", value: interaction.user.id}]);
 
 			if(!interaction?.values[0]) return;
 
