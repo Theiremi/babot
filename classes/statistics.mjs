@@ -23,7 +23,7 @@ export default {
 
 async function topgg(servers, shards)
 {
-  if(!keys["topgg"]) return;
+  if(!keys["topgg"]) return "No token for Top.gg";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://top.gg/api/bots/${env_variables.bot_id}/stats`,
@@ -42,7 +42,7 @@ async function topgg(servers, shards)
 
 async function discordbotlist(servers, users, players)
 {
-  if(!keys["discordbotlist"]) return;
+  if(!keys["discordbotlist"]) return "No token for Discordbotlist.com";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://discordbotlist.com/api/v1/bots/${env_variables.bot_id}/stats`,
@@ -61,7 +61,7 @@ async function discordbotlist(servers, users, players)
 
 async function discords(servers)
 {
-  if(!keys["discords"]) return;
+  if(!keys["discords"]) return "No token for Discords.com";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://discords.com/bots/api/bot/${env_variables.bot_id}`,
@@ -80,7 +80,7 @@ async function discords(servers)
 
 async function botlistme(servers, shards)
 {
-  if(!keys["botlistme"]) return;
+  if(!keys["botlistme"]) return "No token for Botlist.me";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://api.botlist.me/api/v1/bots/${env_variables.bot_id}/stats`,
@@ -99,7 +99,7 @@ async function botlistme(servers, shards)
 
 async function botsgg(servers, shards)
 {
-  if(!keys["botsgg"]) return;
+  if(!keys["botsgg"]) return "No token for Discord.bots.gg";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://discord.bots.gg/api/v1/bots/${env_variables.bot_id}/stats`,
@@ -118,7 +118,7 @@ async function botsgg(servers, shards)
 
 async function discordlistgg(servers)
 {
-  if(!keys["discordlistgg"]) return;
+  if(!keys["discordlistgg"]) return "No token for Discordlist.gg";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: `https://api.discordlist.gg/v0/bots/${env_variables.bot_id}/guilds`,
@@ -139,7 +139,7 @@ async function discordlistgg(servers)
 
 async function discordbotlisteu(servers)
 {
-  if(!keys["discordbotlisteu"]) return;
+  if(!keys["discordbotlisteu"]) return "No token for Discord-botlist.eu";
   return new Promise(async (resolve, reject) => {
     await axios({
       url: "https://api.discord-botlist.eu/v1/update",

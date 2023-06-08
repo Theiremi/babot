@@ -1,55 +1,60 @@
 import chalk from 'chalk';
 import fs from 'fs';
+import axios from "axios";
 import * as url from 'url';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import env_variables from '#root/env_data/env.json' assert { type: 'json' };
 
+let report_levels = [], webhook = "";
 const exposed_functions = {
-  "debug": (sections, msg) =>
+  "debug": (msg, sections) =>
   {
-    log("DEBUG ", "#26A269", sections, msg);
+    log("DEBUG ", "#26A269", msg, sections);
   },
-  "info": (sections, msg) =>
+  "info": (msg, sections) =>
   {
-    log(" INFO ", "#7AADEA", sections, msg);
+    log(" INFO ", "#7AADEA", msg, sections);
   },
-  "notice": (sections, msg) =>
+  "notice": (msg, sections) =>
   {
-    log("NOTICE", "#2A7BDE", sections, msg);
+    log("NOTICE", "#2A7BDE", msg, sections);
   },
-  "warn": (sections, msg) =>
+  "warn": (msg, sections) =>
   {
-    log(" WARN ", "#E9AD0C", sections, msg);
+    log(" WARN ", "#E9AD0C", msg, sections);
   },
-  "error": (sections, msg) =>
+  "error": (msg, sections) =>
   {
-    log("ERROR ", "#F66151", sections, msg);
+    log("ERROR ", "#F66151", msg, sections);
   },
-  "fatal": (sections, msg) =>
+  "fatal": (msg, sections) =>
   {
-    log("FATAL ", "#C01C28", sections, msg);
+    log("FATAL ", "#C01C28", msg, sections);
   }
 }
 export default exposed_functions;
 //module.exports = exposed_functions;
 
 
-function log(type, color, sections, msg)
+function log(type, color, msg, sections)
 {
-  if(typeof sections === "string" && msg === undefined)
+  if(msg instanceof Error)
   {
-    msg = sections;
-    sections = [];
+    msg = msg.stack;
   }
-  else if(typeof sections === "string" && typeof msg === "object")
+  if(typeof msg !== "string")
   {
-    const temp = msg;
-    msg = sections;
-    sections = temp;
+    exposed_functions.warn("Unknown msg argument received : " + msg);
+    return;
   }
-  else if(typeof sections === "string" && typeof msg === "string")
+
+  if(sections === undefined) sections = [];
+  if(typeof sections !== "object")
   {
-    sections = [{tag: "c", value: sections}];
+    exposed_functions.warn("Unknown sections argument received : " + sections);
+    return;
   }
+  if(["ERROR ", " WARN ", "FATAL "].includes(type)) report(type, msg, color);
 
   let date = new Date();
   let msg_formatted = ('[' + date.getFullYear() + '/' +
@@ -77,5 +82,25 @@ function log(type, color, sections, msg)
   fs.appendFile(__dirname + "/../env_data/babot.log", msg_formatted,
     function (err) {
     if (err) throw err;
+  });
+}
+
+async function report(type, msg, color)
+{
+  if(env_variables.webhook_return == "") return;
+
+  await axios({
+    url: env_variables.webhook_return + "?wait=true",
+    method: "POST",
+    data: {
+      username: "BaBot crashs",
+      embeds: [{
+        title: "BaBot : " + type,
+        description: "```" + msg + "```",
+        color: parseInt(color.substring(1), 16)
+      }]
+    }
+  }).then(function(){
+  }, function() {
   });
 }

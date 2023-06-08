@@ -42,7 +42,7 @@
 
 		"hide":           {"name": ":hide", "id": "1093532141100478605"},
 		"stop":           {"name": ":stop:", "id": "1094261017179082758"},
-		"leave":          {},
+		"leave":          {"name": ":power:", "id": "1094941924252721223"},
 		"owner_settings": {"name": ":owner_settings:", "id": "1093532144887922748"},
 
 		"play_now": {"name": ":play:", "id": "1093528812790235197"},

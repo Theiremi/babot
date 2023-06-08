@@ -1,7 +1,5 @@
 const worker_threads = require('worker_threads');
 const Voice = require('@discordjs/voice');
-const axios = require('axios');
-const prism = require('prism-media');
 
 if(!worker_threads.isMainThread)
 {

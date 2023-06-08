@@ -11,15 +11,16 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import { fileTypeFromBuffer } from 'file-type';
-const client_settings = new (await import('#classes/settings.js')).default();
 import logger from '#classes/logger.mjs';
 import I18n from '#classes/locales.js';
 const i18n = new I18n('config');
 
 class Config {
 	#player_configure;
-	constructor(player_configure)
+	#client;
+	constructor(client, player_configure)
 	{
+		this.#client = client;
 		this.#player_configure = player_configure;
 	}
 
@@ -82,7 +83,7 @@ class Config {
       }
 
       const subcommand = interaction.options.getSubcommand();
-      logger.info([{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}], 'Command `config` -> `' + subcommand + '` received');
+      logger.info('Command `config` -> `' + subcommand + '` received', [{tag: "u", value: interaction.user.id}, {tag: "g", value: interaction.guildId}]);
 
       if(!interaction.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild))//Ne peut pas manage la guild
       {
@@ -99,21 +100,21 @@ class Config {
         const new_troll_song = interaction?.options?.getAttachment("add_troll_song");
         if(new_troll_song != null)
         {
-          const nb_songs = (await fs.promises.readdir(path.join(root, '/env_data/guilds/', interaction.guildId, '/soundboard/')).catch(() => [])).length;
+          const nb_songs = await this.#client.stored_data.hLen(`guild:${interaction.guildId}:soundboard`);
           console.log(nb_songs);
           if(nb_songs >= 2)
           {
-            if(await client_settings.isGolden(interaction.guildId, interaction.user.id))
+            if(await this.#client.stored_data.isGolden(interaction.guildId, interaction.user.id))
             {
               if(nb_songs >= 5)
               {
-                await interaction.reply({content: i18n.get("errors.troll_limit_golden", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+                await interaction.reply({content: i18n.get("errors.troll_limit_golden", interaction.locale), ephemeral: true});
                 return;
               }
             }
             else
             {
-              await interaction.reply({content: i18n.get("errors.troll_limit_normal", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+              await interaction.reply({content: i18n.get("errors.troll_limit_normal", interaction.locale), ephemeral: true});
               return;
             }
           }
@@ -122,23 +123,23 @@ class Config {
             !new_troll_song.attachment ||
             !new_troll_song.size)
           {
-            await interaction.reply({content: i18n.get("errors.troll_attachment_fail", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+            await interaction.reply({content: i18n.get("errors.troll_attachment_fail", interaction.locale), ephemeral: true});
             return;
           }
           if(new_troll_song.size > 5242880)
           {
-            await interaction.reply({content: i18n.get("errors.troll_file_too_big", interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+            await interaction.reply({content: i18n.get("errors.troll_file_too_big", interaction.locale), ephemeral: true});
             return;
           }
 
-          await interaction.deferReply({ephemeral: true}).catch(e => console.log("deferReply error : " + e));
+          await interaction.deferReply({ephemeral: true});
 
           const file_retrieved = await axios(new_troll_song.url, {
             responseType: 'arraybuffer'
           }).catch(() => {return false});
           if(file_retrieved === false || file_retrieved?.data === undefined)
           {
-            await interaction.editReply({content: i18n.get("errors.troll_file_unavailable", interaction.locale)}).catch((e) => {console.log('editReply error : ' + e)});
+            await interaction.editReply({content: i18n.get("errors.troll_file_unavailable", interaction.locale)});
             return;
           }
 
@@ -146,19 +147,19 @@ class Config {
           console.log(test_result);
           if(!test_result?.mime?.startsWith('audio/'))
           {
-            await interaction.editReply({content: i18n.get("errors.troll_not_song", interaction.locale)}).catch((e) => {console.log('editReply error : ' + e)});
+            await interaction.editReply({content: i18n.get("errors.troll_not_song", interaction.locale)});
             return;
           }
           console.log(path.parse(new_troll_song.name).name);
 
           const song_name = path.parse(new_troll_song.name).name.replace(/[^ a-z0-9éèà&#@\]\[{}()_-]/gi, "_");
-          await client_settings.addTrollSong(interaction.guildId, song_name, file_retrieved.data);
+          await this.#client.stored_data.addTrollSong(interaction.guildId, song_name, file_retrieved.data);
 
-          await interaction.editReply({content: i18n.place(i18n.get("troll.song_uploaded", interaction.locale), {song: song_name})}).catch((e) => {console.log('editReply error : ' + e)});
+          await interaction.editReply({content: i18n.place(i18n.get("troll.song_uploaded", interaction.locale), {song: song_name})});
         }
         else
         {
-          await interaction.reply(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale));
         }
         return;
       }
@@ -168,41 +169,28 @@ class Config {
 
         if(i18n.exists(choosen_locale))
         {
-          let config = await client_settings.get(interaction.guildId, 1, 'config');
-          if(config === false)
-          {
-            await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-            return;
-          }
-
-          logger.info([{tag: "g", value: interaction.guildId}], 'Set language of the server to ' + choosen_locale);
-          config.locale = choosen_locale;
-          await client_settings.set(interaction.guildId, 1, 'config', config);
-          await interaction.reply({content: i18n.place(i18n.get('languages.change_done', interaction.locale), {language: i18n.get("languages.locales." + choosen_locale, interaction.locale)}), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          logger.info('Set language of the server to ' + choosen_locale, [{tag: "g", value: interaction.guildId}]);
+          await this.#client.stored_data.hSet(`guild:${interaction.guildId}:config`, 'locale', choosen_locale);
+          await interaction.reply({content: i18n.get('languages.change_done', interaction.locale, {language: i18n.get("languages.locales." + choosen_locale, interaction.locale)}), ephemeral: true})
         }
         else
         {
-          await interaction.reply({content: i18n.get('languages.language_doesnt_exists', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
+          await interaction.reply({content: i18n.get('languages.language_doesnt_exists', interaction.locale), ephemeral: true});
         }
       }
-      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true }).catch((e) => { console.log('reply error : ' + e)});
+      else await interaction.reply({ content: i18n.get('errors.unknown_subcommand', interaction.locale), ephemeral: true });
       return;
 		}
 		else if(interaction.isButton())
 		{
 			if(interaction.customId === "disable_troll")
       {
-        let config = await client_settings.get(interaction.guildId, 1, 'config');
-        if(config === false)
-        {
-          await interaction.reply({content: i18n.get('errors.settings_panel_fail', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-          return;
-        }
+        let config = await this.#client.stored_data.hGet(`guild:${interaction.guildId}:config`, 'trollDisabled');
 
-        if(config.trollDisabled) config.trollDisabled = false;
-        else config.trollDisabled = true;
-        await client_settings.set(interaction.guildId, 1, 'config', config);
-        await interaction.update(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+        if(config) config = false;
+        else config = true;
+        await this.#client.stored_data.hSet(`guild:${interaction.guildId}:config`, 'trollDisabled', config);
+        await interaction.update(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale));
       }
 
       else if(interaction.customId.startsWith('delete_troll_'))
@@ -213,39 +201,23 @@ class Config {
           return;
         }
 
-        const troll_index = interaction.customId.split('_').splice(-1)[0];
-        const troll_songs = await fs.promises.readdir(path.join(root, '/env_data/guilds/', interaction.guildId, '/soundboard/')).catch(() => [])
-        if(troll_songs[troll_index-1] === undefined)
-        {
-          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-          return;
-        }
+        const troll_index = interaction.customId.substring(13);
+        await this.#client.stored_data.hDel(`guild:${interaction.guildId}:soundboard`, troll_index);
 
-        if(!fs.existsSync(path.join(root, '/env_data/guilds/', interaction.guildId, '/soundboard/', troll_songs[troll_index-1])))
-        {
-          await interaction.reply({content: i18n.get('errors.settings', interaction.locale), ephemeral: true}).catch((e) => {console.log('reply error : ' + e)});
-          return;
-        }
-        await fs.promises.unlink(path.join(root, '/env_data/guilds/', interaction.guildId, '/soundboard/', troll_songs[troll_index-1])).catch((e) => console.log('Failed to delete troll song ' + troll_songs[troll_index-1] + ' : ' + e));
-
-        await interaction.update(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale)).catch((e) => {console.log('update error : ' + e)});
+        await interaction.update(await this.#generate_troll_config(interaction.guildId, interaction.user.id, interaction.locale));
       }
 		}
 	}
 
 	async #generate_troll_config(guild_id, user_id, locale)
 	{
-	  let guild_config = await client_settings.get(guild_id, 1, 'config')
-	  if(guild_config === false)
-	  {
-	    return {content: i18n.get('errors.settings_panel_fail', locale), ephemeral: true};
-	  }
+	  let trollDisabled = await this.#client.stored_data.hGet(`guild:${guild_id}:config`, 'trollDisabled');
 
 	  let custom_troll = [];
 	  let delete_buttons = [];
 	  let edit_buttons = [];
 	  let count = 0;
-	  for(let e of await fs.promises.readdir(path.join(root, '/env_data/guilds/', guild_id, '/soundboard/')).catch(() => []))
+	  for(let e of await this.#client.stored_data.hKeys(`guild:${guild_id}:soundboard`))
 	  {
 	    count++;
 	    custom_troll.push("**" + count + ".** " + e.split('.')[0]);
@@ -253,7 +225,7 @@ class Config {
 	    {
 	      delete_buttons.push(new Discord.ButtonBuilder()
 	        .setStyle(4)
-	        .setCustomId("delete_troll_" + count)
+	        .setCustomId("delete_troll_" + e)
 	        .setLabel(i18n.place(i18n.get("troll.delete_button", locale), {pos: count}))
 	        .setEmoji({name: "delete", id: "1082771385253888102"})
 	      );
@@ -271,7 +243,7 @@ class Config {
 	    count++;
 	    if(count > 2)
 	    {
-	      if(await client_settings.isGolden(guild_id, user_id))
+	      if(await this.#client.stored_data.isGolden(guild_id, user_id))
 	      {
 	        custom_troll.push("**" + count + ".** " + i18n.get("troll.empty_troll_slot"));
 	      }
@@ -293,7 +265,7 @@ class Config {
 	  troll_settings_embed.setDescription(
 	    i18n.place(
 	      i18n.get("troll.embed_description", locale), {
-	        trollDisabled: (guild_config.trollDisabled ? i18n.get("no") : i18n.get("yes")),
+	        trollDisabled: (trollDisabled ? i18n.get("no") : i18n.get("yes")),
 	        trollSongs: custom_troll.join('\n')
 	      }
 	    )
@@ -302,8 +274,8 @@ class Config {
 	    new Discord.ActionRowBuilder().addComponents([
 	      new Discord.ButtonBuilder()
 	        .setCustomId("disable_troll")
-	        .setStyle(guild_config.trollDisabled ? 4 : 3)
-	        .setLabel(i18n.get(guild_config.trollDisabled ? "troll.enable_troll_btn" : "troll.disable_troll_btn", locale))
+	        .setStyle(trollDisabled ? 4 : 3)
+	        .setLabel(i18n.get(trollDisabled ? "troll.enable_troll_btn" : "troll.disable_troll_btn", locale))
 	    ]),
 	  ];
 	  if(edit_buttons.length) config_components.push(new Discord.ActionRowBuilder().addComponents(edit_buttons));

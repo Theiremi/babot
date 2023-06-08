@@ -1,0 +1,19 @@
+{
+	"dashboard": {
+		"command_description": "Show your personal BaBot control panel.",
+		"panel_title": "{username} - BaBot",
+		"user_profile_0": "I don't know",
+		"is_premium_label": "Rank",
+		"is_normal": "Normal user",
+		"is_golden": "<:golden:1065239445625917520> Golden user",
+		"playlists_label": "Saved playlists",
+		"settings_btn": "Settings"
+	},
+	"settings": {
+		"command_description": "View and change your BaBot settings.",
+		"panel_title": "{username}'s control panel",
+		"panel_content": "- **Disable troll** : Prevent you from receiving trolls from others users. Perfect if you have annoying friends :)",
+		"disable_troll_btn": "Disable troll",
+		"not_authorized_user": "❌ As I can see, this is not your settings panel, right ?"
+	}
+}
