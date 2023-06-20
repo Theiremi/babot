@@ -62,7 +62,7 @@ class UserConfig {
 	        .setFields([
 	          {name: i18n.get("dashboard.is_premium_label", interaction.locale), value: user_golden ? i18n.get("dashboard.is_golden", interaction.locale) : i18n.get("dashboard.is_normal", interaction.locale), inline: true},
 	          {name: "Profile", value: i18n.get("dashboard.user_profile_" + user_profile, interaction.locale), inline: true},
-	          {name: "Can be trolled ?", value: user_config.limited_troll ? "No" : "Yes", inline: false},
+	          {name: "Can be trolled ?", value: user_config.trollDisabled ? "No" : "Yes", inline: false},
 	          {name: i18n.get("dashboard.playlists_label", interaction.locale), value: "Coming a day or another", inline: false}
 	        ])
 	      let dash_components = [
@@ -107,7 +107,7 @@ class UserConfig {
           await interaction.reply({content: i18n.get('settings.not_authorized_user', interaction.locale), ephemeral: true});
           return;
         }
-        const limited_troll = await this.#client.stored_data.hGet(`user:${interaction.user.id}:config`, 'trollDisabled');
+        let limited_troll = await this.#client.stored_data.hGet(`user:${interaction.user.id}:config`, 'trollDisabled');
 
         if(limited_troll) limited_troll = false;
         else limited_troll = true;
@@ -119,12 +119,7 @@ class UserConfig {
 
 	async #generate_user_settings(user, locale)
 	{
-	  const user_config = await this.#client.stored_data.get(user.id, 0, 'config')
-	  if(user_config === false)
-	  {
-	  	logger.warn('Settings function broken in generate_user_settings`', [{tag: "u", value: interaction.user.id}]);
-	    return {content: i18n.get('errors.settings_panel_fail', locale), ephemeral: true};
-	  }
+	  const user_config = await this.#client.stored_data.hGetAll(`user:${user.id}:config`);
 
 	  let settings_embed = new Discord.EmbedBuilder()
 	    .setColor([0x62, 0xD5, 0xE9])
@@ -134,7 +129,7 @@ class UserConfig {
 	    new Discord.ActionRowBuilder().addComponents([
 	      new Discord.ButtonBuilder()
 	        .setCustomId("btn_disable_troll_" + user.id)
-	        .setStyle(user_config.limited_troll ? 3 : 2)
+	        .setStyle(user_config.trollDisabled ? 3 : 2)
 	        .setLabel(i18n.get("settings.disable_troll_btn", locale))
 	    ])
 	  ];

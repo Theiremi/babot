@@ -698,7 +698,7 @@ export default class Player extends EventEmitter {
 		        this.#_guilds_play_data[interaction.guildId].style = interaction.values[0];
 		        logger.info('Set style of the player to ' + this.#_guilds_play_data[interaction.guildId].style, [{tag: "g", value: interaction.guildId}]);
 		        await interaction.update(await this.#generatePlayerSettingsInterface(interaction.guildId, 1, interaction.locale));
-		        await this.updatePlayerInterface(interaction.guildId);
+		        await this.#updatePlayerInterface(interaction.guildId);
 		        return;
 			}
 
@@ -732,7 +732,7 @@ export default class Player extends EventEmitter {
 			{
 				if(search_cache.list[interaction.values[0]] === undefined)
 				{
-					interaction.editReply({content: i18n.get('errors.search_cache_error')});
+					interaction.reply({content: i18n.get('errors.search_cache_error')});
 					return;
 				}
 				const song_link = search_cache.list[interaction.values[0]];
