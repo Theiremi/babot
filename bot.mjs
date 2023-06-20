@@ -41,7 +41,7 @@ player.on('error', e => logger.error);
 //-----//
 
 let custom_status = [//List of all status randomly displayed by the bot
-  ["version 1.6.1 : /changelog", 3],
+  ["version 1.7.0 : /changelog", 3],
   ["/help", 3],
   ["pls don't let me alone in your voice channels 🥺", 3],
   ["want to help BaBot ? Look how in /help -> Contribute", 3],

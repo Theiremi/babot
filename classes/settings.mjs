@@ -6,23 +6,23 @@ import { createClient, commandOptions } from 'redis';
 
 export default class Settings {
 	#initialized = false;
-	#redis_client;
+	redis_client;
 	constructor(redis_addr)
 	{
 		//redis[s]://[[username][:password]@][host][:port][/db-number]
-		this.#redis_client = createClient({
+		this.redis_client = createClient({
 			url: redis_addr
 		});
-		this.#redis_client.on('connect', () => logger.info("Connecting to Redis..."));
-		this.#redis_client.on('ready', () => logger.info("Redis connection established"));
-		this.#redis_client.on('end', () => logger.warn("End of the Redis connection"));
-		this.#redis_client.on('reconnecting', () => logger.notice("Reconnecting to Redis..."));
-		this.#redis_client.on('error', logger.error);
+		this.redis_client.on('connect', () => logger.info("Connecting to Redis..."));
+		this.redis_client.on('ready', () => logger.info("Redis connection established"));
+		this.redis_client.on('end', () => logger.warn("End of the Redis connection"));
+		this.redis_client.on('reconnecting', () => logger.notice("Reconnecting to Redis..."));
+		this.redis_client.on('error', logger.error);
 	}
 
 	async init()
 	{
-		await this.#redis_client.connect();
+		await this.redis_client.connect();
 	}
 
 	parse_in(data)
@@ -41,17 +41,17 @@ export default class Settings {
 
 	async hGet(id, field)
 	{
-		return this.parse_out(await this.#redis_client.HGET(id, field));
+		return this.parse_out(await this.redis_client.HGET(id, field));
 	}
 
 	async hGetBuffer(id, field)
 	{
-		return await this.#redis_client.HGET(commandOptions({ returnBuffers: true }), id, field);
+		return await this.redis_client.HGET(commandOptions({ returnBuffers: true }), id, field);
 	}
 
 	async hGetAll(id)
 	{
-		let return_array = await this.#redis_client.HGETALL(id);
+		let return_array = await this.redis_client.HGETALL(id);
 		for(let i of Object.keys(return_array))
 		{
 			return_array[i] = this.parse_out(return_array[i]);
@@ -61,27 +61,27 @@ export default class Settings {
 
 	async hSet(id, field, content)
 	{
-		return await this.#redis_client.HSET(id, field, this.parse_in(content));
+		return await this.redis_client.HSET(id, field, this.parse_in(content));
 	}
 
 	async hDel(id, field, content)
 	{
-		return await this.#redis_client.HDEL(id, field);
+		return await this.redis_client.HDEL(id, field);
 	}
 
 	async hLen(id)
 	{
-		return await this.#redis_client.HLEN(id);
+		return await this.redis_client.HLEN(id);
 	}
 
 	async hKeys(id)
 	{
-		return await this.#redis_client.HKEYS(id);
+		return await this.redis_client.HKEYS(id);
 	}
 
 	async hExists(id, field)
 	{
-		return await this.#redis_client.HEXISTS(id, field);
+		return await this.redis_client.HEXISTS(id, field);
 	}
 
 	async addTrollSong(id, file, content)
@@ -93,26 +93,26 @@ export default class Settings {
 	{
 		if(typeof id !== "string" || id.length <= 0) return false;
 
-		for(const key of this.#redis_client.scanIterator({ MATCH: `${id}*` }))
+		for(const key of this.redis_client.scanIterator({ MATCH: `${id}*` }))
 		{
-			await this.#redis_client.DEL(key);
+			await this.redis_client.DEL(key);
 		}
 		return;
 	}
 
 	async compress(id)
 	{
-		return new Promise(async function(resolve, reject) {
+		return new Promise((async function(resolve, reject) {
 			if(typeof id !== "string" || id.length <= 0) return false;
 
 			const archive = new AdmZip();
-			for(const key of this.#redis_client.scanIterator({ MATCH: `${id}*` }))
+			for await (const key of this.redis_client.scanIterator({ MATCH: `*:${id}:*`, COUNT: 100000 }))
 			{
-				archive.addFile(key.split(':').splice(-1)[0], Buffer.from(JSON.parse(await this.hGetAll(key))));
+				archive.addFile(key.split(':').splice(-1)[0], Buffer.from(JSON.stringify(await this.hGetAll(key))));
 			}
 
 			archive.toBuffer(resolve, reject);
-		});
+		}).bind(this));
 	}
 
 	async addXP(id, quantity)
